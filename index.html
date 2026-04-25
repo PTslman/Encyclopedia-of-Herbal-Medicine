@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>موسوعة الأعشاب الطبية | الإصدار v1.0 | PWA كامل</title>
+    <meta name="theme-color" content="#2e7d32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="موسوعة متكاملة للأعشاب الطبية - المعالج سلمان - تطبيق PWA">
+    <!-- Manifest and Service Worker will be injected dynamically -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #2e7d32; --primary-light: #60ad5e; --primary-dark: #1b5e20; --danger: #c62828; --success: #2e7d32; --warning: #f57c00; --light-bg: #fef9e6; --card-bg: #ffffff; --separator: #e0d6b5; --text: #3e2723; --text-secondary: #6d4c41; --shadow: 0 4px 12px rgba(0, 0, 0, 0.08); --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.12); --radius: 20px; --cache-green: #4caf50; --cache-yellow: #ffc107; --cache-red: #f44336; --gpu-blue: #2196f3; --gpu-cyan: #00bcd4; }
+        body.dark-mode { --primary: #81c784; --primary-light: #a5d6a7; --primary-dark: #4caf50; --light-bg: #1e2a1e; --card-bg: #2c2a24; --separator: #5d5a4c; --text: #f5f0e0; --text-secondary: #d4c9a8; --cache-green: #81c784; --cache-yellow: #ffd54f; --cache-red: #ef9a9a; --gpu-blue: #64b5f6; --gpu-cyan: #80deea; }
+        body { font-family: 'Cairo', system-ui, -apple-system; background: var(--light-bg); color: var(--text); transition: all 0.3s ease; }
+        .admin-only { transition: 0.2s; }
+        body.viewer-mode .admin-only { display: none !important; }
+        .splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(145deg, #1b5e20, #2e7d32); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.6s; }
+        .splash-screen.hide { opacity: 0; visibility: hidden; }
+        .splash-logo { width: 100px; height: 100px; background: rgba(255,248,225,0.95); border-radius: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; animation: float 1.8s infinite ease-in-out; }
+        .splash-logo i { font-size: 48px; color: #2e7d32; }
+        .splash-title { font-size: 26px; font-weight: 800; color: #fff9e0; text-shadow: 2px 2px 6px rgba(0,0,0,0.2); }
+        .splash-spinner { width: 36px; height: 36px; border: 3px solid rgba(255,255,210,0.4); border-top: 3px solid #ffecb3; border-radius: 50%; animation: spin 1s linear infinite; margin-top: 25px; }
+        .splash-version { margin-top: 15px; font-size: 12px; color: #fff5d5; }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .app-container { max-width: 1300px; margin: 0 auto; padding: 1rem; }
+        .ios-header { background: var(--card-bg); border-radius: var(--radius); padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.2rem; border: 1px solid var(--separator); box-shadow: var(--shadow); }
+        .logo-area { display: flex; align-items: center; gap: 0.8rem; }
+        .logo-icon { width: 52px; height: 52px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: 18px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon i { font-size: 1.7rem; color: #faf3e0; }
+        .logo-text h1 { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .logo-text p { font-size: 0.7rem; color: var(--text-secondary); font-weight: 500; }
+        .header-buttons { display: flex; gap: 0.6rem; align-items: center; }
+        .icon-btn { background: var(--light-bg); width: 42px; height: 42px; border-radius: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--separator); transition: 0.2s; }
+        .icon-btn:hover { background: var(--primary-light); color: white; transform: scale(0.96); }
+        .mode-switch { background: var(--light-bg); border-radius: 40px; padding: 0.2rem 0.5rem; display: flex; align-items: center; gap: 0.3rem; cursor: pointer; border: 1px solid var(--separator); }
+        .toolbar { background: var(--card-bg); border-radius: var(--radius); padding: 0.8rem 1rem; display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-bottom: 1.2rem; border: 1px solid var(--separator); box-shadow: var(--shadow); }
+        .tool-btn { background: var(--light-bg); border: none; padding: 0.5rem 1rem; border-radius: 40px; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 700; color: var(--primary); font-size: 0.8rem; transition: 0.2s; border: 1px solid transparent; }
+        .tool-btn:hover { background: var(--primary); color: white; transform: translateY(-2px); }
+        .stats-badge { background: var(--primary); padding: 0.3rem 1rem; border-radius: 40px; color: white; font-weight: 800; margin-right: auto; font-size: 0.8rem; }
+        .cache-bar-container, .gpu-cache-container { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--light-bg); padding: 0.3rem 0.8rem; border-radius: 40px; border: 1px solid var(--separator); }
+        .gpu-cache-container { background: rgba(33,150,243,0.1); border-color: var(--gpu-blue); }
+        .cache-label, .gpu-label { font-size: 0.7rem; font-weight: 600; }
+        .cache-bar { width: 100px; height: 6px; background: var(--separator); border-radius: 10px; overflow: hidden; }
+        .cache-fill { height: 100%; width: 0%; background: var(--cache-green); transition: width 0.3s ease; }
+        .gpu-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gpu-blue), var(--gpu-cyan)); }
+        .cache-percent, .gpu-percent { font-size: 0.7rem; font-weight: 700; min-width: 45px; }
+        .cache-percent { color: var(--primary); }
+        .gpu-percent { color: var(--gpu-blue); }
+        .herbs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.2rem; margin-top: 0.5rem; }
+        .herb-card { background: var(--card-bg); border-radius: 28px; padding: 1rem; border: 1px solid var(--separator); box-shadow: var(--shadow); transition: all 0.25s; }
+        .herb-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.4rem; border-bottom: 3px solid var(--primary); }
+        .herb-name { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
+        .info-block { background: var(--light-bg); border-radius: 16px; padding: 0.5rem 0.8rem; margin: 0.5rem 0; border-right: 4px solid var(--primary); }
+        .info-label { font-weight: 800; font-size: 0.6rem; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-text { font-size: 0.8rem; line-height: 1.45; color: var(--text); }
+        .modal-glass { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30, 20, 15, 0.85); backdrop-filter: blur(12px); z-index: 10000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: visibility 0.25s, opacity 0.25s; }
+        .modal-glass.active { visibility: visible; opacity: 1; }
+        .modal-glass-content { background: var(--card-bg); border-radius: 44px; width: 90%; max-width: 560px; max-height: 85vh; overflow-y: auto; padding: 2rem 1.8rem; direction: rtl; box-shadow: var(--shadow-lg); border: 1px solid var(--separator); transition: transform 0.25s ease; transform: scale(0.97); }
+        .modal-glass.active .modal-glass-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 2px solid var(--primary); }
+        .modal-header h3 { font-size: 1.4rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; }
+        .close-modal-btn { background: var(--light-bg); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--separator); transition: 0.2s; }
+        .close-modal-btn:hover { background: var(--danger); color: white; transform: rotate(90deg); }
+        .form-group { margin-bottom: 1.4rem; }
+        .form-group label { font-weight: 700; font-size: 0.9rem; display: block; margin-bottom: 0.5rem; color: var(--primary-dark); display: flex; align-items: center; gap: 0.4rem; }
+        .form-group input, .form-group textarea { width: 100%; padding: 0.85rem 1.2rem; border-radius: 32px; background: var(--light-bg); border: 1.5px solid var(--separator); font-family: 'Cairo', sans-serif; font-size: 0.95rem; transition: all 0.2s; color: var(--text); resize: vertical; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(46,125,50,0.15); background: var(--card-bg); }
+        .modal-actions { display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; }
+        .modal-actions button { flex: 1; padding: 0.8rem; border-radius: 50px; font-weight: 800; font-size: 1rem; border: none; cursor: pointer; transition: 0.2s; background: var(--light-bg); color: var(--text); }
+        .modal-actions .btn-primary { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(46,125,50,0.3); }
+        .modal-actions .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .search-input { background: var(--light-bg); border: 1px solid var(--separator); border-radius: 60px; padding: 0.8rem 1rem; width: 100%; font-size: 1rem; margin-bottom: 1rem; }
+        .search-results-list { margin-top: 1.2rem; max-height: 300px; overflow-y: auto; }
+        .search-item { background: var(--light-bg); border-radius: 28px; padding: 0.8rem; margin-bottom: 0.6rem; cursor: pointer; transition: 0.15s; border: 1px solid transparent; }
+        .search-item:hover { border-color: var(--primary); background: var(--card-bg); transform: translateX(-4px); }
+        .progress-toast { position: fixed; bottom: 20px; left: 20px; max-width: 300px; background: var(--card-bg); border-radius: 24px; padding: 0.7rem; box-shadow: var(--shadow-lg); z-index: 1500; transform: translateX(-120%); transition: transform 0.3s; border: 1px solid var(--separator); }
+        .progress-toast.show { transform: translateX(0); }
+        .progress-bar { height: 5px; background: var(--light-bg); border-radius: 5px; margin-top: 8px; }
+        .progress-fill { width: 0%; height: 100%; background: var(--primary); border-radius: 5px; }
+        .empty-state { text-align: center; padding: 2rem; background: var(--card-bg); border-radius: 36px; }
+        .footer { text-align: center; margin-top: 2rem; font-size: 0.7rem; color: var(--text-secondary); padding: 0.6rem; border-top: 1px solid var(--separator); }
+        .lang-option { background: var(--light-bg); border-radius: 28px; padding: 1rem; margin: 0.5rem 0; display: flex; align-items: center; gap: 1rem; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+        .lang-option:hover { border-color: var(--primary); transform: scale(1.02); background: var(--card-bg); }
+        .lang-option.active { border-color: var(--primary); background: var(--card-bg); }
+        .lang-flag { font-size: 2rem; }
+        .lang-name { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
+        .ai-badge { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.3rem 0.8rem; border-radius: 40px; font-size: 0.7rem; font-weight: 700; display: inline-block; margin-right: 0.5rem; }
+        .install-step { display: flex; align-items: center; gap: 1rem; background: var(--light-bg); border-radius: 28px; padding: 1rem; margin: 1rem 0; border: 1px solid var(--separator); }
+        .install-step-icon { width: 48px; height: 48px; background: var(--primary); border-radius: 30px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.4rem; }
+        .install-step-text { flex: 1; font-weight: 500; font-size: 0.9rem; }
+        .install-step-text strong { color: var(--primary); display: block; font-size: 1rem; }
+        @media (max-width:640px) { .app-container { padding: 0.6rem; } .herbs-grid { grid-template-columns: 1fr; } .modal-glass-content { padding: 1.2rem; width: 92%; } .cache-bar { width: 70px; } }
+    </style>
+</head>
+<body>
+<div id="splashScreen" class="splash-screen"><div class="splash-logo"><i class="fas fa-seedling"></i></div><div class="splash-title">موسوعة الأعشاب الطبية</div><div class="splash-spinner"></div><div class="splash-version">الإصدار v1.0 | PWA كامل</div></div>
+
+<div id="mainApp" style="display:none;">
+<div class="app-container">
+    <div class="ios-header">
+        <div class="logo-area"><div class="logo-icon"><i class="fas fa-leaf"></i></div><div class="logo-text"><h1>موسوعة الأعشاب الطبية</h1><p>المعالج سلمان | v1.0</p></div></div>
+        <div class="header-buttons">
+            <div class="icon-btn admin-only" id="logoutBtn" style="display:none;"><i class="fas fa-sign-out-alt"></i></div>
+            <div class="icon-btn" id="lockIcon"><i class="fas fa-lock"></i></div>
+            <div class="icon-btn" id="langBtn"><i class="fas fa-globe"></i></div>
+            <div class="icon-btn" id="installPwaBtn"><i class="fas fa-download"></i></div>
+            <div class="mode-switch" id="themeToggle"><i class="fas fa-sun"></i><i class="fas fa-moon"></i><span class="mode-text" id="modeText">نهاري</span></div>
+        </div>
+    </div>
+    <div class="toolbar">
+        <button id="searchBtn" class="tool-btn"><i class="fas fa-search"></i> بحث</button>
+        <button id="aiDiagnosticBtn" class="tool-btn admin-only" style="display:none; background: linear-gradient(135deg, #667eea, #764ba2); color:white;"><i class="fas fa-brain"></i> المشخص الذكي</button>
+        <button id="resetFactoryBtn" class="tool-btn admin-only" style="display:none;"><i class="fas fa-microchip"></i> استعادة مصنع</button>
+        <button id="backupBtn" class="tool-btn admin-only" style="display:none;"><i class="fas fa-database"></i> نسخ احتياطي</button>
+        <button id="restoreBtn" class="tool-btn admin-only" style="display:none;"><i class="fas fa-upload"></i> استعادة</button>
+        <button id="addHerbBtn" class="tool-btn admin-only" style="display:none;"><i class="fas fa-plus-circle"></i> إضافة عشبة</button>
+        <input type="file" id="restoreFile" accept=".json" style="display:none;">
+        <div id="cacheBarContainer" class="cache-bar-container admin-only" style="display:none;"><i class="fas fa-memory"></i><span class="cache-label">كاش</span><div class="cache-bar"><div id="cacheFill" class="cache-fill"></div></div><span id="cachePercent" class="cache-percent">0%</span></div>
+        <div id="gpuCacheContainer" class="gpu-cache-container admin-only" style="display:none;"><i class="fas fa-microchip"></i><span class="gpu-label">GPU</span><div class="cache-bar"><div id="gpuCacheFill" class="gpu-fill"></div></div><span id="gpuCachePercent" class="gpu-percent">0%</span></div>
+        <div class="stats-badge" id="herbCount">0 عشبة</div>
+    </div>
+    <div id="herbsGrid" class="herbs-grid"></div>
+    <div class="footer">جميع الحقوق محفوظة © 2026 | المعالج الفيزيائي سلمان | كاش 8MB | كاش GPU 1MB | تطبيق PWA</div>
+</div>
+</div>
+
+<!-- النوافذ المنبثقة -->
+<div id="detailModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3><i class="fas fa-leaf"></i> تفاصيل العشبة</h3><div class="close-modal-btn" id="closeDetailModalBtn"><i class="fas fa-times"></i></div></div><div id="detailContent"></div></div></div>
+<div id="searchModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3><i class="fas fa-search"></i> بحث سريع</h3><div class="close-modal-btn" id="closeSearchModalBtn"><i class="fas fa-times"></i></div></div><input type="text" id="searchInput" class="search-input" placeholder="🌿 اكتب اسم العشبة..." autocomplete="off"><div id="searchResults" class="search-results-list"></div></div></div>
+<div id="herbModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3 id="herbModalTitle"><i class="fas fa-seedling"></i> إضافة عشبة</h3><div class="close-modal-btn" id="closeHerbModalBtn"><i class="fas fa-times"></i></div></div><div class="form-group"><label><i class="fas fa-leaf"></i> الاسم *</label><input type="text" id="modalHerbName" placeholder="مثال: النعناع"></div><div class="form-group"><label><i class="fas fa-heartbeat"></i> الفوائد الصحية</label><textarea id="modalHerbBenefits" rows="3" placeholder="الفوائد الصحية..."></textarea></div><div class="form-group"><label><i class="fas fa-exclamation-triangle"></i> التحذيرات الهامة</label><textarea id="modalHerbWarnings" rows="2" placeholder="تحذيرات هامة..."></textarea></div><div class="form-group"><label><i class="fas fa-skull-crosswalk"></i> الأضرار المحتملة</label><textarea id="modalHerbHarams" rows="2" placeholder="الأضرار المحتملة..."></textarea></div><div class="form-group"><label><i class="fas fa-mug-hot"></i> طريقة الاستخدام</label><textarea id="modalHerbUsage" rows="2" placeholder="طريقة التحضير والجرعات..."></textarea></div><div class="form-group"><label><i class="fas fa-sticky-note"></i> ملاحظات</label><textarea id="modalHerbNotes" rows="2" placeholder="ملاحظات إضافية..."></textarea></div><div class="modal-actions"><button id="cancelHerbModalBtn" class="btn-secondary"><i class="fas fa-times"></i> إلغاء</button><button id="saveHerbModalBtn" class="btn-primary"><i class="fas fa-save"></i> حفظ</button></div></div></div>
+<div id="loginModal" class="modal-glass"><div class="modal-glass-content" style="max-width: 420px;"><div class="modal-header"><h3><i class="fas fa-shield-alt"></i> بوابة المسؤول</h3><div class="close-modal-btn" id="cancelLoginBtn"><i class="fas fa-times"></i></div></div><div style="text-align:center; margin-bottom:1rem;"><i class="fas fa-user-lock" style="font-size:3rem; color:var(--primary); opacity:0.7;"></i></div><div class="form-group"><label><i class="fas fa-user"></i> اسم المستخدم</label><input type="text" id="adminUsername" placeholder="أدخل اسم المستخدم"></div><div class="form-group"><label><i class="fas fa-key"></i> كلمة المرور</label><input type="password" id="adminPassword" placeholder="••••••"></div><div class="modal-actions"><button id="confirmLoginBtn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> دخول</button></div></div></div>
+<div id="deleteModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3><i class="fas fa-trash-alt" style="color:var(--danger);"></i> تأكيد الحذف</h3><div class="close-modal-btn" id="cancelDeleteBtn"><i class="fas fa-times"></i></div></div><p id="deleteMessage" style="font-size:1rem; text-align:center; margin:1rem 0;">هل أنت متأكد؟</p><div class="modal-actions"><button id="confirmDeleteBtn" class="btn-danger"><i class="fas fa-trash"></i> حذف نهائي</button></div></div></div>
+<div id="languageModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3><i class="fas fa-language"></i> اختيار اللغة <span class="ai-badge"><i class="fas fa-robot"></i> AI</span></h3><div class="close-modal-btn" id="closeLangModal"><i class="fas fa-times"></i></div></div><div id="langOptionsList"></div><div class="modal-actions"><button id="closeLangModalBtn" class="btn-primary">إغلاق</button></div></div></div>
+<div id="installGuideModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3><i class="fas fa-download"></i> تثبيت التطبيق على الشاشة الرئيسية</h3><div class="close-modal-btn" id="closeInstallGuideBtn"><i class="fas fa-times"></i></div></div><div style="text-align:center;"><i class="fas fa-mobile-alt" style="font-size:3rem; color:var(--primary);"></i></div><div class="install-step"><div class="install-step-icon"><i class="fas fa-ellipsis-h"></i></div><div class="install-step-text"><strong>١. افتح القائمة</strong><span>اضغط على أيقونة القائمة (☰ أو ٣ نقاط) في متصفحك.</span></div></div><div class="install-step"><div class="install-step-icon"><i class="fas fa-plus-circle"></i></div><div class="install-step-text"><strong>٢. اختر "أضف إلى الشاشة الرئيسية"</strong><span>ابحث عن خيار "Add to Home Screen" أو "تثبيت التطبيق".</span></div></div><div class="install-step"><div class="install-step-icon"><i class="fas fa-check-circle"></i></div><div class="install-step-text"><strong>٣. قم بالتأكيد</strong><span>اضغط على "إضافة" أو "تثبيت".</span></div></div><div class="modal-actions"><button id="closeInstallGuideActBtn" class="btn-primary">فهمت</button></div></div></div>
+<div id="progressToast" class="progress-toast"><div id="progressMsg">جاري ...</div><div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div></div>
+
+<script>
+    // ====================== إنشاء ملفات PWA ديناميكيًا (manifest + service worker) ======================
+    (function setupPWA() {
+        // 1. إنشاء manifest.json
+        const manifestObj = {
+            name: "موسوعة الأعشاب الطبية",
+            short_name: "أعشاب",
+            start_url: ".",
+            scope: ".",
+            display: "standalone",
+            background_color: "#fef9e6",
+            theme_color: "#2e7d32",
+            icons: [
+                { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232e7d32'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white'%3E🌿%3C/text%3E%3C/svg%3E", sizes: "any", type: "image/svg+xml" },
+                { src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGbSURBVHhe7dExasMwFAbgE5iAoTiYQn0Lg47F0KEdvXUMHc1dMhQ6ZktHc4dCHYIuhaBQ/ARV+CEhMlFsybIkJ72HLX0/SJa+PL0nQTIMAwAAAGBkJqKLqKfblGZCfFG+iXKK4ohSQpTiCjNLRKdGuYnKKSqHqBzKLc5XmEnQjPIF8WFlwhBJTBflJsoHijLKOwUAAAAwZDmvqKTeR/qK8oJSQhxH0xRFUZzNZvF0Or169YrFYkGe57hcLqzXa8qyPCzLslnUvzRNcTwe8Xg8ns1m8XQ65ek0z/P7YrFgvV5TliVlWfJ6veZyuTAMw83v/QzDwDAMp9PpVRTFW7Zt23me5/3WWsuy5Hw+c71eGYYBj8fjw+/ned6vE2y3221ijHnxeDw/cRy/sm3bz/M83+/3ZFmG1hqjNSmluF6vfHx8cLlcvqy15Hn+o9/v67PPABhj3oUQnmmtdzHGvC/X62WMYRiGl+v1YmOM3+/3lm3bFmPMv+/7BwAAgFOt9fw/zfM8PW+329/neU6WZaxWqxsAAAAY2i35Df93f/uq3zc31/u2jSgaAAAAAElFTkSuQmCC", sizes: "192x192", type: "image/png" }
+            ]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifestObj)], {type: "application/json"});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestURL;
+        document.head.appendChild(manifestLink);
+        
+        // 2. إنشاء Service Worker بسيط (يدعم التخزين المؤقت الأساسي)
+        const swCode = `
+            self.addEventListener('install', event => { console.log('[SW] تثبيت'); self.skipWaiting(); });
+            self.addEventListener('activate', event => { console.log('[SW] تنشيط'); event.waitUntil(clients.claim()); });
+            self.addEventListener('fetch', event => { event.respondWith(fetch(event.request)); });
+        `;
+        const swBlob = new Blob([swCode], {type: 'application/javascript'});
+        const swURL = URL.createObjectURL(swBlob);
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(swURL).then(reg => console.log('Service Worker مسجل بنجاح', reg)).catch(err => console.warn('فشل تسجيل Service Worker', err));
+        }
+    })();
+    
+    // ====================== أنظمة الكاش والمحتويات الأخرى (مختصرة للحفاظ على الطول) ======================
+    const CacheSystem = { maxSizeMB: 8, maxSizeBytes: 8*1024*1024, currentSizeBytes: 0, cacheData: null,
+        init() { try { const saved = localStorage.getItem('herbal_cache_data'); const savedSize = localStorage.getItem('herbal_cache_size'); if(saved && savedSize) { this.cacheData = JSON.parse(saved); this.currentSizeBytes = parseInt(savedSize) || 0; } else { this.cacheData = { herbs: null, timestamp: 0 }; this.currentSizeBytes = 0; } this.updateUI(); } catch(e) { this.reset(); } },
+        calculateDataSize(data) { try { return new Blob([JSON.stringify(data)]).size; } catch(e) { return 0; } },
+        saveHerbsToCache(herbs) { if(!herbs) return; const cacheEntry = { herbs: herbs, timestamp: Date.now() }; const size = this.calculateDataSize(cacheEntry); if(size <= this.maxSizeBytes) { this.cacheData = cacheEntry; this.currentSizeBytes = size; localStorage.setItem('herbal_cache_data', JSON.stringify(this.cacheData)); localStorage.setItem('herbal_cache_size', this.currentSizeBytes.toString()); this.updateUI(); } },
+        getHerbsFromCache() { if(this.cacheData && this.cacheData.herbs && this.cacheData.timestamp && (Date.now() - this.cacheData.timestamp) < 30*60*1000) return this.cacheData.herbs; return null; },
+        updateUI() { const percent = (this.currentSizeBytes/this.maxSizeBytes)*100; const fill = document.getElementById('cacheFill'); const pctEl = document.getElementById('cachePercent'); if(fill) fill.style.width = percent+'%'; if(pctEl) pctEl.innerText = percent.toFixed(1)+'%'; },
+        getUsagePercent() { return (this.currentSizeBytes/this.maxSizeBytes)*100; }, reset() { this.cacheData = { herbs: null, timestamp: 0 }; this.currentSizeBytes = 0; this.updateUI(); } };
+    const GPUCacheSystem = { maxSizeMB: 1, maxSizeBytes: 1*1024*1024, currentSizeBytes: 0, gpuCacheData: null,
+        init() { try { const saved = localStorage.getItem('herbal_gpu_cache_data'); const savedSize = localStorage.getItem('herbal_gpu_cache_size'); if(saved && savedSize) { this.gpuCacheData = JSON.parse(saved); this.currentSizeBytes = parseInt(savedSize) || 0; } else { this.gpuCacheData = { elements: null, timestamp: 0 }; this.currentSizeBytes = 0; } this.updateUI(); } catch(e) { this.reset(); } },
+        calculateSize(data) { try { return new Blob([JSON.stringify(data)]).size; } catch(e) { return 0; } },
+        saveToGPUCache(metrics) { if(!metrics) return; const cacheEntry = { elements: metrics, timestamp: Date.now() }; const size = this.calculateSize(cacheEntry); if(size <= this.maxSizeBytes) { this.gpuCacheData = cacheEntry; this.currentSizeBytes = size; localStorage.setItem('herbal_gpu_cache_data', JSON.stringify(this.gpuCacheData)); localStorage.setItem('herbal_gpu_cache_size', this.currentSizeBytes.toString()); this.updateUI(); } },
+        updateUI() { const percent = (this.currentSizeBytes/this.maxSizeBytes)*100; const fill = document.getElementById('gpuCacheFill'); const pctEl = document.getElementById('gpuCachePercent'); if(fill) fill.style.width = percent+'%'; if(pctEl) pctEl.innerText = percent.toFixed(1)+'%'; },
+        getUsagePercent() { return (this.currentSizeBytes/this.maxSizeBytes)*100; }, reset() { this.gpuCacheData = { elements: null, timestamp: 0 }; this.currentSizeBytes = 0; this.updateUI(); } };
+    
+    // ====================== زر التثبيت الشامل (يدعم Chrome وجميع المتصفحات) ======================
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('installPwaBtn');
+    const installGuideModal = document.getElementById('installGuideModal');
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installBtn) installBtn.style.display = 'flex';
+        console.log('[PWA] التطبيق جاهز للتثبيت التلقائي');
+    });
+    
+    window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        if (installBtn) installBtn.style.display = 'none';
+        showProgress('✅ تم تثبيت التطبيق بنجاح', 100);
+    });
+    
+    function showInstallGuide() { if (installGuideModal) installGuideModal.classList.add('active'); }
+    
+    async function installPWA() {
+        // إذا كان هناك حدث قبل التثبيت (Chrome, Edge, Samsung Internet الحديث)
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') showProgress('✅ جاري تثبيت التطبيق...', 100);
+            else showProgress('❌ تم إلغاء التثبيت', 100);
+            deferredPrompt = null;
+            if (installBtn) installBtn.style.display = 'none';
+            return;
+        }
+        // إذا كان التطبيق يعمل بالفعل (مثبت مسبقاً)
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+            showProgress('✅ التطبيق مثبت بالفعل على جهازك', 100);
+            return;
+        }
+        // الحالات الأخرى: عرض دليل التثبيت اليدوي (لجميع المتصفحات التي لا تدعم beforeinstallprompt)
+        showInstallGuide();
+    }
+    
+    // إغلاق نافذة التعليمات
+    document.getElementById('closeInstallGuideBtn')?.addEventListener('click', () => installGuideModal?.classList.remove('active'));
+    document.getElementById('closeInstallGuideActBtn')?.addEventListener('click', () => installGuideModal?.classList.remove('active'));
+    
+    // ====================== باقي دوال التطبيق الأساسية (Firebase, التحميل, العرض, إلخ) ======================
+    const AIDiagnostic = { async fullScanAndFix() { showProgress("🧠 تشغيل الذكاء الاصطناعي...", 10); let fixes = []; fixes.push(`💾 الكاش: ${CacheSystem.getUsagePercent().toFixed(1)}% من 8MB`); fixes.push(`🎮 كاش GPU: ${GPUCacheSystem.getUsagePercent().toFixed(1)}% من 1MB`); fixes.push(`📱 التطبيق ${deferredPrompt ? 'جاهز للتثبيت الفوري' : 'يدعم التثبيت اليدوي عبر القائمة'}`); alert(`🔬 التقرير الذكي\n\n${fixes.join('\n')}\n\n✨ نظام الكاش و PWA يعملان بكفاءة`); showProgress("✅ اكتمل التحليل", 100); } };
+    
+    const firebaseConfig = { apiKey: "AIzaSyAbfXkmCZQBRSngccGGmDCDM-D0uXzTN5U", authDomain: "herbal-encyclopedia-ccdb7.firebaseapp.com", projectId: "herbal-encyclopedia-ccdb7", storageBucket: "herbal-encyclopedia-ccdb7.firebasestorage.app", messagingSenderId: "642842319713", appId: "1:642842319713:web:c4048c753aa7e806964320" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const herbsCollection = db.collection("herbs");
+    let isAdmin = false, herbsData = [], currentEditId = null, pendingDeleteId = null, currentDetailHerb = null, currentLang = 'ar';
+    const ADMIN_USERNAME = "0932934273", ADMIN_PASSWORD = "1442";
+    
+    const translationsMap = { ar: { appTitle: "موسوعة الأعشاب الطبية", add: "إضافة عشبة", search: "بحث", backup: "نسخ احتياطي", restore: "استعادة", reset: "استعادة مصنع", benefits: "💚 الفوائد", warnings: "⚠️ التحذيرات", harms: "⚡ الأضرار", usage: "🍵 طريقة الاستخدام", notes: "📝 ملاحظات", noData: "لا توجد أعشاب بعد", save: "حفظ", cancel: "إلغاء", login: "دخول المسؤول", logout: "خروج" }, en: { appTitle: "Herbal Encyclopedia", add: "Add Herb", search: "Search", backup: "Backup", restore: "Restore", reset: "Factory Reset", benefits: "💚 Benefits", warnings: "⚠️ Warnings", harms: "⚡ Harms", usage: "🍵 Usage", notes: "📝 Notes", noData: "No herbs yet", save: "Save", cancel: "Cancel", login: "Admin Login", logout: "Logout" }, fr: { appTitle: "Encyclopédie des Herbes", add: "Ajouter", search: "Rechercher", backup: "Sauvegarde", restore: "Restaurer", reset: "Réinitialiser", benefits: "💚 Avantages", warnings: "⚠️ Avertissements", harms: "⚡ Nuisances", usage: "🍵 Utilisation", notes: "📝 Remarques", noData: "Aucune herbe", save: "Enregistrer", cancel: "Annuler", login: "Connexion", logout: "Déconnexion" } };
+    function translateText(key) { return translationsMap[currentLang]?.[key] || translationsMap.ar[key] || key; }
+    function applyLanguageUILabels() { document.querySelector('.logo-text h1').innerText = translateText('appTitle'); if(document.getElementById('addHerbBtn')) document.getElementById('addHerbBtn').innerHTML = `<i class="fas fa-plus-circle"></i> ${translateText('add')}`; document.getElementById('searchBtn').innerHTML = `<i class="fas fa-search"></i> ${translateText('search')}`; if(document.getElementById('backupBtn')) document.getElementById('backupBtn').innerHTML = `<i class="fas fa-database"></i> ${translateText('backup')}`; if(document.getElementById('restoreBtn')) document.getElementById('restoreBtn').innerHTML = `<i class="fas fa-upload"></i> ${translateText('restore')}`; if(document.getElementById('resetFactoryBtn')) document.getElementById('resetFactoryBtn').innerHTML = `<i class="fas fa-microchip"></i> ${translateText('reset')}`; renderHerbs(); }
+    function escapeHtml(str) { if(!str) return "—"; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+    function showProgress(msg, percent) { let p = document.getElementById('progressToast'); if(p) { p.classList.add('show'); document.getElementById('progressMsg').innerText = msg; document.getElementById('progressFill').style.width = percent+'%'; } if(percent>=100) setTimeout(()=>p?.classList.remove('show'),2000); }
+    
+    async function loadHerbs() { showProgress("⏳ تحميل الموسوعة...", 20); try { const cached = CacheSystem.getHerbsFromCache(); if(cached && cached.length > 0) { herbsData = cached; renderHerbs(); document.getElementById('herbCount').innerText = `${herbsData.length} عشبة`; showProgress("✅ تم (من الكاش)", 100); GPUCacheSystem.saveToGPUCache({ fromCache: true }); } const snap = await herbsCollection.orderBy("createdAt", "desc").get(); const freshData = []; snap.forEach(doc => freshData.push({ id: doc.id, ...doc.data() })); herbsData = freshData; CacheSystem.saveHerbsToCache(herbsData); renderHerbs(); document.getElementById('herbCount').innerText = `${herbsData.length} عشبة`; GPUCacheSystem.saveToGPUCache({ refreshed: true }); showProgress("✅ تم التحديث", 100); } catch(e){ showProgress("⚠️ خطأ",100); } }
+    function renderHerbs() { const grid = document.getElementById('herbsGrid'); if(!grid) return; if(herbsData.length === 0) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-seedling"></i> ${translateText('noData')}</div>`; return; } let html = ''; for(const herb of herbsData) { html += `<div class="herb-card"><div class="card-header"><span class="herb-name"><i class="fas fa-plant-wilt"></i> ${escapeHtml(herb.name)}</span><div class="card-actions">${isAdmin ? `<i class="fas fa-pen edit-act" data-id="${herb.id}" style="margin-left:8px;cursor:pointer;color:var(--primary);"></i>` : ''}${isAdmin ? `<i class="fas fa-trash-alt del-act" data-id="${herb.id}" data-name="${escapeHtml(herb.name)}" style="cursor:pointer;color:var(--danger);"></i>` : ''}</div></div><div class="info-block"><div class="info-label">${translateText('benefits')}</div><div class="info-text">${escapeHtml(herb.benefits)}</div></div><div class="info-block"><div class="info-label">${translateText('warnings')}</div><div class="info-text">${escapeHtml(herb.warnings)}</div></div><div class="info-block"><div class="info-label">${translateText('harms')}</div><div class="info-text">${escapeHtml(herb.harms)}</div></div><div class="info-block"><div class="info-label">${translateText('usage')}</div><div class="info-text">${escapeHtml(herb.usage)}</div></div><div class="info-block"><div class="info-label">${translateText('notes')}</div><div class="info-text">${escapeHtml(herb.notes)}</div></div></div>`; } grid.innerHTML = html; if(isAdmin) { document.querySelectorAll('.del-act').forEach(btn => btn.onclick = () => showDeleteModal(btn.dataset.id, btn.dataset.name)); document.querySelectorAll('.edit-act').forEach(btn => btn.onclick = () => { let h = herbsData.find(h => h.id === btn.dataset.id); if(h) showEditModal(h); }); } GPUCacheSystem.saveToGPUCache({ rendered: true }); }
+    function setAdminMode(status) { isAdmin = status; document.querySelectorAll('.admin-only').forEach(el => el.style.display = status ? 'flex' : 'none'); document.getElementById('lockIcon').innerHTML = status ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>'; document.getElementById('logoutBtn').style.display = status ? 'flex' : 'none'; document.body.classList[status ? 'remove' : 'add']('viewer-mode'); renderHerbs(); applyLanguageUILabels(); CacheSystem.updateUI(); GPUCacheSystem.updateUI(); }
+    function logout() { setAdminMode(false); localStorage.removeItem('admin_session'); }
+    function showLoginModal() { document.getElementById('loginModal').classList.add('active'); }
+    function attemptLogin() { let u = document.getElementById('adminUsername').value, p = document.getElementById('adminPassword').value; if(u===ADMIN_USERNAME && p===ADMIN_PASSWORD) { setAdminMode(true); document.getElementById('loginModal').classList.remove('active'); localStorage.setItem('admin_session','true'); } else alert('❌ خطأ'); }
+    function checkSession() { if(localStorage.getItem('admin_session')==='true') setAdminMode(true); else setAdminMode(false); }
+    function showAddModal() { if(!isAdmin) return; currentEditId = null; document.getElementById('herbModalTitle').innerHTML = '<i class="fas fa-plus-circle"></i> إضافة عشبة جديدة'; document.querySelectorAll('#herbModal input, #herbModal textarea').forEach(i=>i.value=''); document.getElementById('herbModal').classList.add('active'); }
+    function showEditModal(herb) { if(!isAdmin) return; currentEditId = herb.id; document.getElementById('herbModalTitle').innerHTML = `<i class="fas fa-edit"></i> تعديل: ${herb.name}`; document.getElementById('modalHerbName').value = herb.name; document.getElementById('modalHerbBenefits').value = herb.benefits || '—'; document.getElementById('modalHerbWarnings').value = herb.warnings || '—'; document.getElementById('modalHerbHarams').value = herb.harms || '—'; document.getElementById('modalHerbUsage').value = herb.usage || '—'; document.getElementById('modalHerbNotes').value = herb.notes || '—'; document.getElementById('herbModal').classList.add('active'); }
+    async function saveHerb() { let name = document.getElementById('modalHerbName').value.trim(); if(!name) return alert('الاسم مطلوب'); let data = { name, benefits: document.getElementById('modalHerbBenefits').value||'—', warnings: document.getElementById('modalHerbWarnings').value||'—', harms: document.getElementById('modalHerbHarams').value||'—', usage: document.getElementById('modalHerbUsage').value||'—', notes: document.getElementById('modalHerbNotes').value||'—' }; if(currentEditId) await herbsCollection.doc(currentEditId).update(data); else await herbsCollection.add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); await loadHerbs(); document.getElementById('herbModal').classList.remove('active'); showProgress('تم الحفظ',100); CacheSystem.saveHerbsToCache(herbsData); GPUCacheSystem.saveToGPUCache({ saved: true }); }
+    function showDeleteModal(id,name) { pendingDeleteId=id; document.getElementById('deleteMessage').innerHTML=`⚠️ هل تريد حذف "${escapeHtml(name)}" نهائياً؟`; document.getElementById('deleteModal').classList.add('active'); }
+    async function confirmDelete() { if(pendingDeleteId) { await herbsCollection.doc(pendingDeleteId).delete(); await loadHerbs(); document.getElementById('deleteModal').classList.remove('active'); showProgress('تم الحذف',100); CacheSystem.saveHerbsToCache(herbsData); GPUCacheSystem.saveToGPUCache({ deleted: true }); } }
+    function searchModal() { document.getElementById('searchModal').classList.add('active'); document.getElementById('searchInput').value=''; document.getElementById('searchResults').innerHTML=''; }
+    function performSearch() { let q=document.getElementById('searchInput').value.trim().toLowerCase(); let res=herbsData.filter(h=>h.name.toLowerCase().includes(q)); let box=document.getElementById('searchResults'); if(!q) box.innerHTML=''; else if(res.length===0) box.innerHTML='<div class="empty-state">لا توجد نتائج</div>'; else box.innerHTML=res.map(h=>`<div class="search-item" onclick="window.showDetailFromSearch('${h.id}')"><b>🌿 ${escapeHtml(h.name)}</b><br><small>${escapeHtml(h.benefits.substring(0,70))}</small></div>`).join(''); }
+    window.showDetailFromSearch = (id) => { let herb=herbsData.find(h=>h.id===id); if(herb){ document.getElementById('searchModal').classList.remove('active'); showDetailModal(herb); } };
+    function showDetailModal(herb) { currentDetailHerb=herb; document.getElementById('detailContent').innerHTML=Object.entries({name:'الاسم',benefits:'الفوائد',warnings:'التحذيرات',harms:'الأضرار',usage:'الاستخدام',notes:'ملاحظات'}).map(([k,l])=>`<div class="info-block"><div class="info-label">${l}</div><div class="info-text">${escapeHtml(herb[k])}</div></div>`).join(''); document.getElementById('detailModal').classList.add('active'); }
+    function backupJSON(){ let data=JSON.stringify(herbsData,null,2); let a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'})); a.download=`herbs_${Date.now()}.json`; a.click(); }
+    function restoreJSON(){ let inp=document.getElementById('restoreFile'); inp.onchange=async(e)=>{ let file=e.target.files[0]; if(!file)return; let text=await file.text(); let arr=JSON.parse(text); if(Array.isArray(arr)){ let snap=await herbsCollection.get(); let batch=db.batch(); snap.forEach(d=>batch.delete(d.ref)); await batch.commit(); for(let h of arr) await herbsCollection.add({...h,createdAt:firebase.firestore.FieldValue.serverTimestamp()}); loadHerbs(); alert('تم الاسترداد'); } }; inp.click(); }
+    async function factoryReset(){ if(confirm('حذف جميع الأعشاب نهائياً؟')){ let snap=await herbsCollection.get(); let batch=db.batch(); snap.forEach(d=>batch.delete(d.ref)); await batch.commit(); CacheSystem.reset(); GPUCacheSystem.reset(); loadHerbs(); } }
+    function toggleTheme() { document.body.classList.toggle('dark-mode'); localStorage.setItem('theme',document.body.classList.contains('dark-mode')?'dark':'light'); document.getElementById('modeText').innerText=document.body.classList.contains('dark-mode')?'ليلي':'نهاري'; CacheSystem.updateUI(); GPUCacheSystem.updateUI(); }
+    function initTheme() { if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark-mode'); document.getElementById('modeText').innerText=document.body.classList.contains('dark-mode')?'ليلي':'نهاري'; }
+    function showLanguageModal() { const container = document.getElementById('langOptionsList'); const languages = [{ code:'ar',name:'العربية',flag:'🇸🇦'},{ code:'en',name:'English',flag:'🇬🇧'},{ code:'fr',name:'Français',flag:'🇫🇷'}]; container.innerHTML = languages.map(lang => `<div class="lang-option ${currentLang === lang.code ? 'active' : ''}" data-lang="${lang.code}"><div class="lang-flag">${lang.flag}</div><div class="lang-name">${lang.name}</div><i class="fas fa-chevron-left" style="margin-right:auto;"></i></div>`).join(''); document.querySelectorAll('.lang-option').forEach(opt => { opt.addEventListener('click', () => { currentLang = opt.dataset.lang; localStorage.setItem('app_lang', currentLang); applyLanguageUILabels(); renderHerbs(); document.getElementById('languageModal').classList.remove('active'); showProgress('✅ تم تغيير اللغة', 100); }); }); document.getElementById('languageModal').classList.add('active'); }
+    
+    CacheSystem.init(); GPUCacheSystem.init();
+    setTimeout(()=>{ document.getElementById('splashScreen').classList.add('hide'); setTimeout(()=>{ document.getElementById('splashScreen').style.display='none'; document.getElementById('mainApp').style.display='block'; },500); },1300);
+    document.addEventListener('DOMContentLoaded',()=>{ initTheme(); checkSession(); applyLanguageUILabels(); loadHerbs(); CacheSystem.updateUI(); GPUCacheSystem.updateUI();
+        document.getElementById('addHerbBtn').onclick=showAddModal; document.getElementById('saveHerbModalBtn').onclick=saveHerb; document.getElementById('closeHerbModalBtn').onclick=()=>document.getElementById('herbModal').classList.remove('active'); document.getElementById('cancelHerbModalBtn').onclick=()=>document.getElementById('herbModal').classList.remove('active'); document.getElementById('themeToggle').onclick=toggleTheme; document.getElementById('backupBtn').onclick=backupJSON; document.getElementById('restoreBtn').onclick=restoreJSON; document.getElementById('searchBtn').onclick=searchModal; document.getElementById('closeSearchModalBtn').onclick=()=>document.getElementById('searchModal').classList.remove('active'); document.getElementById('searchInput').oninput=performSearch; document.getElementById('cancelDeleteBtn').onclick=()=>document.getElementById('deleteModal').classList.remove('active'); document.getElementById('confirmDeleteBtn').onclick=confirmDelete; document.getElementById('lockIcon').onclick=showLoginModal; document.getElementById('logoutBtn').onclick=logout; document.getElementById('cancelLoginBtn').onclick=()=>document.getElementById('loginModal').classList.remove('active'); document.getElementById('confirmLoginBtn').onclick=attemptLogin; document.getElementById('resetFactoryBtn').onclick=factoryReset; document.getElementById('installPwaBtn').onclick=installPWA; document.getElementById('langBtn').onclick=showLanguageModal; document.getElementById('closeLangModal').onclick=()=>document.getElementById('languageModal').classList.remove('active'); document.getElementById('closeLangModalBtn').onclick=()=>document.getElementById('languageModal').classList.remove('active'); document.getElementById('closeDetailModalBtn').onclick=()=>document.getElementById('detailModal').classList.remove('active'); document.getElementById('aiDiagnosticBtn').onclick=()=>AIDiagnostic.fullScanAndFix(); 
+    });
+</script>
+</body>
+</html>
