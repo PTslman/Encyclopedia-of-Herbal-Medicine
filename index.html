@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
-        /* نفس الأنماط السابقة مع تحسينات جمالية وإضافة متغيرات حجم الخط */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --primary: #2e7d32; --primary-light: #60ad5e; --primary-dark: #1b5e20;
@@ -20,16 +19,16 @@
             --separator: #e0d6b5; --text: #3e2723; --text-secondary: #6d4c41;
             --shadow: 0 8px 20px rgba(0, 0, 0, 0.08); --shadow-lg: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
             --radius: 20px; --radius-lg: 28px; --transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            /* أحجام الخطوط الأساسية */
+            /* أحجام الخطوط الأساسية القابلة للتكبير */
             --base-font-size: 1rem;
             --base-line-height: 1.45;
         }
         body.font-large {
-            --base-font-size: 1.15rem;
+            --base-font-size: 1.2rem;
             --base-line-height: 1.55;
         }
         body.font-xlarge {
-            --base-font-size: 1.3rem;
+            --base-font-size: 1.4rem;
             --base-line-height: 1.65;
         }
         body.dark-mode {
@@ -37,7 +36,64 @@
             --light-bg: #1e2a1e; --card-bg: #2c2a24; --separator: #5d5a4c;
             --text: #f5f0e0; --text-secondary: #d4c9a8;
         }
-        body { font-family: 'Cairo', sans-serif; background: var(--light-bg); color: var(--text); transition: var(--transition); font-size: var(--base-font-size); line-height: var(--base-line-height); }
+        /* جعل جميع العناصر تعتمد على الحجم الأساسي */
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--light-bg);
+            color: var(--text);
+            transition: var(--transition);
+            font-size: var(--base-font-size);
+            line-height: var(--base-line-height);
+        }
+        /* ضمان أن جميع العناصر ترث الحجم بشكل صحيح */
+        body, button, input, textarea, select, .tool-btn, .icon-btn, .modal-glass-content, .progress-status, .stats-badge, .contact-phone-btn, .view-btn, .header-buttons, .footer, .splash-title, .splash-version, .herb-name, .category-name, .info-text, .info-label, .card-header span, .category-card div, .search-item, .empty-state, .login-title, .login-sub, .form-group label, .modal-actions button, .category-name-display {
+            font-size: inherit;
+        }
+        /* أحكام خاصة لبعض العناصر لتكون نسبية (em) بدلاً من rem */
+        .tool-btn, .icon-btn, .contact-phone-btn, .view-btn, .sync-switch {
+            font-size: 0.9em;
+        }
+        body.font-large .tool-btn, body.font-large .icon-btn, body.font-large .contact-phone-btn, body.font-large .view-btn, body.font-large .sync-switch {
+            font-size: 0.95em;
+        }
+        body.font-xlarge .tool-btn, body.font-xlarge .icon-btn, body.font-xlarge .contact-phone-btn, body.font-xlarge .view-btn, body.font-xlarge .sync-switch {
+            font-size: 1em;
+        }
+        /* أسماء الأعشاب والتصنيفات: حجم نسبي أكبر بقليل */
+        .herb-name, .category-name {
+            font-size: 1.2em;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        /* نصوص المعلومات في البطاقات */
+        .info-text {
+            font-size: 0.9em;
+            line-height: var(--base-line-height);
+            color: var(--text);
+        }
+        .info-label {
+            font-size: 0.7em;
+            font-weight: 800;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        /* التصنيف المصغر بجانب اسم العشبة */
+        .card-header span {
+            font-size: 0.8em;
+            background: var(--light-bg);
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        /* النص "اضغط لعرض الأعشاب" */
+        .category-card div {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+        /* زيادة حجم بعض العناصر في المودالات */
+        .modal-actions button, .form-group label, .image-btn {
+            font-size: 0.9em;
+        }
         .admin-only { display: none; transition: 0.2s; }
         body.viewer-mode .admin-only { display: none !important; }
         
@@ -50,7 +106,7 @@
         .splash-screen.hide { opacity: 0; visibility: hidden; pointer-events: none; }
         .splash-logo { width: 100px; height: 100px; background: rgba(255,248,225,0.95); border-radius: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; animation: float 1.8s infinite ease-in-out; }
         .splash-logo i { font-size: 48px; color: #2e7d32; }
-        .splash-title { font-size: 26px; font-weight: 800; color: #fff9e0; text-shadow: 2px 2px 6px rgba(0,0,0,0.2); }
+        .splash-title { font-size: 1.8em; font-weight: 800; color: #fff9e0; text-shadow: 2px 2px 6px rgba(0,0,0,0.2); }
         .splash-spinner { width: 36px; height: 36px; border: 3px solid rgba(255,255,210,0.4); border-top: 3px solid #ffecb3; border-radius: 50%; animation: spin 1s linear infinite; margin-top: 25px; }
         @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -175,14 +231,14 @@
         .tool-btn {
             background: var(--light-bg); border: none; padding: 0.5rem 1rem; border-radius: 40px;
             display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 700;
-            color: var(--primary); font-size: 0.85rem; transition: 0.2s; border: 1px solid transparent;
+            color: var(--primary); transition: 0.2s; border: 1px solid transparent;
         }
         .tool-btn:hover { background: var(--primary); color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         .stats-badge {
             background: var(--primary); padding: 0.3rem 1rem; border-radius: 40px;
-            color: white; font-weight: 800; margin-right: auto; font-size: 0.8rem;
+            color: white; font-weight: 800; margin-right: auto;
         }
-        .visitor-counter { display: inline-flex; align-items: center; gap: 0.4rem; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 0.3rem 0.8rem; border-radius: 40px; color: white; font-weight: 700; font-size: 0.8rem; }
+        .visitor-counter { display: inline-flex; align-items: center; gap: 0.4rem; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 0.3rem 0.8rem; border-radius: 40px; color: white; font-weight: 700; }
         .contact-phone-btn {
             background: #25D366;
             padding: 0.2rem 0.8rem;
@@ -191,7 +247,6 @@
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            font-size: 0.7rem;
             font-weight: 600;
             color: white;
             transition: 0.2s;
@@ -250,11 +305,8 @@
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 0.8rem; padding-bottom: 0.4rem; border-bottom: 3px solid var(--primary);
         }
-        .herb-name, .category-name { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
         .info-block { background: var(--light-bg); border-radius: 16px; padding: 0.5rem 0.8rem; margin: 0.5rem 0; border-right: 4px solid var(--primary); transition: all 0.2s; }
         .info-block:hover { background: var(--card-bg); transform: translateX(-3px); }
-        .info-label { font-weight: 800; font-size: 0.6rem; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.5px; }
-        .info-text { font-size: 0.85rem; line-height: var(--base-line-height); color: var(--text); }
         .card-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
 
         /* المودالات الحديثة */
@@ -276,11 +328,10 @@
         .close-modal-btn { background: var(--light-bg); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--separator); transition: var(--transition); }
         .close-modal-btn:hover { background: var(--danger); color: white; transform: rotate(90deg); }
         .form-group { margin-bottom: 1rem; }
-        .form-group label { font-weight: 700; font-size: 0.85rem; display: block; margin-bottom: 0.3rem; color: var(--primary-dark); display: flex; align-items: center; gap: 0.5rem; }
+        .form-group label { font-weight: 700; display: block; margin-bottom: 0.3rem; color: var(--primary-dark); display: flex; align-items: center; gap: 0.5rem; }
         .form-group input, .form-group textarea, .form-group select {
             width: 100%; padding: 0.7rem 1rem; border-radius: 40px; background: var(--light-bg);
-            border: 1.5px solid var(--separator); font-family: inherit; font-size: 0.9rem;
-            transition: var(--transition); color: var(--text);
+            border: 1.5px solid var(--separator); font-family: inherit; transition: var(--transition); color: var(--text);
         }
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             outline: none; border-color: var(--primary);
@@ -290,7 +341,7 @@
         .image-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.5rem; }
         .image-btn {
             display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;
-            border-radius: 40px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            border-radius: 40px; font-weight: 600; cursor: pointer;
             transition: var(--transition); border: none; background: var(--light-bg);
             color: var(--text); border: 1px solid var(--separator);
         }
@@ -308,7 +359,7 @@
             display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: center;
         }
         .modal-actions button {
-            flex: 1; padding: 0.7rem; border-radius: 40px; font-weight: 700; font-size: 0.9rem;
+            flex: 1; padding: 0.7rem; border-radius: 40px; font-weight: 700;
             border: none; cursor: pointer; transition: var(--transition);
             background: var(--light-bg); color: var(--text);
         }
@@ -319,9 +370,8 @@
         .search-item { background: var(--light-bg); border-radius: 28px; padding: 0.8rem; margin-bottom: 0.6rem; cursor: pointer; border: 1px solid transparent; transition: 0.15s; }
         .search-item:hover { border-color: var(--primary); background: var(--card-bg); transform: translateX(-4px); }
         .empty-state { text-align: center; padding: 2rem; background: var(--card-bg); border-radius: 36px; }
-        .footer { text-align: center; margin-top: 2rem; font-size: 0.7rem; color: var(--text-secondary); padding: 0.6rem; border-top: 1px solid var(--separator); }
+        .footer { text-align: center; margin-top: 2rem; padding: 0.6rem; border-top: 1px solid var(--separator); }
         
-        /* أنماط إضافية لواجهة التصنيفات المتطورة */
         .category-item {
             display: flex;
             align-items: center;
@@ -334,11 +384,10 @@
             border: 1px solid var(--separator);
         }
         .category-item:hover { transform: translateX(-4px); border-color: var(--primary); background: var(--card-bg); }
-        .category-name-display { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.6rem; }
-        .category-actions i { margin: 0 6px; cursor: pointer; transition: 0.2s; font-size: 1.1rem; }
+        .category-name-display { font-weight: 700; display: flex; align-items: center; gap: 0.6rem; }
+        .category-actions i { margin: 0 6px; cursor: pointer; transition: 0.2s; font-size: 1.1em; }
         .category-actions i:hover { transform: scale(1.15); }
         
-        /* مودال تسجيل الدخول المعاصر مع زر إلغاء */
         .login-modern {
             background: linear-gradient(145deg, var(--card-bg), var(--light-bg));
             text-align: center;
@@ -359,7 +408,6 @@
         }
         .login-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--primary); }
         .login-sub { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.5rem; }
-        /* زر ضبط حجم الخط */
         .font-size-btn {
             background: var(--light-bg);
             border: 1px solid var(--separator);
@@ -380,7 +428,7 @@
             .herbs-grid, .categories-grid { grid-template-columns: 1fr; }
             .smart-progress-bar { padding: 8px 16px; gap: 8px; }
             .image-actions { gap: 0.5rem; }
-            .image-btn { padding: 0.4rem 0.8rem; font-size: 0.7rem; }
+            .image-btn { padding: 0.4rem 0.8rem; }
         }
     </style>
 </head>
@@ -421,14 +469,12 @@
         <button id="deleteAllBtn" class="tool-btn admin-only" style="background-color: var(--danger); color: white;"><i class="fas fa-trash-alt"></i> حذف الكل</button>
         <button id="deleteAllHerbsOnlyBtn" class="tool-btn admin-only" style="background-color: #ff9800; color: white;"><i class="fas fa-leaf"></i> مسح الأعشاب فقط</button>
         
-        <!-- أزرار المزامنة الأنيقة -->
         <button id="stopSyncBtn" class="sync-switch sync-stop admin-only"><i class="fas fa-pause"></i> إيقاف</button>
         <button id="startSyncBtn" class="sync-switch sync-start admin-only"><i class="fas fa-play"></i> تشغيل</button>
         
         <input type="file" id="restoreFile" accept=".json" style="display:none;">
         <div class="stats-badge" id="herbCount">0 عشبة</div>
         <div class="contact-phone-btn" id="whatsappBtn"><i class="fab fa-whatsapp"></i> 0932934273 <i class="fas fa-external-link-alt"></i></div>
-        <!-- زر تكبير الخط -->
         <div class="font-size-btn" id="fontSizeToggleBtn" title="تغيير حجم الخط"><i class="fas fa-text-height"></i> <span id="fontSizeLabel">عادي</span></div>
     </div>
     <div id="contentArea"></div>
@@ -486,7 +532,6 @@
 <div id="detailModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>تفاصيل العشبة</h3><div class="close-modal-btn" id="closeDetailModalBtn"><i class="fas fa-times"></i></div></div><div id="detailContent"></div></div></div>
 <div id="searchModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>بحث سريع</h3><div class="close-modal-btn" id="closeSearchModalBtn"><i class="fas fa-times"></i></div></div><input type="text" id="searchInput" class="search-input" placeholder="🌿 اكتب اسم العشبة..."><div id="searchResults"></div></div></div>
 
-<!-- مودال تسجيل الدخول المعاصر مع زر رجوع -->
 <div id="loginModal" class="modal-glass">
     <div class="modal-glass-content login-modern">
         <div class="login-icon"><i class="fas fa-user-shield"></i></div>
@@ -532,7 +577,6 @@
         });
     }
     
-    // ========== فتح واتساب فوري ==========
     function openWhatsApp() {
         const phone = "0932934273";
         const cleanPhone = phone.replace(/\D/g, '');
@@ -554,7 +598,7 @@
     }
     function escapeHtml(s){ if(!s) return '—'; return s.replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
 
-    // ========== Firebase - إعدادات بدون تخزين محلي للبيانات ==========
+    // ========== Firebase - تحسين الأداء والمزامنة ==========
     const firebaseConfig = {
         apiKey: "AIzaSyB634alkmrWFHIZrAo90oi9nTpMjwR3gXU",
         authDomain: "harb-f6240.firebaseapp.com",
@@ -566,7 +610,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     
-    // إعدادات إضافية لتحسين المزامنة والأداء
     const settings = {
         ignoreUndefinedProperties: true,
         merge: true
@@ -582,7 +625,7 @@
     let currentImageBase64 = null, currentImageFile = null;
     let unsubscribeCategories = null, unsubscribeHerbs = null;
     let reconnectAttempts = 0;
-    let isSyncActive = true;  // للتحكم في تشغيل/إيقاف المزامنة
+    let isSyncActive = true;
     const ADMIN_USER = "0932934273", ADMIN_PASS = "1442";
 
     // ========== شريط التقدم ==========
@@ -606,15 +649,60 @@
         }
     }
 
-    // ========== تحسين الاتصال: التحقق من الإنترنت ==========
+    // ========== تخزين مؤقت محلي لتحسين التحميل الأولي ==========
+    const CACHE_KEY = 'herbal_cache_v1';
+    function saveToLocalCache(cats, hrbs) {
+        try {
+            const cacheData = { categories: cats, herbs: hrbs, timestamp: Date.now() };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+        } catch(e) { console.warn("فشل حفظ الكاش", e); }
+    }
+    function loadFromLocalCache() {
+        try {
+            const raw = localStorage.getItem(CACHE_KEY);
+            if(raw) {
+                const data = JSON.parse(raw);
+                if(data.categories && data.herbs) {
+                    categories = data.categories;
+                    herbs = data.herbs;
+                    document.getElementById('herbCount').innerText = herbs.length + ' عشبة';
+                    renderContent();
+                    updateProgress(100, 'ذاكرة مؤقتة', 'تم عرض البيانات المخزنة مؤقتاً أثناء التحميل من السحابة', herbs.length, herbs.length);
+                    setTimeout(()=>progressBar.classList.add('hide'), 2000);
+                    return true;
+                }
+            }
+        } catch(e) { console.warn("فشل تحميل الكاش", e); }
+        return false;
+    }
+
+    // ========== تحسين جلب البيانات مع إعادة محاولة ذكية ==========
     function isOnline() { return navigator.onLine; }
-    
-    // ========== تحميل البيانات مع مهلة وحماية ==========
-    async function fetchWithTimeout(promise, timeoutMs = 15000) {
-        return Promise.race([
-            promise,
-            new Promise((_, reject) => setTimeout(() => reject(new Error("انتهاء المهلة")), timeoutMs))
-        ]);
+    async function fetchWithTimeout(promise, timeoutMs = 20000) {
+        let timeoutId;
+        const timeoutPromise = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error("انتهت المهلة")), timeoutMs);
+        });
+        const result = await Promise.race([promise, timeoutPromise]);
+        clearTimeout(timeoutId);
+        return result;
+    }
+
+    async function fetchWithRetry(fn, maxRetries = 5, baseDelay = 1000) {
+        let lastError;
+        for(let attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+                updateProgress(10 + attempt*15, 'جلب البيانات', `محاولة ${attempt+1}/${maxRetries} - الاتصال بالسحابة...`, 0, 0);
+                return await fn();
+            } catch(err) {
+                lastError = err;
+                if(attempt === maxRetries-1) throw err;
+                const delay = baseDelay * Math.pow(2, attempt);
+                updateProgress(10 + attempt*10, 'إعادة محاولة', `فشلت المحاولة ${attempt+1}، إعادة بعد ${Math.round(delay/1000)} ثانية`, 0, 0);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+        throw lastError;
     }
 
     async function initialLoad() {
@@ -631,30 +719,42 @@
             return;
         }
         
-        updateProgress(10, 'جلب البيانات', 'جلب التصنيفات والأعشاب من السحابة...');
+        // عرض الكاش أولاً إن وجد
+        const hasCache = loadFromLocalCache();
+        if(!hasCache) updateProgress(5, 'البدء', 'جلب البيانات من السحابة (قد يستغرق قليلاً)...');
+        
         try {
-            const [catsSnap, herbsSnap] = await fetchWithTimeout(Promise.all([
-                categoriesCol.orderBy("name").get(),
-                herbsCol.get()
-            ]), 20000);
+            const fetchOperation = async () => {
+                const [catsSnap, herbsSnap] = await fetchWithTimeout(Promise.all([
+                    categoriesCol.orderBy("name").get(),
+                    herbsCol.get()
+                ]), 25000);
+                return { cats: catsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })), 
+                         herbs: herbsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) };
+            };
             
-            categories = catsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            herbs = herbsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const { cats, herbs: newHerbs } = await fetchWithRetry(fetchOperation, 5, 1200);
+            
+            categories = cats;
+            herbs = newHerbs;
+            saveToLocalCache(categories, herbs);
             updateProgress(100, 'اكتمل', `✅ تم تحميل ${herbs.length} عشبة و ${categories.length} تصنيف من السحابة`, herbs.length, herbs.length);
             document.getElementById('herbCount').innerText = herbs.length + ' عشبة';
             renderContent();
         } catch(error) {
-            console.error("خطأ في تحميل البيانات:", error);
-            updateProgress(100, 'خطأ', `❌ فشل التحميل: ${error.message || "يرجى التحقق من الاتصال"}`);
-            const container = document.getElementById('contentArea');
-            container.innerHTML = `<div class="empty-state" style="margin:2rem">
-                <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:var(--danger);"></i>
-                <p style="margin:1rem 0">حدث خطأ أثناء تحميل البيانات من السحابة.</p>
-                <p style="font-size:0.8rem;">يرجى التحقق من اتصال الإنترنت أو قواعد البيانات.</p>
-                <button id="retryLoadBtn" class="tool-btn" style="background:var(--primary); color:white; margin-top:1rem;">إعادة المحاولة</button>
-            </div>`;
-            const retryBtn = document.getElementById('retryLoadBtn');
-            if(retryBtn) retryBtn.onclick = () => { initialLoad(); };
+            console.error("خطأ حاسم في تحميل البيانات:", error);
+            updateProgress(100, 'خطأ', `❌ فشل التحميل بعد عدة محاولات: ${error.message || "يرجى التحقق من الاتصال"}`);
+            if(!hasCache) {
+                const container = document.getElementById('contentArea');
+                container.innerHTML = `<div class="empty-state" style="margin:2rem">
+                    <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:var(--danger);"></i>
+                    <p style="margin:1rem 0">حدث خطأ أثناء تحميل البيانات من السحابة.</p>
+                    <p style="font-size:0.8rem;">يرجى التحقق من اتصال الإنترنت أو قواعد البيانات.</p>
+                    <button id="retryLoadBtn" class="tool-btn" style="background:var(--primary); color:white; margin-top:1rem;">إعادة المحاولة</button>
+                </div>`;
+                const retryBtn = document.getElementById('retryLoadBtn');
+                if(retryBtn) retryBtn.onclick = () => { initialLoad(); };
+            }
             setTimeout(()=>progressBar.classList.add('hide'), 3000);
         }
     }
@@ -668,32 +768,33 @@
         if (unsubscribeCategories) unsubscribeCategories();
         if (unsubscribeHerbs) unsubscribeHerbs();
         
+        const handleError = (error) => {
+            console.warn("خطأ في الاستماع المباشر:", error);
+            if (isSyncActive) handleReconnection();
+        };
+        
         try {
             unsubscribeCategories = categoriesCol.orderBy("name").onSnapshot({
                 next: (snapshot) => {
                     if (!isSyncActive) return;
                     categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    saveToLocalCache(categories, herbs);
                     renderContent();
                     reconnectAttempts = 0;
                 },
-                error: (error) => {
-                    console.warn("خطأ في استماع التصنيفات، محاولة إعادة الاتصال:", error);
-                    if (isSyncActive) handleReconnection();
-                }
+                error: handleError
             });
             
             unsubscribeHerbs = herbsCol.onSnapshot({
                 next: (snapshot) => {
                     if (!isSyncActive) return;
                     herbs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    saveToLocalCache(categories, herbs);
                     document.getElementById('herbCount').innerText = herbs.length + ' عشبة';
                     renderContent();
                     reconnectAttempts = 0;
                 },
-                error: (error) => {
-                    console.warn("خطأ في استماع الأعشاب، محاولة إعادة الاتصال:", error);
-                    if (isSyncActive) handleReconnection();
-                }
+                error: handleError
             });
         } catch(e) { 
             console.error("فشل بدء الاستماع المباشر:", e);
@@ -731,8 +832,8 @@
     function handleReconnection() {
         if (!isSyncActive) return;
         reconnectAttempts++;
-        if (reconnectAttempts < 5) {
-            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+        if (reconnectAttempts < 6) {
+            const delay = Math.min(1000 * Math.pow(1.8, reconnectAttempts), 45000);
             setTimeout(() => {
                 console.log(`محاولة إعادة الاتصال رقم ${reconnectAttempts} بعد ${delay}ms`);
                 startRealtimeUpdates();
@@ -743,9 +844,9 @@
         }
     }
 
-    // ========== دالات العرض الأصلية (بدون تغيير) ==========
+    // ========== دالات العرض (مع تحسين حجم الخط) ==========
     function renderContent() { if(currentView === "all") renderAllHerbs(); else renderCategories(); }
-    function renderAllHerbs() { /* تم إبقاء الكود الأصلي */ 
+    function renderAllHerbs() {
         const container = document.getElementById('contentArea');
         if(herbs.length===0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-leaf"></i> لا توجد أعشاب بعد</div>'; return; }
         let html = '<div class="herbs-grid">';
@@ -753,7 +854,7 @@
             let catName = categories.find(c=>c.id===h.categoryId)?.name || "بدون تصنيف";
             html += `<div class="herb-card" data-id="${h.id}">
                 ${h.imageUrl ? `<img src="${escapeHtml(h.imageUrl)}" class="herb-card-image" loading="lazy" onerror="this.style.display='none'">` : ''}
-                <div class="card-header"><span class="herb-name">🌿 ${escapeHtml(h.name)}</span><span style="font-size:0.7rem;background:var(--light-bg);padding:2px 8px;border-radius:20px;">${escapeHtml(catName)}</span></div>
+                <div class="card-header"><span class="herb-name">🌿 ${escapeHtml(h.name)}</span><span>${escapeHtml(catName)}</span></div>
                 <div class="info-block"><div class="info-label">💚 الفوائد</div><div class="info-text">${escapeHtml(h.benefits||'—')}</div></div>
                 <div class="info-block"><div class="info-label">⚠️ التحذيرات</div><div class="info-text">${escapeHtml(h.warnings||'—')}</div></div>
                 <div class="info-block"><div class="info-label">⚡ الأضرار</div><div class="info-text">${escapeHtml(h.harms||'—')}</div></div>
@@ -766,15 +867,15 @@
         container.innerHTML = html;
         attachHerbEvents();
     }
-    function renderCategories() { /* الأصلي */ 
+    function renderCategories() {
         const container = document.getElementById('contentArea');
         if(categories.length===0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i> لا توجد تصنيفات، أضف تصنيفاً</div>'; return; }
         let html = '<div class="categories-grid">';
         for(let cat of categories) {
             let herbsCount = herbs.filter(h=>h.categoryId===cat.id).length;
             html += `<div class="category-card" data-cat-id="${cat.id}">
-                <div class="card-header"><span class="category-name">📁 ${escapeHtml(cat.name)}</span><span style="font-size:0.7rem;">${herbsCount} عشبة</span></div>
-                <div style="font-size:0.8rem;color:var(--text-secondary);">اضغط لعرض الأعشاب</div>
+                <div class="card-header"><span class="category-name">📁 ${escapeHtml(cat.name)}</span><span>${herbsCount} عشبة</span></div>
+                <div>اضغط لعرض الأعشاب</div>
                 ${isAdmin ? `<div class="card-actions"><i class="fas fa-edit edit-cat" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}"></i><i class="fas fa-trash-alt del-cat" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}"></i></div>` : ''}
             </div>`;
         }
@@ -786,7 +887,7 @@
             document.querySelectorAll('.del-cat').forEach(btn=>btn.onclick=e=>{e.stopPropagation(); pendingDeleteId=btn.dataset.id; pendingDeleteType='category'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف التصنيف "${btn.dataset.name}" وجميع أعشابه؟`; document.getElementById('deleteModal').classList.add('active');});
         }
     }
-    function attachHerbEvents() { /* الأصلي */ 
+    function attachHerbEvents() {
         if(isAdmin) {
             document.querySelectorAll('.edit-herb').forEach(btn=>btn.onclick=e=>{e.stopPropagation(); editHerb(btn.dataset.id);});
             document.querySelectorAll('.del-herb').forEach(btn=>btn.onclick=e=>{e.stopPropagation(); pendingDeleteId=btn.dataset.id; pendingDeleteType='herb'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف "${btn.dataset.name}" من السحابة؟`; document.getElementById('deleteModal').classList.add('active');});
@@ -795,7 +896,7 @@
             document.querySelectorAll('.herb-card').forEach(card=>card.onclick=()=>showHerbDetail(card.dataset.id));
         }
     }
-    function showCategoryHerbs(catId) { /* الأصلي */ 
+    function showCategoryHerbs(catId) {
         let cat = categories.find(c=>c.id===catId);
         if(!cat) return;
         let catHerbs = herbs.filter(h=>h.categoryId===catId);
@@ -818,7 +919,7 @@
         attachHerbEvents();
         document.getElementById('backCatBtn')?.addEventListener('click',()=>{ currentView='categories'; renderContent(); document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); document.querySelector('.view-btn[data-view="categories"]').classList.add('active'); });
     }
-    function showHerbDetail(id) { /* الأصلي */ 
+    function showHerbDetail(id) {
         let h = herbs.find(x=>x.id===id);
         if(!h) return;
         let catName = categories.find(c=>c.id===h.categoryId)?.name || "بدون تصنيف";
@@ -827,7 +928,7 @@
         document.getElementById('detailModal').classList.add('active');
     }
     
-    // ========== التصنيفات والأعشاب (الأصلي) ==========
+    // ========== دوال التصنيفات والأعشاب (بدون تغيير) ==========
     async function addCategory(name) { await categoriesCol.add({ name, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); }
     async function updateCategory(id, name) { await categoriesCol.doc(id).update({ name }); }
     async function deleteCategoryWithHerbs(id) { const batch = db.batch(); const relatedHerbs = await herbsCol.where('categoryId', '==', id).get(); relatedHerbs.forEach(doc => batch.delete(doc.ref)); batch.delete(categoriesCol.doc(id)); await batch.commit(); }
@@ -840,11 +941,11 @@
     function editHerb(id) { let h = herbs.find(x=>x.id===id); if(!h) return; resetHerbForm(); currentEditHerbId = id; currentImageBase64 = h.imageUrl; document.getElementById('modalHerbName').value = h.name; document.getElementById('modalHerbBenefits').value = h.benefits || ''; document.getElementById('modalHerbWarnings').value = h.warnings || ''; document.getElementById('modalHerbHarams').value = h.harms || ''; document.getElementById('modalHerbUsage').value = h.usage || ''; document.getElementById('modalHerbNotes').value = h.notes || ''; populateCategorySelect(h.categoryId || ''); if(h.imageUrl) { document.getElementById('imagePreviewContainer').innerHTML = `<img src="${escapeHtml(h.imageUrl)}" class="herb-image-preview" onclick="document.getElementById('herbImageInput').click()">`; document.getElementById('clearImageBtn').style.display = 'inline-flex'; document.getElementById('compressInfo').innerHTML = '🖼️ صورة موجودة'; } else { document.getElementById('clearImageBtn').style.display = 'none'; document.getElementById('compressInfo').innerHTML = ''; } document.getElementById('herbModalTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل العشبة'; document.getElementById('herbModal').classList.add('active'); }
     async function saveHerb() { let name = document.getElementById('modalHerbName').value.trim(); if(!name) return alert('الاسم مطلوب'); let categoryId = document.getElementById('modalHerbCategory').value; let finalCategoryId = categoryId === "" ? null : categoryId; let imageUrl = currentImageBase64; if(currentImageFile) { imageUrl = await compressImage(currentImageFile); currentImageFile=null; } let data = { name, categoryId: finalCategoryId, benefits: document.getElementById('modalHerbBenefits').value || '—', warnings: document.getElementById('modalHerbWarnings').value || '—', harms: document.getElementById('modalHerbHarams').value || '—', usage: document.getElementById('modalHerbUsage').value || '—', notes: document.getElementById('modalHerbNotes').value || '—', imageUrl: imageUrl || null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }; showSaveProgress(30,'تجهيز...','حفظ البيانات'); const docRef = currentEditHerbId ? herbsCol.doc(currentEditHerbId) : herbsCol.doc(); await docRef.set(data, { merge: true }); showSaveProgress(100,'تم ✅','انتهى'); document.getElementById('herbModal').classList.remove('active'); resetHerbForm(); if('Notification' in window && Notification.permission === 'granted' && !currentEditHerbId) { navigator.serviceWorker.ready.then(reg=>reg.showNotification('🌿 عشبة جديدة', { body: `تم إضافة "${name}" إلى الموسوعة`, icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%232e7d32"/%3E%3Ctext x="50" y="67" font-size="50" text-anchor="middle" fill="white"%3E🌿%3C/text%3E%3C/svg%3E' })); } }
     async function confirmDelete() { if(pendingDeleteType==='category') await deleteCategoryWithHerbs(pendingDeleteId); else if(pendingDeleteType==='herb') await herbsCol.doc(pendingDeleteId).delete(); document.getElementById('deleteModal').classList.remove('active'); pendingDeleteId=null; pendingDeleteType=null; }
-    async function deleteAllData() { const allCats = await categoriesCol.get(); const allHerbs = await herbsCol.get(); const batch = db.batch(); allCats.docs.forEach(doc => batch.delete(doc.ref)); allHerbs.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit(); alert("✅ تم حذف جميع الأعشاب والتصنيفات من السحابة"); }
-    async function deleteAllHerbsOnly() { if(confirm("⚠️ تحذير: سيتم حذف جميع الأعشاب نهائياً من السحابة!\nسيتم الاحتفاظ بالتصنيفات فقط.\nهل أنت متأكد؟")) { const allHerbs = await herbsCol.get(); const batch = db.batch(); allHerbs.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit(); alert("✅ تم حذف جميع الأعشاب بنجاح من السحابة\nتم الاحتفاظ بالتصنيفات."); } }
+    async function deleteAllData() { const allCats = await categoriesCol.get(); const allHerbs = await herbsCol.get(); const batch = db.batch(); allCats.docs.forEach(doc => batch.delete(doc.ref)); allHerbs.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit(); alert("✅ تم حذف جميع الأعشاب والتصنيفات من السحابة"); localStorage.removeItem(CACHE_KEY); }
+    async function deleteAllHerbsOnly() { if(confirm("⚠️ تحذير: سيتم حذف جميع الأعشاب نهائياً من السحابة!\nسيتم الاحتفاظ بالتصنيفات فقط.\nهل أنت متأكد؟")) { const allHerbs = await herbsCol.get(); const batch = db.batch(); allHerbs.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit(); alert("✅ تم حذف جميع الأعشاب بنجاح من السحابة\nتم الاحتفاظ بالتصنيفات."); localStorage.removeItem(CACHE_KEY); } }
     async function backupJSON() { let data = { categories, herbs, backupDate: new Date().toISOString() }; let a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'})); a.download=`herbs_backup_${Date.now()}.json`; a.click(); alert("✅ تم إنشاء ملف النسخ الاحتياطي"); }
     function restoreJSON() { document.getElementById('restoreFile').click(); }
-    async function handleRestore(e) { let file=e.target.files[0]; if(!file) return; let text=await file.text(); let {categories:cats, herbs:hs}=JSON.parse(text); if(Array.isArray(cats) && Array.isArray(hs)) { if(confirm("⚠️ سيتم استبدال جميع البيانات الحالية بالبيانات الموجودة في الملف.\nهل أنت متأكد؟")) { await deleteAllData(); for(let c of cats) await categoriesCol.add({ name:c.name, createdAt:new Date() }); for(let h of hs) { await herbsCol.add({ name: h.name, categoryId: h.categoryId, benefits: h.benefits||'—', warnings: h.warnings||'—', harms: h.harms||'—', usage: h.usage||'—', notes: h.notes||'—', imageUrl: h.imageUrl||null, createdAt: new Date() }); } alert("✅ تمت الاستعادة بنجاح من السحابة"); } } else alert("ملف غير صالح"); document.getElementById('restoreFile').value=''; }
+    async function handleRestore(e) { let file=e.target.files[0]; if(!file) return; let text=await file.text(); let {categories:cats, herbs:hs}=JSON.parse(text); if(Array.isArray(cats) && Array.isArray(hs)) { if(confirm("⚠️ سيتم استبدال جميع البيانات الحالية بالبيانات الموجودة في الملف.\nهل أنت متأكد؟")) { await deleteAllData(); for(let c of cats) await categoriesCol.add({ name:c.name, createdAt:new Date() }); for(let h of hs) { await herbsCol.add({ name: h.name, categoryId: h.categoryId, benefits: h.benefits||'—', warnings: h.warnings||'—', harms: h.harms||'—', usage: h.usage||'—', notes: h.notes||'—', imageUrl: h.imageUrl||null, createdAt: new Date() }); } alert("✅ تمت الاستعادة بنجاح من السحابة"); localStorage.removeItem(CACHE_KEY); } } else alert("ملف غير صالح"); document.getElementById('restoreFile').value=''; }
     function setAdminMode(val) { isAdmin=val; document.querySelectorAll('.admin-only').forEach(el=>el.style.display=val?'inline-flex':'none'); document.getElementById('lockIcon').innerHTML=val?'<i class="fas fa-lock-open"></i>':'<i class="fas fa-lock"></i>'; document.getElementById('logoutBtn').style.display=val?'flex':'none'; document.body.classList[val?'remove':'add']('viewer-mode'); renderContent(); }
     function logout() { setAdminMode(false); localStorage.removeItem('admin_session'); }
     function showLogin() { document.getElementById('loginModal').classList.add('active'); }
@@ -862,7 +963,6 @@
     
     // ======================= تحسينات PWA المتقدمة =======================
     (function setupAdvancedPWA() {
-        // 1. تحسين ملف manifest الديناميكي
         const manifest = {
             name: "موسوعة الأعشاب الطبية",
             short_name: "أعشاب",
@@ -895,9 +995,8 @@
         }
         manifestLink.href = manifestURL;
         
-        // 2. Service Worker متقدم مع استراتيجيات تخزين مؤقت متعددة وفشل آمن و تحديث تلقائي
         const advancedSWCode = `
-        const CACHE_NAME = 'herbal-v4';
+        const CACHE_NAME = 'herbal-v5';
         const OFFLINE_URL = '/offline.html';
         const CACHED_URLS = [
             '/',
@@ -926,7 +1025,6 @@
         
         self.addEventListener('fetch', event => {
             const url = new URL(event.request.url);
-            // استراتيجية: cache-first للموارد الثابتة، network-first للصفحات والبيانات
             if(event.request.destination === 'document') {
                 event.respondWith(
                     fetch(event.request).catch(() => caches.match(event.request))
@@ -950,7 +1048,6 @@
         if('serviceWorker' in navigator) {
             navigator.serviceWorker.register(swURL).then(reg => {
                 console.log('Service Worker مسجل بنجاح', reg);
-                // مراقبة التحديثات
                 reg.addEventListener('updatefound', () => {
                     const newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
@@ -962,16 +1059,6 @@
             }).catch(console.warn);
         }
         
-        // إضافة صفحة عدم الاتصال افتراضياً
-        if(!document.getElementById('offlinePage')) {
-            const offlinePage = document.createElement('div');
-            offlinePage.id = 'offlinePage';
-            offlinePage.style.display = 'none';
-            offlinePage.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-wifi"></i><h3>لا يوجد اتصال بالإنترنت</h3><p>سيتم تحديث التطبيق تلقائياً عند استعادة الاتصال.</p></div>';
-            document.body.appendChild(offlinePage);
-        }
-        
-        // استماع لأحداث الاتصال
         window.addEventListener('online', () => {
             updateProgress(30, 'متصل', '🔄 تم استعادة الاتصال، جاري التحديث...', 0, 0);
             setTimeout(() => { initialLoad(); }, 500);
@@ -980,22 +1067,13 @@
             updateProgress(50, 'غير متصل', '⚠️ لا يوجد اتصال بالإنترنت، يتم عرض البيانات المخزنة مؤقتاً', 0, 0);
         });
         
-        // تحسين عرض أيقونة التثبيت
         if('getInstalledRelatedApps' in navigator) {
             navigator.getInstalledRelatedApps().then(apps => {
                 if(apps.length) document.getElementById('installPwaBtn')?.remove();
             });
         }
-        
-        // التحقق من التحديثات بشكل دوري (كل ساعة)
-        setInterval(() => {
-            if('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({type: 'CHECK_UPDATE'});
-            }
-        }, 3600000);
     })();
     
-    // نهاية تحسينات PWA
     let deferredPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installPwaBtn').style.display = 'flex'; });
     window.installPWA = async () => { if(deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if(outcome === 'accepted') document.getElementById('installPwaBtn').style.display = 'none'; deferredPrompt = null; } else document.getElementById('installGuideModal')?.classList.add('active'); };
@@ -1004,11 +1082,28 @@
     document.getElementById('stopSyncBtn')?.addEventListener('click', stopRealtimeUpdates);
     document.getElementById('startSyncBtn')?.addEventListener('click', restartRealtimeUpdates);
     document.getElementById('deleteAllHerbsOnlyBtn')?.addEventListener('click', deleteAllHerbsOnly);
+    
+    // ========== تحكم حجم الخط ==========
     let currentFontLevel = localStorage.getItem('fontLevel') || 'normal';
-    function setFontSize(level) { document.body.classList.remove('font-large', 'font-xlarge'); if (level === 'large') document.body.classList.add('font-large'); else if (level === 'xlarge') document.body.classList.add('font-xlarge'); localStorage.setItem('fontLevel', level); const labelMap = { normal: 'عادي', large: 'كبير', xlarge: 'أكبر' }; const fontSizeLabelSpan = document.getElementById('fontSizeLabel'); if (fontSizeLabelSpan) fontSizeLabelSpan.innerText = labelMap[level] || 'عادي'; }
-    function cycleFontSize() { const levels = ['normal', 'large', 'xlarge']; let currentIndex = levels.indexOf(currentFontLevel); let nextIndex = (currentIndex + 1) % levels.length; currentFontLevel = levels[nextIndex]; setFontSize(currentFontLevel); }
+    function setFontSize(level) {
+        document.body.classList.remove('font-large', 'font-xlarge');
+        if (level === 'large') document.body.classList.add('font-large');
+        else if (level === 'xlarge') document.body.classList.add('font-xlarge');
+        localStorage.setItem('fontLevel', level);
+        const labelMap = { normal: 'عادي', large: 'كبير', xlarge: 'أكبر' };
+        const fontSizeLabelSpan = document.getElementById('fontSizeLabel');
+        if (fontSizeLabelSpan) fontSizeLabelSpan.innerText = labelMap[level] || 'عادي';
+    }
+    function cycleFontSize() {
+        const levels = ['normal', 'large', 'xlarge'];
+        let currentIndex = levels.indexOf(currentFontLevel);
+        let nextIndex = (currentIndex + 1) % levels.length;
+        currentFontLevel = levels[nextIndex];
+        setFontSize(currentFontLevel);
+    }
     setFontSize(currentFontLevel);
     document.getElementById('fontSizeToggleBtn')?.addEventListener('click', cycleFontSize);
+    
     setTimeout(()=>{ document.getElementById('splashScreen')?.classList.add('hide'); document.getElementById('mainApp').style.display='block'; },1500);
     (async function() { initTheme(); checkSession(); VisitorCounter.init(); await initialLoad(); startRealtimeUpdates(); if('Notification' in window && Notification.permission === 'default') { setTimeout(()=> Notification.requestPermission(), 5000); } })();
     document.addEventListener('DOMContentLoaded',()=>{
@@ -1045,4 +1140,4 @@
     });
 </script>
 </body>
-</html>
+                                                                                                                                                                                                                                                                                                       </html>
