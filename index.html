@@ -17,7 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <style>
-        /* الأنماط الأصلية - محفوظة بالكامل */
+        /* جميع الأنماط الأصلية محفوظة بالكامل */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --primary: #2e7d32; --primary-light: #60ad5e; --primary-dark: #1b5e20;
@@ -149,7 +149,6 @@
         .login-sub { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.5rem; }
         .font-size-btn { background: var(--light-bg); border: 1px solid var(--separator); padding: 0.5rem 0.8rem; border-radius: 40px; cursor: pointer; font-weight: 700; color: var(--primary); transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
         .font-size-btn:hover { background: var(--primary); color: white; transform: translateY(-2px); }
-        /* تحسينات إضافية للواجهة بعد التثبيت */
         @media (display-mode: standalone) {
             .splash-screen { background: linear-gradient(145deg, #0f3b12, #1b5e20); }
             .app-container { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
@@ -158,7 +157,6 @@
         }
         @media (max-width:640px) { .app-container { padding: 0.6rem; } .herbs-grid, .categories-grid { grid-template-columns: 1fr; } .smart-progress-bar { padding: 8px 16px; gap: 8px; } .image-actions { gap: 0.5rem; } .image-btn { padding: 0.4rem 0.8rem; } }
         img[onerror]:after { content: "🌿"; display: block; text-align: center; font-size: 2rem; }
-        /* أنماط إضافية عصرية للمسؤول */
         .admin-clock { background: var(--primary-dark); color: white; padding: 0.2rem 0.7rem; border-radius: 40px; font-size: 0.75rem; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; }
         .tool-btn.export-btn { background: #1976d2; color: white; border: none; }
         .tool-btn.export-btn:hover { background: #0b5aa7; }
@@ -166,8 +164,6 @@
         .tool-btn.reset-sync-btn:hover { background: #e07e00; }
         .tool-btn.notify-btn { background: #9c27b0; color: white; }
         .tool-btn.notify-btn:hover { background: #7b1fa2; }
-
-        /* === الأنماط الجديدة لأزرار الزوار === */
         .visitor-toolbar {
             background: var(--card-bg);
             border-radius: var(--radius);
@@ -202,13 +198,13 @@
         }
         .visitor-only { display: flex; }
         body.viewer-mode .visitor-only { display: flex; }
-        /* إخفاء شريط الزوار عند تسجيل الدخول كمسؤول (اختلاف الرؤية) */
         body:not(.viewer-mode) .visitor-toolbar { display: none; }
-        
-        /* ===== إخفاء زر التصنيفات من شريط الأدوات العلوي (لأنه موجود في شريط الزوار) ===== */
-        .view-toggle button[data-view="categories"] {
-            display: none;
-        }
+        .view-toggle button[data-view="categories"] { display: none; }
+        /* ألوان خاصة لأزرار الزوار الجديدة */
+        .visitor-btn.resync-btn { background: #2e7d32; color: white; }
+        .visitor-btn.resync-btn:hover { background: #1b5e20; }
+        .visitor-btn.clear-btn { background: #c62828; color: white; }
+        .visitor-btn.clear-btn:hover { background: #8e0000; }
     </style>
 </head>
 <body>
@@ -241,7 +237,6 @@
         </div>
         <button id="searchBtn" class="tool-btn"><i class="fas fa-search"></i> بحث</button>
         <button id="refreshDataBtn" class="tool-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
-        <!-- أزرار المسؤول المحسنة والمضافة -->
         <button id="manageCategoriesBtn" class="tool-btn admin-only"><i class="fas fa-folder-tree"></i> التصنيفات</button>
         <button id="addHerbBtn" class="tool-btn admin-only"><i class="fas fa-plus-circle"></i> إضافة عشبة</button>
         <button id="backupBtn" class="tool-btn admin-only"><i class="fas fa-database"></i> نسخ احتياطي</button>
@@ -250,11 +245,9 @@
         <button id="deleteAllHerbsOnlyBtn" class="tool-btn admin-only" style="background-color: #ff9800; color: white;"><i class="fas fa-leaf"></i> مسح الأعشاب فقط</button>
         <button id="stopSyncBtn" class="sync-switch sync-stop admin-only"><i class="fas fa-pause"></i> إيقاف</button>
         <button id="startSyncBtn" class="sync-switch sync-start admin-only"><i class="fas fa-play"></i> تشغيل</button>
-        <!-- أزرار جديدة مفيدة للمسؤول -->
         <button id="resetSyncBtn" class="tool-btn admin-only reset-sync-btn"><i class="fas fa-sync-alt"></i> إعادة ضبط المزامنة</button>
         <button id="requestNotifyBtn" class="tool-btn admin-only notify-btn"><i class="fas fa-bell"></i> تفعيل الإشعارات</button>
         <button id="exportCsvBtn" class="tool-btn admin-only export-btn"><i class="fas fa-file-csv"></i> تصدير CSV</button>
-        <!-- أزرار إضافية للمسؤول (جديدة) -->
         <button id="clearCacheBtn" class="tool-btn admin-only" style="background-color: #607d8b; color: white;"><i class="fas fa-broom"></i> تنظيف الكاش المحلي</button>
         <button id="systemReportBtn" class="tool-btn admin-only" style="background-color: #455a64; color: white;"><i class="fas fa-chart-simple"></i> تقرير النظام</button>
         <button id="copyAppLinkBtn" class="tool-btn admin-only" style="background-color: #00897b; color: white;"><i class="fas fa-link"></i> نسخ رابط التطبيق</button>
@@ -265,12 +258,15 @@
         <div class="font-size-btn" id="fontSizeToggleBtn" title="تغيير حجم الخط"><i class="fas fa-text-height"></i> <span id="fontSizeLabel">عادي</span></div>
     </div>
 
-    <!-- ===== شريط أدوات الزوار الجديد (يظهر فقط للزوار العاديين) ===== -->
+    <!-- شريط أدوات الزوار (يظهر فقط عند عدم تسجيل الدخول) -->
     <div class="visitor-toolbar visitor-only">
         <button id="visitorCategoriesBtn" class="visitor-btn"><i class="fas fa-folder-open"></i> عرض التصنيفات</button>
         <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة التطبيق</button>
         <button id="visitorStatsBtn" class="visitor-btn"><i class="fas fa-chart-line"></i> إحصائيات الزوار</button>
         <button id="quickHelpBtn" class="visitor-btn"><i class="fas fa-question-circle"></i> مساعدة سريعة</button>
+        <!-- الأزرار الجديدة للزوار -->
+        <button id="visitorResyncBtn" class="visitor-btn resync-btn"><i class="fas fa-sync-alt"></i> إعادة المزامنة والاتصال</button>
+        <button id="visitorClearTempBtn" class="visitor-btn clear-btn"><i class="fas fa-database"></i> حذف البيانات المؤقتة</button>
     </div>
 
     <div id="contentArea"></div>
@@ -365,7 +361,7 @@
                     ctx.drawImage(img, 0, 0, width, height);
                     const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
                     const compressInfo = document.getElementById('compressInfo');
-                    if (compressInfo) compressInfo.innerHTML = `✅ تم الضغط: ${(file.size/1024).toFixed(2)} KB → ${(compressedDataUrl.length*0.75/1024).toFixed(2)} KB (أبعاد: ${Math.round(width)}x${Math.round(height)})`;
+                    if (compressInfo) compressInfo.innerHTML = `✅ تم الضغط: ${(file.size/1024).toFixed(2)} KB → ${(compressedDataUrl.length*0.75/1024).toFixed(2)} KB`;
                     resolve(compressedDataUrl);
                 };
                 img.onerror = reject;
@@ -381,7 +377,6 @@
         const url = `https://wa.me/${internationalPhone}?text=مرحباً%20أريد%20الاستفسار%20عن%20الأعشاب`;
         window.open(url, '_blank');
     }
-    window.copyPhoneNumber = () => { openWhatsApp(); };
     
     function showSaveProgress(percent, status, stage) {
         const bar = document.getElementById('saveProgressBar');
@@ -414,11 +409,8 @@
     const categoriesCol = db.collection("categories");
     const herbsCol = db.collection("herbs");
 
-    // ========== بيانات المسؤول ==========
     const ADMIN_UID = "VwPJ3q2ElUbPmrZR1XyHv1wiI8p2";
-    const ADMIN_EMAIL = "admin@herbal.com";
     
-    // ========== المتغيرات ==========
     let isAdmin = false, categories = [], herbs = [], currentView = "all";
     let currentEditHerbId = null, pendingDeleteId = null, pendingDeleteType = null;
     let currentImageBase64 = null, currentImageFile = null;
@@ -427,7 +419,6 @@
     let isSyncActive = true;
     let isRefreshing = false;
 
-    // ========== شريط التقدم ==========
     const progressBar = document.getElementById('smartProgressBar');
     const progressFill = document.getElementById('progressFill');
     const progressPercent = document.getElementById('progressPercent');
@@ -446,7 +437,6 @@
         if(percent>=100) setTimeout(()=> progressBar.classList.add('hide'), 1200);
     }
 
-    // ========== تخزين مؤقت محلي ==========
     const CACHE_KEY = 'herbal_cache_v2';
     function saveToLocalCache(cats, hrbs) {
         try { localStorage.setItem(CACHE_KEY, JSON.stringify({ categories: cats, herbs: hrbs, timestamp: Date.now() })); } catch(e) { console.warn(e); }
@@ -470,7 +460,6 @@
         return false;
     }
 
-    // ========== جلب البيانات ==========
     function isOnline() { return navigator.onLine; }
     async function fetchWithTimeout(promise, timeoutMs = 25000) {
         let timeoutId;
@@ -508,7 +497,7 @@
             categories = newCats;
             herbs = newHerbs;
             saveToLocalCache(categories, herbs);
-            updateProgress(100, 'اكتمل', `✅ تم تحميل ${herbs.length} عشبة و ${categories.length} تصنيف`, herbs.length, herbs.length);
+            updateProgress(100, 'اكتمل', `✅ تم تحميل ${herbs.length} عشبة`, herbs.length, herbs.length);
             document.getElementById('herbCount').innerText = herbs.length + ' عشبة';
             renderContent();
             return true;
@@ -537,7 +526,7 @@
             categories = cats;
             herbs = newHerbs;
             saveToLocalCache(categories, herbs);
-            updateProgress(100, 'اكتمل', `✅ تم تحميل ${herbs.length} عشبة و ${categories.length} تصنيف`, herbs.length, herbs.length);
+            updateProgress(100, 'اكتمل', `✅ تم تحميل ${herbs.length} عشبة`, herbs.length, herbs.length);
             document.getElementById('herbCount').innerText = herbs.length + ' عشبة';
             renderContent();
         } catch(error) {
@@ -556,7 +545,6 @@
         }
     }
 
-    // ========== المزامنة المباشرة ==========
     function startRealtimeUpdates() {
         if (!isSyncActive) return;
         if (unsubscribeCategories) unsubscribeCategories();
@@ -602,40 +590,23 @@
         } else console.warn("فشل متكرر في الاتصال");
     }
 
-    // ========== التحديث اليدوي المُعاد تصميمه (يحذف المزامنة ويعيد جلب إجباري) ==========
     async function manualRefresh() {
-        if (isRefreshing) {
-            alert("يتم التحديث حالياً، انتظر قليلاً");
-            return;
-        }
+        if (isRefreshing) { alert("يتم التحديث حالياً، انتظر قليلاً"); return; }
         isRefreshing = true;
         const refreshBtn = document.getElementById('refreshDataBtn');
         const originalText = refreshBtn.innerHTML;
-        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري التحديث الإجباري...';
+        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري التحديث...';
         refreshBtn.disabled = true;
-        
         try {
-            // 1. إيقاف المزامنة الحالية وحذف المستمعين (لأنهم سيتم إعادة إنشاؤهم)
             if (unsubscribeCategories) unsubscribeCategories();
             if (unsubscribeHerbs) unsubscribeHerbs();
-            isSyncActive = false;  // مؤقتًا حتى ننتهي من الجلب
-            
-            // 2. جلب البيانات من الخادم بشكل إجباري كامل مع إعادة المحاولات
-            updateProgress(5, 'تحديث إجباري', 'جارٍ حذف المزامنة القديمة وجلب أحدث البيانات...');
-            const fetchSuccess = await forceFetchFromServer();
-            if (!fetchSuccess) {
-                throw new Error("فشل جلب البيانات من الخادم بعد عدة محاولات");
-            }
-            
-            // 3. إعادة تشغيل المزامنة المباشرة بنجاح
+            isSyncActive = false;
+            await forceFetchFromServer();
             isSyncActive = true;
             startRealtimeUpdates();
-            updateProgress(100, 'تم التحديث', '✅ تم تحديث البيانات والمزامنة بنجاح');
-            setTimeout(() => progressBar.classList.add('hide'), 1500);
+            updateProgress(100, 'تم التحديث', '✅ تم تحديث البيانات');
         } catch(e) {
-            console.error(e);
-            alert("❌ فشل التحديث الإجباري: " + e.message);
-            // محاولة إعادة تشغيل المزامنة حتى لو فشل الجلب
+            alert("❌ فشل التحديث: " + e.message);
             isSyncActive = true;
             startRealtimeUpdates();
         } finally {
@@ -645,22 +616,19 @@
         }
     }
 
-    // دالة إعادة ضبط المزامنة (جديدة)
     async function resetSync() {
         if (unsubscribeCategories) unsubscribeCategories();
         if (unsubscribeHerbs) unsubscribeHerbs();
         isSyncActive = false;
-        updateProgress(20, 'إعادة ضبط', 'إعادة تهيئة الاتصال بالسحابة...');
+        updateProgress(20, 'إعادة ضبط', 'إعادة تهيئة الاتصال...');
         setTimeout(() => {
             isSyncActive = true;
             startRealtimeUpdates();
             updateProgress(100, 'تم', '✅ تم إعادة ضبط المزامنة');
-            setTimeout(() => progressBar.classList.add('hide'), 1500);
             alert("تم إعادة ضبط المزامنة والاتصال بالسحابة بنجاح.");
         }, 500);
     }
 
-    // دالة تصدير CSV (جديدة)
     async function exportToCSV() {
         if (!herbs.length) { alert("لا توجد أعشاب للتصدير"); return; }
         let csvRows = [["الاسم", "التصنيف", "الفوائد", "التحذيرات", "الأضرار", "الاستخدام", "ملاحظات"]];
@@ -681,37 +649,31 @@
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         link.href = url;
-        link.setAttribute("download", `herbs_export_${Date.now()}.csv`);
-        document.body.appendChild(link);
+        link.download = `herbs_export_${Date.now()}.csv`;
         link.click();
-        document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        alert("✅ تم تصدير الأعشاب إلى ملف CSV");
+        alert("✅ تم تصدير الأعشاب إلى CSV");
     }
 
-    // طلب الإشعارات يدويًا
     function requestNotificationPermission() {
         if ('Notification' in window) {
             Notification.requestPermission().then(perm => {
-                if (perm === 'granted') alert('✅ تم تفعيل الإشعارات، ستصل التنبيهات عند إضافة أعشاب جديدة.');
-                else alert('⚠️ لم يتم منح صلاحية الإشعارات.');
+                if (perm === 'granted') alert('✅ تم تفعيل الإشعارات');
+                else alert('⚠️ لم يتم منح صلاحية الإشعارات');
             });
-        } else {
-            alert('المتصفح لا يدعم الإشعارات.');
-        }
+        } else alert('المتصفح لا يدعم الإشعارات');
     }
 
-    // ساعة المسؤول
     function startAdminClock() {
         const clockSpan = document.querySelector('#adminClock span');
         if (!clockSpan) return;
         setInterval(() => {
             const now = new Date();
-            clockSpan.innerText = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            clockSpan.innerText = now.toLocaleTimeString('ar-EG');
         }, 1000);
     }
 
-    // ========== دوال العرض (بدون تغيير) ==========
+    // دوال العرض
     function renderContent() { if(currentView === "all") renderAllHerbs(); else renderCategories(); }
     function renderAllHerbs() {
         const container = document.getElementById('contentArea');
@@ -736,7 +698,7 @@
     }
     function renderCategories() {
         const container = document.getElementById('contentArea');
-        if(categories.length===0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i> لا توجد تصنيفات، أضف تصنيفاً</div>'; return; }
+        if(categories.length===0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i> لا توجد تصنيفات</div>'; return; }
         let html = '<div class="categories-grid">';
         for(let cat of categories) {
             let herbsCount = herbs.filter(h=>h.categoryId===cat.id).length;
@@ -795,26 +757,141 @@
         document.getElementById('detailModal').classList.add('active');
     }
 
-    // ========== دوال التصنيفات والأعشاب (بدون تغيير جوهري) ==========
+    // دوال التصنيفات والأعشاب
     async function addCategory(name) { await categoriesCol.add({ name, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); }
     async function updateCategory(id, name) { await categoriesCol.doc(id).update({ name }); }
     async function deleteCategoryWithHerbs(id) { const batch = db.batch(); const relatedHerbs = await herbsCol.where('categoryId', '==', id).get(); relatedHerbs.forEach(doc => batch.delete(doc.ref)); batch.delete(categoriesCol.doc(id)); await batch.commit(); }
-    function showCategoryManager() { let listHtml = ''; for(let cat of categories) { listHtml += `<div class="category-item"><div class="category-name-display"><i class="fas fa-folder"></i> ${escapeHtml(cat.name)} <span style="font-size:0.7rem; background:var(--primary); color:white; padding:2px 8px; border-radius:30px;">${herbs.filter(h=>h.categoryId===cat.id).length}</span></div><div class="category-actions"><i class="fas fa-edit edit-cat-item" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}" style="color:var(--primary);"></i><i class="fas fa-trash-alt del-cat-item" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}" style="color:var(--danger);"></i></div></div>`; } if(!categories.length) listHtml = '<div class="empty-state">لا توجد تصنيفات</div>'; document.getElementById('categoriesList').innerHTML = listHtml; document.querySelectorAll('.edit-cat-item').forEach(btn=>btn.onclick=()=>{ let newName=prompt("تعديل اسم التصنيف", btn.dataset.name); if(newName) updateCategory(btn.dataset.id, newName); }); document.querySelectorAll('.del-cat-item').forEach(btn=>btn.onclick=()=>{ pendingDeleteId=btn.dataset.id; pendingDeleteType='category'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف التصنيف "${btn.dataset.name}" وجميع أعشابه؟`; document.getElementById('deleteModal').classList.add('active'); }); document.getElementById('categoryModal').classList.add('active'); }
+    function showCategoryManager() { 
+        let listHtml = ''; 
+        for(let cat of categories) { 
+            listHtml += `<div class="category-item"><div class="category-name-display"><i class="fas fa-folder"></i> ${escapeHtml(cat.name)} <span style="font-size:0.7rem; background:var(--primary); color:white; padding:2px 8px; border-radius:30px;">${herbs.filter(h=>h.categoryId===cat.id).length}</span></div><div class="category-actions"><i class="fas fa-edit edit-cat-item" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}" style="color:var(--primary);"></i><i class="fas fa-trash-alt del-cat-item" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}" style="color:var(--danger);"></i></div></div>`; 
+        } 
+        if(!categories.length) listHtml = '<div class="empty-state">لا توجد تصنيفات</div>'; 
+        document.getElementById('categoriesList').innerHTML = listHtml; 
+        document.querySelectorAll('.edit-cat-item').forEach(btn=>btn.onclick=()=>{ let newName=prompt("تعديل اسم التصنيف", btn.dataset.name); if(newName) updateCategory(btn.dataset.id, newName); }); 
+        document.querySelectorAll('.del-cat-item').forEach(btn=>btn.onclick=()=>{ pendingDeleteId=btn.dataset.id; pendingDeleteType='category'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف التصنيف "${btn.dataset.name}" وجميع أعشابه؟`; document.getElementById('deleteModal').classList.add('active'); }); 
+        document.getElementById('categoryModal').classList.add('active'); 
+    }
     function addNewCategory() { let name = document.getElementById('newCategoryName').value.trim(); if(name) { addCategory(name); document.getElementById('newCategoryName').value=''; showCategoryManager(); } else alert('أدخل اسم التصنيف'); }
     function editCategoryModal(id, name) { let newName = prompt("تعديل اسم التصنيف", name); if(newName) updateCategory(id, newName); }
     function populateCategorySelect(selectedId='') { let select = document.getElementById('modalHerbCategory'); select.innerHTML = '<option value="">-- بدون تصنيف --</option>' + categories.map(c=>`<option value="${c.id}" ${c.id===selectedId?'selected':''}>${escapeHtml(c.name)}</option>`).join(''); if(!categories.length) select.innerHTML = '<option value="">-- بدون تصنيف (لا توجد تصنيفات) --</option>'; }
     function resetHerbForm() { currentEditHerbId=null; currentImageBase64=null; currentImageFile=null; document.getElementById('modalHerbName').value=''; document.getElementById('modalHerbBenefits').value=''; document.getElementById('modalHerbWarnings').value=''; document.getElementById('modalHerbHarams').value=''; document.getElementById('modalHerbUsage').value=''; document.getElementById('modalHerbNotes').value=''; document.getElementById('imagePreviewContainer').innerHTML=''; document.getElementById('clearImageBtn').style.display='none'; document.getElementById('compressInfo').innerHTML=''; populateCategorySelect(); }
     function showAddHerb() { if(!isAdmin) return; resetHerbForm(); document.getElementById('herbModalTitle').innerHTML = '<i class="fas fa-plus-circle"></i> إضافة عشبة جديدة'; document.getElementById('herbModal').classList.add('active'); }
-    function editHerb(id) { let h = herbs.find(x=>x.id===id); if(!h) return; resetHerbForm(); currentEditHerbId = id; currentImageBase64 = h.imageUrl; document.getElementById('modalHerbName').value = h.name; document.getElementById('modalHerbBenefits').value = h.benefits || ''; document.getElementById('modalHerbWarnings').value = h.warnings || ''; document.getElementById('modalHerbHarams').value = h.harms || ''; document.getElementById('modalHerbUsage').value = h.usage || ''; document.getElementById('modalHerbNotes').value = h.notes || ''; populateCategorySelect(h.categoryId || ''); if(h.imageUrl) { document.getElementById('imagePreviewContainer').innerHTML = `<img src="${escapeHtml(h.imageUrl)}" class="herb-image-preview" onclick="document.getElementById('herbImageInput').click()">`; document.getElementById('clearImageBtn').style.display = 'inline-flex'; document.getElementById('compressInfo').innerHTML = '🖼️ صورة موجودة'; } else { document.getElementById('clearImageBtn').style.display = 'none'; document.getElementById('compressInfo').innerHTML = ''; } document.getElementById('herbModalTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل العشبة'; document.getElementById('herbModal').classList.add('active'); }
-    async function saveHerb() { let name = document.getElementById('modalHerbName').value.trim(); if(!name) return alert('الاسم مطلوب'); let categoryId = document.getElementById('modalHerbCategory').value; let finalCategoryId = categoryId === "" ? null : categoryId; let imageUrl = currentImageBase64; if(currentImageFile) { imageUrl = await compressImage(currentImageFile); currentImageFile=null; } let data = { name, categoryId: finalCategoryId, benefits: document.getElementById('modalHerbBenefits').value || '—', warnings: document.getElementById('modalHerbWarnings').value || '—', harms: document.getElementById('modalHerbHarams').value || '—', usage: document.getElementById('modalHerbUsage').value || '—', notes: document.getElementById('modalHerbNotes').value || '—', imageUrl: imageUrl || null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }; showSaveProgress(30,'تجهيز...','حفظ البيانات'); const docRef = currentEditHerbId ? herbsCol.doc(currentEditHerbId) : herbsCol.doc(); await docRef.set(data, { merge: true }); showSaveProgress(100,'تم ✅','انتهى'); document.getElementById('herbModal').classList.remove('active'); resetHerbForm(); if('Notification' in window && Notification.permission === 'granted' && !currentEditHerbId) { navigator.serviceWorker.ready.then(reg=>reg.showNotification('🌿 عشبة جديدة', { body: `تم إضافة "${name}" إلى الموسوعة`, icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%232e7d32"/%3E%3Ctext x="50" y="67" font-size="50" text-anchor="middle" fill="white"%3E🌿%3C/text%3E%3C/svg%3E' })); } }
-    async function confirmDelete() { if(pendingDeleteType==='category') await deleteCategoryWithHerbs(pendingDeleteId); else if(pendingDeleteType==='herb') await herbsCol.doc(pendingDeleteId).delete(); document.getElementById('deleteModal').classList.remove('active'); pendingDeleteId=null; pendingDeleteType=null; }
-    async function deleteAllData() { const allCats = await categoriesCol.get(); const allHerbs = await herbsCol.get(); const batch = db.batch(); allCats.docs.forEach(doc => batch.delete(doc.ref)); allHerbs.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit(); alert("✅ تم حذف جميع الأعشاب والتصنيفات من السحابة"); localStorage.removeItem(CACHE_KEY); }
-    async function deleteAllHerbsOnly() { if(confirm("⚠️ تحذير: سيتم حذف جميع الأعشاب نهائياً؟")) { const allHerbs = await herbsCol.get(); const batch = db.batch(); allHerbs.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit(); alert("✅ تم حذف جميع الأعشاب بنجاح"); localStorage.removeItem(CACHE_KEY); } }
-    async function backupJSON() { let data = { categories, herbs, backupDate: new Date().toISOString() }; let a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'})); a.download=`herbs_backup_${Date.now()}.json`; a.click(); alert("✅ تم إنشاء ملف النسخ الاحتياطي"); }
+    function editHerb(id) { 
+        let h = herbs.find(x=>x.id===id); 
+        if(!h) return; 
+        resetHerbForm(); 
+        currentEditHerbId = id; 
+        currentImageBase64 = h.imageUrl; 
+        document.getElementById('modalHerbName').value = h.name; 
+        document.getElementById('modalHerbBenefits').value = h.benefits || ''; 
+        document.getElementById('modalHerbWarnings').value = h.warnings || ''; 
+        document.getElementById('modalHerbHarams').value = h.harms || ''; 
+        document.getElementById('modalHerbUsage').value = h.usage || ''; 
+        document.getElementById('modalHerbNotes').value = h.notes || ''; 
+        populateCategorySelect(h.categoryId || ''); 
+        if(h.imageUrl) { 
+            document.getElementById('imagePreviewContainer').innerHTML = `<img src="${escapeHtml(h.imageUrl)}" class="herb-image-preview" onclick="document.getElementById('herbImageInput').click()">`; 
+            document.getElementById('clearImageBtn').style.display = 'inline-flex'; 
+            document.getElementById('compressInfo').innerHTML = '🖼️ صورة موجودة'; 
+        } else { 
+            document.getElementById('clearImageBtn').style.display = 'none'; 
+            document.getElementById('compressInfo').innerHTML = ''; 
+        } 
+        document.getElementById('herbModalTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل العشبة'; 
+        document.getElementById('herbModal').classList.add('active'); 
+    }
+    async function saveHerb() { 
+        let name = document.getElementById('modalHerbName').value.trim(); 
+        if(!name) return alert('الاسم مطلوب'); 
+        let categoryId = document.getElementById('modalHerbCategory').value; 
+        let finalCategoryId = categoryId === "" ? null : categoryId; 
+        let imageUrl = currentImageBase64; 
+        if(currentImageFile) { 
+            imageUrl = await compressImage(currentImageFile); 
+            currentImageFile=null; 
+        } 
+        let data = { 
+            name, 
+            categoryId: finalCategoryId, 
+            benefits: document.getElementById('modalHerbBenefits').value || '—', 
+            warnings: document.getElementById('modalHerbWarnings').value || '—', 
+            harms: document.getElementById('modalHerbHarams').value || '—', 
+            usage: document.getElementById('modalHerbUsage').value || '—', 
+            notes: document.getElementById('modalHerbNotes').value || '—', 
+            imageUrl: imageUrl || null, 
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
+        }; 
+        showSaveProgress(30,'تجهيز...','حفظ البيانات'); 
+        const docRef = currentEditHerbId ? herbsCol.doc(currentEditHerbId) : herbsCol.doc(); 
+        await docRef.set(data, { merge: true }); 
+        showSaveProgress(100,'تم ✅','انتهى'); 
+        document.getElementById('herbModal').classList.remove('active'); 
+        resetHerbForm(); 
+        if('Notification' in window && Notification.permission === 'granted' && !currentEditHerbId) { 
+            navigator.serviceWorker.ready.then(reg=>reg.showNotification('🌿 عشبة جديدة', { body: `تم إضافة "${name}" إلى الموسوعة`, icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%232e7d32"/%3E%3Ctext x="50" y="67" font-size="50" text-anchor="middle" fill="white"%3E🌿%3C/text%3E%3C/svg%3E' })); 
+        } 
+    }
+    async function confirmDelete() { 
+        if(pendingDeleteType==='category') await deleteCategoryWithHerbs(pendingDeleteId); 
+        else if(pendingDeleteType==='herb') await herbsCol.doc(pendingDeleteId).delete(); 
+        document.getElementById('deleteModal').classList.remove('active'); 
+        pendingDeleteId=null; pendingDeleteType=null; 
+    }
+    async function deleteAllData() { 
+        const allCats = await categoriesCol.get(); 
+        const allHerbs = await herbsCol.get(); 
+        const batch = db.batch(); 
+        allCats.docs.forEach(doc => batch.delete(doc.ref)); 
+        allHerbs.docs.forEach(doc => batch.delete(doc.ref)); 
+        await batch.commit(); 
+        alert("✅ تم حذف جميع الأعشاب والتصنيفات من السحابة"); 
+        localStorage.removeItem(CACHE_KEY); 
+    }
+    async function deleteAllHerbsOnly() { 
+        if(confirm("⚠️ تحذير: سيتم حذف جميع الأعشاب نهائياً؟")) { 
+            const allHerbs = await herbsCol.get(); 
+            const batch = db.batch(); 
+            allHerbs.docs.forEach(doc => batch.delete(doc.ref)); 
+            await batch.commit(); 
+            alert("✅ تم حذف جميع الأعشاب بنجاح"); 
+            localStorage.removeItem(CACHE_KEY); 
+        } 
+    }
+    async function backupJSON() { 
+        let data = { categories, herbs, backupDate: new Date().toISOString() }; 
+        let a=document.createElement('a'); 
+        a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'})); 
+        a.download=`herbs_backup_${Date.now()}.json`; 
+        a.click(); 
+        alert("✅ تم إنشاء ملف النسخ الاحتياطي"); 
+    }
     function restoreJSON() { document.getElementById('restoreFile').click(); }
-    async function handleRestore(e) { let file=e.target.files[0]; if(!file) return; let text=await file.text(); let {categories:cats, herbs:hs}=JSON.parse(text); if(Array.isArray(cats) && Array.isArray(hs)) { if(confirm("⚠️ سيتم استبدال جميع البيانات الحالية. هل أنت متأكد؟")) { await deleteAllData(); for(let c of cats) await categoriesCol.add({ name:c.name, createdAt:new Date() }); for(let h of hs) { await herbsCol.add({ name: h.name, categoryId: h.categoryId, benefits: h.benefits||'—', warnings: h.warnings||'—', harms: h.harms||'—', usage: h.usage||'—', notes: h.notes||'—', imageUrl: h.imageUrl||null, createdAt: new Date() }); } alert("✅ تمت الاستعادة بنجاح"); localStorage.removeItem(CACHE_KEY); } } else alert("ملف غير صالح"); document.getElementById('restoreFile').value=''; }
+    async function handleRestore(e) { 
+        let file=e.target.files[0]; 
+        if(!file) return; 
+        let text=await file.text(); 
+        let {categories:cats, herbs:hs}=JSON.parse(text); 
+        if(Array.isArray(cats) && Array.isArray(hs)) { 
+            if(confirm("⚠️ سيتم استبدال جميع البيانات الحالية. هل أنت متأكد؟")) { 
+                await deleteAllData(); 
+                for(let c of cats) await categoriesCol.add({ name:c.name, createdAt:new Date() }); 
+                for(let h of hs) { 
+                    await herbsCol.add({ 
+                        name: h.name, categoryId: h.categoryId, 
+                        benefits: h.benefits||'—', warnings: h.warnings||'—', 
+                        harms: h.harms||'—', usage: h.usage||'—', notes: h.notes||'—', 
+                        imageUrl: h.imageUrl||null, createdAt: new Date() 
+                    }); 
+                } 
+                alert("✅ تمت الاستعادة بنجاح"); 
+                localStorage.removeItem(CACHE_KEY); 
+            } 
+        } else alert("ملف غير صالح"); 
+        document.getElementById('restoreFile').value=''; 
+    }
     
-    // ========== دوال المصادقة ==========
+    // دوال المصادقة
     function setAdminMode(val) {
         isAdmin = val;
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = val ? 'inline-flex' : 'none');
@@ -850,7 +927,7 @@
         });
     }
     
-    // ========== دوال إضافية (بحث، ثيم، حجم خط) ==========
+    // دوال إضافية (بحث، ثيم، حجم خط)
     function showSearch() { document.getElementById('searchModal').classList.add('active'); document.getElementById('searchInput').value=''; document.getElementById('searchResults').innerHTML=''; }
     function performSearch() { let q=document.getElementById('searchInput').value.trim().toLowerCase(); let res=herbs.filter(h=>h.name.toLowerCase().includes(q)); document.getElementById('searchResults').innerHTML=res.length?res.map(h=>`<div class="search-item" onclick="window.showDetailFromSearch('${h.id}')"><b>🌿 ${escapeHtml(h.name)}</b><br><small>${escapeHtml(h.benefits?.substring(0,70))}</small></div>`).join(''):'<div class="empty-state">لا نتائج</div>'; }
     window.showDetailFromSearch = (id) => { let h=herbs.find(x=>x.id===id); if(h){ document.getElementById('searchModal').classList.remove('active'); showHerbDetail(id); } };
@@ -858,7 +935,6 @@
     function initTheme() { if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark-mode'); const modeTextSpan = document.getElementById('modeText'); if(modeTextSpan) modeTextSpan.innerText = document.body.classList.contains('dark-mode') ? 'ليلي' : 'نهاري'; }
     const VisitorCounter = { init(){ let c=localStorage.getItem('visitor'); c=c?parseInt(c)+1:1; localStorage.setItem('visitor',c); } };
     
-    // ========== تحكم حجم الخط ==========
     let currentFontLevel = localStorage.getItem('fontLevel') || 'normal';
     function setFontSize(level) {
         document.body.classList.remove('font-large', 'font-xlarge');
@@ -872,7 +948,7 @@
     function cycleFontSize() { const levels = ['normal', 'large', 'xlarge']; let idx = levels.indexOf(currentFontLevel); currentFontLevel = levels[(idx+1)%levels.length]; setFontSize(currentFontLevel); }
     setFontSize(currentFontLevel);
     
-    // ========== تحسينات إضافية (كاش متقدم، webview، مساعد) ==========
+    // تحسينات الأداء
     (function enhancePerformance() {
         const CACHE_CLEAN_KEY = 'last_cache_clean';
         const lastClean = localStorage.getItem(CACHE_CLEAN_KEY);
@@ -886,31 +962,14 @@
             }
             keysToRemove.forEach(k => localStorage.removeItem(k));
             localStorage.setItem(CACHE_CLEAN_KEY, Date.now().toString());
-            console.log('🗑️ تم مسح الكاش القديم');
         }
         document.body.style.touchAction = 'pan-y pinch-zoom';
-        window.addEventListener('load', () => {
-            if (typeof firebase === 'undefined') {
-                console.error('Firebase لم يتم تحميله، إعادة محاولة...');
-                setTimeout(() => location.reload(), 2000);
-            }
-        });
         let offlineToast = null;
         window.addEventListener('offline', () => {
             if (!offlineToast) {
                 offlineToast = document.createElement('div');
                 offlineToast.textContent = '⚠️ لا يوجد اتصال بالإنترنت. يتم عرض البيانات المخزنة.';
-                offlineToast.style.position = 'fixed';
-                offlineToast.style.bottom = '80px';
-                offlineToast.style.left = '20px';
-                offlineToast.style.right = '20px';
-                offlineToast.style.backgroundColor = 'rgba(0,0,0,0.8)';
-                offlineToast.style.color = 'white';
-                offlineToast.style.padding = '10px';
-                offlineToast.style.borderRadius = '30px';
-                offlineToast.style.textAlign = 'center';
-                offlineToast.style.zIndex = '9999';
-                offlineToast.style.fontSize = '0.8rem';
+                offlineToast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:rgba(0,0,0,0.8);color:white;padding:10px;border-radius:30px;text-align:center;z-index:9999;font-size:0.8rem;';
                 document.body.appendChild(offlineToast);
                 setTimeout(() => { if (offlineToast) offlineToast.remove(); offlineToast = null; }, 4000);
             }
@@ -921,14 +980,9 @@
             updateProgress(30, 'متصل', '🔄 تم استعادة الاتصال، جاري التحديث...');
             setTimeout(() => initialLoad(), 1000);
         });
-        document.addEventListener('error', (e) => {
-            if (e.target.tagName === 'IMG') {
-                e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23e0d6b5"/%3E%3Ctext x="50" y="67" font-size="50" text-anchor="middle" fill="%236d4c41"%3E🌿%3C/text%3E%3C/svg%3E';
-            }
-        }, true);
     })();
     
-    // ========== إعدادات PWA الثابتة ==========
+    // إعدادات PWA الثابتة
     (function setupPWA() {
         let manifestObj = {
             name: "موسوعة الأعشاب الطبية",
@@ -941,378 +995,164 @@
             orientation: "portrait",
             lang: "ar",
             dir: "rtl",
-            icons: [
-                { src: "icon-192.png", sizes: "192x192", type: "image/png" },
-                { src: "icon-512.png", sizes: "512x512", type: "image/png" }
-            ],
+            icons: [{ src: "icon-192.png", sizes: "192x192", type: "image/png" }, { src: "icon-512.png", sizes: "512x512", type: "image/png" }],
             categories: ["education", "health", "reference"],
-            shortcuts: [
-                { name: "البحث", short_name: "بحث", url: "./?search=true" },
-                { name: "إضافة عشبة", short_name: "إضافة", url: "./?add=true" }
-            ]
+            shortcuts: [{ name: "البحث", short_name: "بحث", url: "./?search=true" }, { name: "إضافة عشبة", short_name: "إضافة", url: "./?add=true" }]
         };
-        
         async function generateIcon(size, bgColor, textColor, letter) {
             return new Promise((resolve) => {
                 const canvas = document.createElement('canvas');
-                canvas.width = size;
-                canvas.height = size;
+                canvas.width = size; canvas.height = size;
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(0, 0, size, size);
+                ctx.fillStyle = bgColor; ctx.fillRect(0, 0, size, size);
                 ctx.fillStyle = textColor;
                 ctx.font = `bold ${size * 0.5}px "Cairo"`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText(letter, size/2, size/2);
-                canvas.toBlob(blob => {
-                    const url = URL.createObjectURL(blob);
-                    resolve({ url, size });
-                }, 'image/png');
+                canvas.toBlob(blob => resolve({ url: URL.createObjectURL(blob), size }), 'image/png');
             });
         }
-        
         async function finalizeManifest() {
             const icon192 = await generateIcon(192, '#2e7d32', '#ffffff', '🌿');
             const icon512 = await generateIcon(512, '#2e7d32', '#ffffff', '🌿');
-            manifestObj.icons = [
-                { src: icon192.url, sizes: "192x192", type: "image/png" },
-                { src: icon512.url, sizes: "512x512", type: "image/png" }
-            ];
+            manifestObj.icons = [{ src: icon192.url, sizes: "192x192", type: "image/png" }, { src: icon512.url, sizes: "512x512", type: "image/png" }];
             const manifestBlob = new Blob([JSON.stringify(manifestObj)], {type: 'application/json'});
             const manifestURL = URL.createObjectURL(manifestBlob);
             let link = document.querySelector('link[rel="manifest"]');
-            if (!link) {
-                link = document.createElement('link');
-                link.rel = 'manifest';
-                document.head.appendChild(link);
-            }
+            if (!link) { link = document.createElement('link'); link.rel = 'manifest'; document.head.appendChild(link); }
             link.href = manifestURL;
-            console.log('✅ Manifest تم إنشاؤه');
         }
-        
         function registerSW() {
-            const swCode = `
-const CACHE_NAME = 'herbal-pwa-v3';
-const urlsToCache = [
-  '.',
-  './',
-  './index.html',
-  'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'
-];
-self.addEventListener('install', event => {
-  self.skipWaiting();
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
-});
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
-  );
-});
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.map(key => {
-        if (key !== CACHE_NAME) return caches.delete(key);
-      })
-    ))
-  );
-  self.clients.claim();
-});
-            `;
+            const swCode = `const CACHE_NAME='herbal-pwa-v3';const urlsToCache=['.','./','./index.html','https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap','https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css','https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js','https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js','https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'];self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(urlsToCache)));});self.addEventListener('fetch',event=>{event.respondWith(caches.match(event.request).then(response=>response||fetch(event.request)));});self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(key=>{if(key!==CACHE_NAME)return caches.delete(key);}))));self.clients.claim();});`;
             const swBlob = new Blob([swCode], {type: 'application/javascript'});
             const swURL = URL.createObjectURL(swBlob);
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register(swURL).then(reg => {
-                    console.log('✅ Service Worker مسجل', reg);
-                }).catch(err => console.error('❌ فشل تسجيل SW', err));
-            }
+            if ('serviceWorker' in navigator) navigator.serviceWorker.register(swURL).catch(err => console.error('SW registration failed', err));
         }
-        
         let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            const installBtn = document.getElementById('installPwaBtn');
-            if (installBtn) installBtn.style.display = 'flex';
-        });
-        
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installPwaBtn').style.display = 'flex'; });
         window.installPWA = async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    document.getElementById('installPwaBtn').style.display = 'none';
-                    console.log('✅ تم تثبيت التطبيق');
-                }
-                deferredPrompt = null;
-            } else {
-                const guideModal = document.getElementById('installGuideModal');
-                if (guideModal) guideModal.classList.add('active');
-            }
+            if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') document.getElementById('installPwaBtn').style.display = 'none'; deferredPrompt = null; }
+            else document.getElementById('installGuideModal').classList.add('active');
         };
-        
         document.getElementById('installPwaBtn')?.addEventListener('click', window.installPWA);
         finalizeManifest();
         registerSW();
     })();
     
-    // ========== تهيئة التطبيق ==========
-    setTimeout(()=>{ document.getElementById('splashScreen')?.classList.add('hide'); document.getElementById('mainApp').style.display='block'; },1500);
+    // ========== دوال الزوار الجديدة (المطلوبة) ==========
+    async function visitorResync() {
+        if (!confirm("🔄 إعادة المزامنة ستقوم بقطع الاتصال الحالي، وجلب أحدث البيانات من الخادم، ثم إعادة الاتصال المباشر.\nهل تريد الاستمرار؟")) return;
+        updateProgress(10, 'إعادة مزامنة', 'يقوم الزائر بإعادة ضبط المزامنة...');
+        try {
+            if (unsubscribeCategories) unsubscribeCategories();
+            if (unsubscribeHerbs) unsubscribeHerbs();
+            isSyncActive = false;
+            await forceFetchFromServer();
+            isSyncActive = true;
+            startRealtimeUpdates();
+            updateProgress(100, 'تم', '✅ تمت إعادة المزامنة والاتصال بنجاح');
+            alert("✅ تمت إعادة المزامنة وتحديث البيانات من السيرفر.");
+        } catch(e) {
+            console.error(e);
+            updateProgress(100, 'خطأ', '❌ فشل إعادة المزامنة');
+            alert("❌ فشل إعادة المزامنة: " + e.message);
+            isSyncActive = true;
+            startRealtimeUpdates();
+        }
+    }
     
-    (async function() { 
-        initTheme(); 
-        initAuthListener(); 
-        VisitorCounter.init(); 
-        await initialLoad(); 
-        startRealtimeUpdates(); 
-        if('Notification' in window && Notification.permission === 'default') setTimeout(()=> Notification.requestPermission(), 5000); 
-    })();
-    
-    // ========== الأكواد الجديدة لتحسين المزامنة واستقرار Firebase وأزرار الزوار ==========
-    // (تمت الإضافة دون تعديل أي كود سابق)
-    
-    // 1. تحسين المزامنة والاتصال بالخادم
-    const SyncEnhancer = {
-        retryCount: 0,
-        maxRetries: 8,
-        baseDelay: 1500,
-        reconnectTimer: null,
-        
-        // مراقبة حالة الاتصال وإعادة محاولة قوية
-        monitorConnection() {
-            window.addEventListener('online', () => {
-                console.log("🔄 تم استعادة الاتصال، محاولة إعادة المزامنة فوراً");
-                if (!isSyncActive) {
-                    restartRealtimeUpdates();
-                } else {
-                    // إعادة تعيين المستمعين لتجديد الاتصال
-                    if (unsubscribeCategories) unsubscribeCategories();
-                    if (unsubscribeHerbs) unsubscribeHerbs();
-                    startRealtimeUpdates();
-                }
-                updateProgress(30, 'مزامنة', '✅ تم استعادة الاتصال، جاري التحديث...');
-                setTimeout(() => initialLoad(), 800);
-            });
-            
-            // فحص دوري لصحة الاتصال بـ Firebase
-            setInterval(() => {
-                if (isSyncActive && !isOnline()) {
-                    console.warn("⚠️ الانترنت غير متصل، سيتم إعادة المحاولة لاحقاً");
-                }
-            }, 30000);
-        },
-        
-        // دالة متقدمة لإعادة المحاولة مع تأخير تصاعدي
-        async advancedRetry(fn, context = "عام") {
-            let attempt = 0;
-            while (attempt < this.maxRetries) {
-                try {
-                    return await fn();
-                } catch (err) {
-                    attempt++;
-                    console.warn(`⚠️ فشل في ${context} (محاولة ${attempt}/${this.maxRetries}):`, err.message);
-                    if (attempt >= this.maxRetries) throw err;
-                    const delay = this.baseDelay * Math.pow(1.6, attempt - 1);
-                    updateProgress(20 + (attempt * 10), 'إعادة محاولة', `${context}: إعادة بعد ${Math.round(delay/1000)} ثانية`);
-                    await new Promise(r => setTimeout(r, delay));
-                }
+    function visitorClearTempData() {
+        if (!confirm("⚠️ سيؤدي حذف البيانات المؤقتة إلى إزالة جميع الملفات المخزنة محلياً (الكاش، الإعدادات) وإعادة تحميل التطبيق.\nملاحظة: بيانات الأعشاب والتصنيفات المخزنة على السحابة لن تتأثر.\nهل أنت متأكد؟")) return;
+        try {
+            localStorage.clear();
+            sessionStorage.clear();
+            if ('caches' in window) {
+                caches.keys().then(names => names.forEach(name => caches.delete(name)));
             }
+            alert("✅ تم حذف البيانات المؤقتة بالكامل. سيتم إعادة تحميل التطبيق.");
+            location.reload();
+        } catch(e) {
+            console.error(e);
+            alert("❌ حدث خطأ أثناء محاولة مسح البيانات: " + e.message);
         }
-    };
+    }
     
-    // 2. تحسين استقرار Firebase (مراقبة الأخطاء وإعادة التهيئة الدورية)
-    const FirebaseHealthMonitor = {
-        errorCount: 0,
-        lastFailTimestamp: 0,
-        checkInterval: null,
-        
-        startMonitoring() {
-            // مراقبة أخطاء Firebase عن طريق اعتراض (ليس تعديلاً بل إضافة مستمع عام)
-            window.addEventListener('unhandledrejection', (event) => {
-                if (event.reason && event.reason.code && event.reason.code.startsWith('firestore/')) {
-                    this.errorCount++;
-                    console.error("🔥 خطأ Firebase تم رصده:", event.reason.code);
-                    if (this.errorCount >= 3 && (Date.now() - this.lastFailTimestamp) < 60000) {
-                        console.warn("🔄 محاولة إعادة تهيئة الاتصال بـ Firebase تلقائياً");
-                        this.lastFailTimestamp = Date.now();
-                        this.reinitializeFirestore();
-                    } else {
-                        this.lastFailTimestamp = Date.now();
-                    }
-                    setTimeout(() => { this.errorCount = 0; }, 120000);
-                }
-            });
-            
-            // فحص دوري لصحة Firestore
-            this.checkInterval = setInterval(() => {
-                if (isSyncActive) {
-                    db.collection('categories').limit(1).get().catch(err => {
-                        console.warn("⚠️ فشل فحص الاتصال بـ Firestore، محاولة إعادة الاتصال");
-                        this.reinitializeFirestore();
-                    });
-                }
-            }, 300000); // كل 5 دقائق
-        },
-        
-        reinitializeFirestore() {
-            try {
-                if (unsubscribeCategories) unsubscribeCategories();
-                if (unsubscribeHerbs) unsubscribeHerbs();
-                // إعادة تعيين المتغيرات دون تعديل الإعدادات الأصلية
-                reconnectAttempts = 0;
-                if (isSyncActive) {
-                    setTimeout(() => {
-                        startRealtimeUpdates();
-                        console.log("✅ تم إعادة تهيئة الاتصال بـ Firebase بنجاح");
-                    }, 1000);
-                }
-            } catch(e) { console.error("فشل إعادة التهيئة:", e); }
-        }
-    };
-    
-    // دوال أزرار الزوار الجديدة
+    // دوال أزرار الزوار الأخرى (عرض التصنيفات، المشاركة، الإحصائيات، المساعدة)
     function showVisitorCategories() {
-        // نافذة بسيطة تعرض التصنيفات للمستخدم العادي مع إمكانية الضغط لعرض الأعشاب
-        if (!categories.length) {
-            alert("لا توجد تصنيفات حالياً.");
-            return;
-        }
+        if (!categories.length) { alert("لا توجد تصنيفات حالياً."); return; }
         let catsList = categories.map(cat => {
             let count = herbs.filter(h => h.categoryId === cat.id).length;
-            return `<div class="category-item" style="cursor:pointer;" data-cat-id="${cat.id}">
-                        <div class="category-name-display"><i class="fas fa-folder"></i> ${escapeHtml(cat.name)} <span style="background:var(--primary);color:white;padding:2px 8px;border-radius:30px;">${count}</span></div>
-                        <i class="fas fa-chevron-left"></i>
-                    </div>`;
+            return `<div class="category-item" style="cursor:pointer;" data-cat-id="${cat.id}"><div class="category-name-display"><i class="fas fa-folder"></i> ${escapeHtml(cat.name)} <span style="background:var(--primary);color:white;padding:2px 8px;border-radius:30px;">${count}</span></div><i class="fas fa-chevron-left"></i></div>`;
         }).join('');
         const modalDiv = document.createElement('div');
         modalDiv.className = 'modal-glass active';
-        modalDiv.innerHTML = `<div class="modal-glass-content" style="max-width:500px;">
-            <div class="modal-header"><h3>📂 جميع التصنيفات</h3><div class="close-modal-btn" onclick="this.closest('.modal-glass').classList.remove('active')"><i class="fas fa-times"></i></div></div>
-            <div style="max-height:400px;overflow-y:auto;">${catsList || '<div class="empty-state">لا توجد تصنيفات</div>'}</div>
-            <div class="modal-actions"><button class="btn-secondary" onclick="this.closest('.modal-glass').classList.remove('active')">إغلاق</button></div>
-        </div>`;
+        modalDiv.innerHTML = `<div class="modal-glass-content" style="max-width:500px;"><div class="modal-header"><h3>📂 جميع التصنيفات</h3><div class="close-modal-btn" onclick="this.closest('.modal-glass').classList.remove('active')"><i class="fas fa-times"></i></div></div><div style="max-height:400px;overflow-y:auto;">${catsList || '<div class="empty-state">لا توجد تصنيفات</div>'}</div><div class="modal-actions"><button class="btn-secondary" onclick="this.closest('.modal-glass').classList.remove('active')">إغلاق</button></div></div>`;
         document.body.appendChild(modalDiv);
         modalDiv.querySelectorAll('.category-item').forEach(el => {
             el.addEventListener('click', () => {
                 const catId = el.dataset.catId;
                 modalDiv.classList.remove('active');
-                setTimeout(() => {
-                    const cat = categories.find(c => c.id === catId);
-                    if (cat) showCategoryHerbs(catId);
-                    else alert("حدث خطأ");
-                }, 100);
+                setTimeout(() => { const cat = categories.find(c => c.id === catId); if (cat) showCategoryHerbs(catId); else alert("حدث خطأ"); }, 100);
             });
         });
-        setTimeout(() => modalDiv.removeEventListener('click', null), 5000);
     }
     
     function shareApp() {
         if (navigator.share) {
-            navigator.share({
-                title: 'موسوعة الأعشاب الطبية',
-                text: 'استكشف فوائد وأضرار الأعشاب الطبية',
-                url: window.location.href
-            }).catch(err => console.log('مشاركة ملغاة', err));
+            navigator.share({ title: 'موسوعة الأعشاب الطبية', text: 'استكشف فوائد وأضرار الأعشاب الطبية', url: window.location.href }).catch(err => console.log('مشاركة ملغاة', err));
         } else {
-            // نسخ الرابط للحالات التي لا تدعم المشاركة
-            navigator.clipboard.writeText(window.location.href).then(() => {
-                alert("✅ تم نسخ رابط التطبيق، يمكنك مشاركته الآن");
-            }).catch(() => alert("يمكنك مشاركة الرابط: " + window.location.href));
+            navigator.clipboard.writeText(window.location.href).then(() => alert("✅ تم نسخ رابط التطبيق، يمكنك مشاركته الآن")).catch(() => alert("يمكنك مشاركة الرابط: " + window.location.href));
         }
     }
     
     function showVisitorStats() {
         const visits = localStorage.getItem('visitor') || 1;
         const lastVisit = localStorage.getItem('last_visit_date') || 'غير معروف';
-        const herbStats = herbs.length;
-        const catStats = categories.length;
-        alert(`📊 إحصائيات سريعة:\n👥 عدد زياراتك لهذا التطبيق: ${visits}\n🌿 عدد الأعشاب المسجلة: ${herbStats}\n📂 عدد التصنيفات: ${catStats}\n📅 آخر زيارة مسجلة: ${lastVisit}`);
+        alert(`📊 إحصائيات سريعة:\n👥 عدد زياراتك لهذا التطبيق: ${visits}\n🌿 عدد الأعشاب المسجلة: ${herbs.length}\n📂 عدد التصنيفات: ${categories.length}\n📅 آخر زيارة مسجلة: ${lastVisit}`);
         localStorage.setItem('last_visit_date', new Date().toLocaleDateString('ar-EG'));
     }
     
     function showQuickHelp() {
-        const helpText = `📖 دليل سريع لاستخدام الموسوعة:
-🔍 بحث: اضغط على زر "بحث" لكتابة اسم العشبة.
-📂 التصنيفات: اضغط على أي تصنيف لعرض أعشابه.
-🌿 الأعشاب: اضغط على أي عشبة لرؤية التفاصيل كاملة.
-🌙/☀️: يمكنك تغيير المظهر (ليلي/نهاري) من زر القمر/الشمس.
-🔊 يمكنك تغيير حجم الخط من زر "Aa" في شريط الأدوات.
-📞 للتواصل المباشر: اضغط على زر واتساب.
-📲 لتثبيت التطبيق: اضغط على زر التحميل (إن وجد) أو من قائمة المتصفح.`;
-        alert(helpText);
+        alert(`📖 دليل سريع لاستخدام الموسوعة:\n🔍 بحث: اضغط على زر "بحث" لكتابة اسم العشبة.\n📂 التصنيفات: اضغط على أي تصنيف لعرض أعشابه.\n🌿 الأعشاب: اضغط على أي عشبة لرؤية التفاصيل كاملة.\n🌙/☀️: يمكنك تغيير المظهر (ليلي/نهاري) من زر القمر/الشمس.\n🔊 يمكنك تغيير حجم الخط من زر "Aa" في شريط الأدوات.\n📞 للتواصل المباشر: اضغط على زر واتساب.\n📲 لتثبيت التطبيق: اضغط على زر التحميل (إن وجد) أو من قائمة المتصفح.`);
     }
-
-    // ========== دوال جديدة للمسؤول (الأزرار الإضافية) ==========
-    function clearLocalCache() {
+    
+    // دوال المسؤول الإضافية
+    function clearLocalCacheAdmin() {
         if (confirm("⚠️ هل أنت متأكد من مسح الكاش المحلي؟ سيتم حذف جميع البيانات المخزنة محلياً وإعادة تحميل الصفحة.")) {
-            localStorage.clear();
-            sessionStorage.clear();
+            localStorage.clear(); sessionStorage.clear();
             alert("✅ تم مسح الكاش المحلي. سيتم إعادة تحميل التطبيق.");
             location.reload();
         }
     }
-    
-    function showSystemReport() {
+    function showSystemReportAdmin() {
         const report = {
-            "عدد الأعشاب": herbs.length,
-            "عدد التصنيفات": categories.length,
-            "حالة المزامنة": isSyncActive ? "نشطة" : "متوقفة",
-            "المستخدم مسؤول": isAdmin,
+            "عدد الأعشاب": herbs.length, "عدد التصنيفات": categories.length,
+            "حالة المزامنة": isSyncActive ? "نشطة" : "متوقفة", "المستخدم مسؤول": isAdmin,
             "آخر تحديث للكاش": localStorage.getItem(CACHE_KEY) ? new Date(JSON.parse(localStorage.getItem(CACHE_KEY)).timestamp).toLocaleString() : "لا يوجد",
             "حالة الاتصال": navigator.onLine ? "متصل" : "غير متصل",
-            "إصدار التطبيق": "v1.0",
             "مستمعي Firebase": (unsubscribeCategories ? "نشط" : "غير نشط") + " / " + (unsubscribeHerbs ? "نشط" : "غير نشط"),
             "عدد مرات إعادة الاتصال": reconnectAttempts
         };
-        let reportText = "📋 تقرير النظام:\n" + Object.entries(report).map(([k,v]) => `${k}: ${v}`).join("\n");
-        alert(reportText);
-        console.log("تقرير النظام:", report);
+        alert("📋 تقرير النظام:\n" + Object.entries(report).map(([k,v]) => `${k}: ${v}`).join("\n"));
+    }
+    function copyAppLinkAdmin() {
+        navigator.clipboard.writeText(window.location.href).then(() => alert("✅ تم نسخ رابط التطبيق")).catch(() => alert("❌ فشل نسخ الرابط"));
     }
     
-    function copyAppLink() {
-        const link = window.location.href;
-        navigator.clipboard.writeText(link).then(() => {
-            alert("✅ تم نسخ رابط التطبيق: " + link);
-        }).catch(() => {
-            alert("❌ فشل نسخ الرابط، يمكنك نسخه يدوياً: " + link);
-        });
-    }
+    // مراقبة الاستقرار
+    setInterval(() => {
+        if (isSyncActive && (!unsubscribeCategories || !unsubscribeHerbs)) { console.warn("⚠️ فقدان المستمعين، إعادة تشغيل المزامنة"); startRealtimeUpdates(); }
+        if (isSyncActive && isOnline()) { categoriesCol.limit(1).get().catch(() => { if (unsubscribeCategories) unsubscribeCategories(); if (unsubscribeHerbs) unsubscribeHerbs(); startRealtimeUpdates(); }); }
+    }, 60000);
     
-    // بدء تحسينات المزامنة واستقرار Firebase بعد تحميل الصفحة
-    setTimeout(() => {
-        SyncEnhancer.monitorConnection();
-        FirebaseHealthMonitor.startMonitoring();
-    }, 2000);
+    // تهيئة التطبيق وربط الأحداث
+    setTimeout(()=>{ document.getElementById('splashScreen')?.classList.add('hide'); document.getElementById('mainApp').style.display='block'; },1500);
     
-    // ربط أزرار الزوار الجديدة
+    (async function() { initTheme(); initAuthListener(); VisitorCounter.init(); await initialLoad(); startRealtimeUpdates(); if('Notification' in window && Notification.permission === 'default') setTimeout(()=> Notification.requestPermission(), 5000); })();
+    
     document.addEventListener('DOMContentLoaded',()=>{
-        const visitorCatBtn = document.getElementById('visitorCategoriesBtn');
-        if(visitorCatBtn) visitorCatBtn.addEventListener('click', showVisitorCategories);
-        
-        const shareBtn = document.getElementById('shareAppBtn');
-        if(shareBtn) shareBtn.addEventListener('click', shareApp);
-        
-        const statsBtn = document.getElementById('visitorStatsBtn');
-        if(statsBtn) statsBtn.addEventListener('click', showVisitorStats);
-        
-        const helpBtn = document.getElementById('quickHelpBtn');
-        if(helpBtn) helpBtn.addEventListener('click', showQuickHelp);
-        
-        // تحديث عداد الزوار عند كل زيارة (محلياً)
-        let visitCount = parseInt(localStorage.getItem('visitor') || '0');
-        if(visitCount === 0) localStorage.setItem('visitor', '1');
-        else localStorage.setItem('visitor', (visitCount + 1).toString());
-        localStorage.setItem('last_visit_date', new Date().toLocaleDateString('ar-EG'));
-    });
-    
-    // ========== ربط الأحداث (مع إضافة الأزرار الجديدة) ==========
-    document.addEventListener('DOMContentLoaded',()=>{
-        document.getElementById('refreshDataBtn')?.addEventListener('click', () => { manualRefresh(); });
+        // ربط الأزرار الأساسية
+        document.getElementById('refreshDataBtn')?.addEventListener('click', manualRefresh);
         document.getElementById('addHerbBtn')?.addEventListener('click',showAddHerb);
         document.getElementById('manageCategoriesBtn')?.addEventListener('click',showCategoryManager);
         document.getElementById('backupBtn')?.addEventListener('click',backupJSON);
@@ -1350,15 +1190,27 @@ self.addEventListener('activate', event => {
         document.getElementById('uploadImageBtn')?.addEventListener('click',()=>document.getElementById('herbImageInput').click());
         document.getElementById('herbImageInput')?.addEventListener('change',async(e)=>{ let file=e.target.files[0]; if(file && file.type.startsWith('image/')){ currentImageFile=file; let compressed=await compressImage(file,800,0.8); currentImageBase64=compressed; document.getElementById('imagePreviewContainer').innerHTML=`<img src="${compressed}" class="herb-image-preview" onclick="document.getElementById('herbImageInput').click()">`; document.getElementById('clearImageBtn').style.display='inline-flex'; } else alert('ملف غير صالح'); });
         document.getElementById('clearImageBtn')?.addEventListener('click',()=>{ currentImageBase64=null; currentImageFile=null; document.getElementById('herbImageInput').value=''; document.getElementById('imagePreviewContainer').innerHTML=''; document.getElementById('clearImageBtn').style.display='none'; document.getElementById('compressInfo').innerHTML=''; });
-        // ربط الأزرار الجديدة للمسؤول
+        // ربط أزرار المسؤول الإضافية
         document.getElementById('resetSyncBtn')?.addEventListener('click', resetSync);
         document.getElementById('exportCsvBtn')?.addEventListener('click', exportToCSV);
         document.getElementById('requestNotifyBtn')?.addEventListener('click', requestNotificationPermission);
-        // ربط الأزرار الإضافية للمسؤول
-        document.getElementById('clearCacheBtn')?.addEventListener('click', clearLocalCache);
-        document.getElementById('systemReportBtn')?.addEventListener('click', showSystemReport);
-        document.getElementById('copyAppLinkBtn')?.addEventListener('click', copyAppLink);
+        document.getElementById('clearCacheBtn')?.addEventListener('click', clearLocalCacheAdmin);
+        document.getElementById('systemReportBtn')?.addEventListener('click', showSystemReportAdmin);
+        document.getElementById('copyAppLinkBtn')?.addEventListener('click', copyAppLinkAdmin);
+        // ربط أزرار الزوار الجديدة
+        document.getElementById('visitorResyncBtn')?.addEventListener('click', visitorResync);
+        document.getElementById('visitorClearTempBtn')?.addEventListener('click', visitorClearTempData);
+        document.getElementById('visitorCategoriesBtn')?.addEventListener('click', showVisitorCategories);
+        document.getElementById('shareAppBtn')?.addEventListener('click', shareApp);
+        document.getElementById('visitorStatsBtn')?.addEventListener('click', showVisitorStats);
+        document.getElementById('quickHelpBtn')?.addEventListener('click', showQuickHelp);
+        
+        // تحديث عداد الزوار
+        let visitCount = parseInt(localStorage.getItem('visitor') || '0');
+        if(visitCount === 0) localStorage.setItem('visitor', '1');
+        else localStorage.setItem('visitor', (visitCount + 1).toString());
+        localStorage.setItem('last_visit_date', new Date().toLocaleDateString('ar-EG'));
     });
 </script>
 </body>
-</html>
+    </html>
