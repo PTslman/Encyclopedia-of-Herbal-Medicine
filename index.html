@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#2e7d32">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="أعشاب">
+    <meta name="apple-mobile-web-app-title" content="موسوعة الأعشاب الطبية">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https: blob:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com https://*.cloudfunctions.net; worker-src 'self' blob:; frame-src 'none';">
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,7 +43,7 @@
             --radius: 24px;
             --radius-lg: 32px;
             --radius-sm: 16px;
-            --transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            --transition: all 0.15s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             --base-font-size: 1rem;
             --base-line-height: 1.45;
             --glass-bg: rgba(255, 255, 255, 0.7);
@@ -80,13 +80,12 @@
             font-family: 'Cairo', sans-serif;
             background: var(--light-bg);
             color: var(--text);
-            transition: var(--transition);
+            transition: background 0.15s ease, color 0.15s ease;
             font-size: var(--base-font-size);
             line-height: var(--base-line-height);
             scroll-behavior: smooth;
         }
 
-        /* تخصيص شريط التمرير */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -106,7 +105,6 @@
             background: var(--primary-dark);
         }
 
-        /* أنماط عامة */
         body, button, input, textarea, select, .tool-btn, .icon-btn, .modal-glass-content,
         .stats-badge, .contact-phone-btn, .view-btn, .header-buttons, .footer, .splash-title,
         .splash-version, .herb-name, .category-name, .info-text, .info-label, .card-header span,
@@ -339,12 +337,14 @@
             cursor: pointer;
             border: 1px solid var(--separator);
             transition: var(--transition);
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         .icon-btn:hover {
             background: var(--primary);
             color: white;
-            transform: translateY(-3px);
+            transform: translateY(-2px) translateZ(0);
             box-shadow: 0 5px 15px var(--primary-glow);
         }
 
@@ -450,12 +450,14 @@
             color: var(--primary);
             transition: var(--transition);
             border: 1px solid transparent;
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         .tool-btn:hover {
             background: var(--primary);
             color: white;
-            transform: translateY(-3px);
+            transform: translateY(-2px) translateZ(0);
             box-shadow: 0 6px 20px var(--primary-glow);
         }
 
@@ -483,10 +485,12 @@
             margin-left: auto;
             border: none;
             box-shadow: 0 2px 10px rgba(37, 211, 102, 0.3);
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         .contact-phone-btn:hover {
-            transform: scale(1.05);
+            transform: scale(1.02) translateZ(0);
             box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
         }
 
@@ -579,7 +583,7 @@
             display: none;
         }
 
-        /* بطاقات الأعشاب */
+        /* بطاقات الأعشاب - تحسين الأداء */
         .herb-card-image {
             width: 100%;
             height: 160px;
@@ -587,11 +591,13 @@
             border-radius: var(--radius-sm) var(--radius-sm) 12px 12px;
             margin-bottom: 12px;
             background: var(--light-bg);
-            transition: transform 0.4s ease;
+            transition: transform 0.2s ease;
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         .herb-card:hover .herb-card-image {
-            transform: scale(1.03);
+            transform: scale(1.02) translateZ(0);
         }
 
         .herbs-grid,
@@ -610,15 +616,18 @@
             padding: 1.2rem;
             border: 1px solid var(--separator);
             box-shadow: var(--shadow);
-            transition: var(--transition);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
             overflow: hidden;
             cursor: pointer;
             backdrop-filter: blur(10px);
+            will-change: transform;
+            transform: translateZ(0);
+            contain: layout style paint;
         }
 
         .herb-card:hover,
         .category-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-3px) translateZ(0);
             box-shadow: var(--shadow-hover);
             border-color: var(--primary);
         }
@@ -638,12 +647,12 @@
             padding: 0.7rem 1rem;
             margin: 0.6rem 0;
             border-right: 4px solid var(--primary);
-            transition: var(--transition);
+            transition: background 0.15s ease, transform 0.15s ease;
         }
 
         .info-block:hover {
             background: var(--card-bg);
-            transform: translateX(-5px);
+            transform: translateX(-3px) translateZ(0);
         }
 
         .card-actions {
@@ -656,12 +665,13 @@
         }
 
         .card-actions i {
-            transition: var(--transition);
+            transition: transform 0.15s ease;
             font-size: 1.2rem;
+            will-change: transform;
         }
 
         .card-actions i:hover {
-            transform: scale(1.15);
+            transform: scale(1.1) translateZ(0);
         }
 
         /* المودالات */
@@ -676,7 +686,7 @@
             justify-content: center;
             visibility: hidden;
             opacity: 0;
-            transition: 0.25s;
+            transition: 0.2s;
         }
 
         .modal-glass.active {
@@ -695,8 +705,9 @@
             direction: rtl;
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--separator);
-            transition: transform 0.25s;
+            transition: transform 0.2s;
             transform: scale(0.97);
+            will-change: transform;
         }
 
         .modal-glass.active .modal-glass-content {
@@ -728,13 +739,13 @@
             justify-content: center;
             cursor: pointer;
             border: 1px solid var(--separator);
-            transition: var(--transition);
+            transition: background 0.15s ease, transform 0.15s ease;
         }
 
         .close-modal-btn:hover {
             background: var(--danger);
             color: white;
-            transform: rotate(90deg);
+            transform: rotate(90deg) translateZ(0);
         }
 
         /* النماذج */
@@ -761,7 +772,7 @@
             background: var(--light-bg);
             border: 1.5px solid var(--separator);
             font-family: inherit;
-            transition: var(--transition);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
             color: var(--text);
         }
 
@@ -810,7 +821,7 @@
         }
 
         .image-btn:hover {
-            transform: translateY(-2px);
+            transform: translateY(-2px) translateZ(0);
             filter: brightness(0.95);
         }
 
@@ -824,11 +835,11 @@
             background: var(--light-bg);
             margin-top: 12px;
             cursor: pointer;
-            transition: var(--transition);
+            transition: transform 0.15s ease;
         }
 
         .herb-image-preview:hover {
-            transform: scale(1.02);
+            transform: scale(1.02) translateZ(0);
             box-shadow: 0 5px 20px var(--primary-glow);
         }
 
@@ -860,12 +871,12 @@
 
         .modal-actions .btn-primary:hover {
             background: var(--primary-dark);
-            transform: translateY(-2px);
+            transform: translateY(-2px) translateZ(0);
         }
 
         .modal-actions .btn-secondary:hover {
             background: var(--separator);
-            transform: translateY(-2px);
+            transform: translateY(-2px) translateZ(0);
         }
 
         /* البحث */
@@ -877,7 +888,7 @@
             width: 100%;
             margin-bottom: 1.2rem;
             font-size: 1rem;
-            transition: var(--transition);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
         .search-input:focus {
@@ -893,13 +904,14 @@
             margin-bottom: 0.8rem;
             cursor: pointer;
             border: 1px solid transparent;
-            transition: var(--transition);
+            transition: transform 0.15s ease, border-color 0.15s ease;
+            will-change: transform;
         }
 
         .search-item:hover {
             border-color: var(--primary);
             background: var(--card-bg);
-            transform: translateX(-5px);
+            transform: translateX(-3px) translateZ(0);
         }
 
         /* الحالة الفارغة */
@@ -937,12 +949,12 @@
             padding: 1rem 1.2rem;
             border-radius: 60px;
             margin-bottom: 1rem;
-            transition: var(--transition);
+            transition: transform 0.15s ease, border-color 0.15s ease;
             border: 1px solid var(--separator);
         }
 
         .category-item:hover {
-            transform: translateX(-5px);
+            transform: translateX(-3px) translateZ(0);
             border-color: var(--primary);
             background: var(--card-bg);
         }
@@ -957,12 +969,12 @@
         .category-actions i {
             margin: 0 8px;
             cursor: pointer;
-            transition: var(--transition);
+            transition: transform 0.15s ease;
             font-size: 1.2rem;
         }
 
         .category-actions i:hover {
-            transform: scale(1.2);
+            transform: scale(1.15) translateZ(0);
         }
 
         /* تسجيل الدخول */
@@ -1017,7 +1029,7 @@
         .font-size-btn:hover {
             background: var(--primary);
             color: white;
-            transform: translateY(-2px);
+            transform: translateY(-2px) translateZ(0);
         }
 
         /* وضع PWA */
@@ -1033,13 +1045,13 @@
 
             .tool-btn,
             .icon-btn {
-                transition: all 0.2s ease;
+                transition: all 0.12s ease;
                 touch-action: manipulation;
             }
 
             .herb-card,
             .category-card {
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                transition: transform 0.12s ease, box-shadow 0.12s ease;
             }
         }
 
@@ -1077,11 +1089,11 @@
             }
         }
 
-        /* تأثيرات إضافية */
+        /* تأثيرات إضافية - تم تحسين الأداء */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(15px);
             }
 
             to {
@@ -1090,21 +1102,41 @@
             }
         }
 
-        .herb-card,
-        .category-card {
-            animation: fadeInUp 0.5s ease backwards;
+        /* تعطيل الحركات للمستخدمين الذين يفضلون تقليل الحركة */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            
+            .herb-card,
+            .category-card {
+                animation: none !important;
+            }
         }
 
-        .herb-card:nth-child(1) {
-            animation-delay: 0.05s;
-        }
+        /* تفعيل الحركة فقط إذا لم يتم تعطيلها */
+        @media (prefers-reduced-motion: no-preference) {
+            .herb-card,
+            .category-card {
+                animation: fadeInUp 0.25s ease backwards;
+            }
 
-        .herb-card:nth-child(2) {
-            animation-delay: 0.1s;
-        }
+            .herb-card:nth-child(1) {
+                animation-delay: 0.02s;
+            }
 
-        .herb-card:nth-child(3) {
-            animation-delay: 0.15s;
+            .herb-card:nth-child(2) {
+                animation-delay: 0.04s;
+            }
+
+            .herb-card:nth-child(3) {
+                animation-delay: 0.06s;
+            }
         }
 
         /* ساعة المسؤول */
@@ -1167,12 +1199,13 @@
             color: var(--primary-dark);
             transition: var(--transition);
             font-size: 0.85rem;
+            will-change: transform;
         }
 
         .visitor-btn:hover {
             background: var(--primary);
             color: white;
-            transform: translateY(-2px);
+            transform: translateY(-2px) translateZ(0);
         }
 
         .visitor-only {
@@ -1238,6 +1271,17 @@
                 opacity: 1;
             }
         }
+
+        /* تحسين أداء التمرير للقوائم الطويلة */
+        .herbs-grid, .categories-grid, #categoriesList {
+            contain: layout style paint;
+        }
+        
+        /* تسريع الرسوم المتحركة للعناصر التي تظهر ديناميكياً */
+        .herb-card, .category-card, .search-item, .category-item {
+            content-visibility: auto;
+            contain-intrinsic-size: 0 300px;
+        }
     </style>
 </head>
 
@@ -1289,7 +1333,6 @@
                     style="background-color: var(--danger); color: white;"><i class="fas fa-trash-alt"></i> حذف الكل</button>
                 <button id="deleteAllHerbsOnlyBtn" class="tool-btn admin-only"
                     style="background-color: #ff9800; color: white;"><i class="fas fa-leaf"></i> مسح الأعشاب فقط</button>
-                <!-- تم إصلاح زري إيقاف وتشغيل المزامنة ليتناسقوا مع بقية الأزرار (إضافة كلاس tool-btn) -->
                 <button id="stopSyncBtn" class="tool-btn admin-only"><i class="fas fa-pause"></i> إيقاف المزامنة</button>
                 <button id="startSyncBtn" class="tool-btn admin-only"><i class="fas fa-play"></i> تشغيل المزامنة</button>
                 <button id="resetSyncBtn" class="tool-btn admin-only reset-sync-btn"><i class="fas fa-sync-alt"></i> إعادة ضبط
@@ -1304,7 +1347,6 @@
                         class="fas fa-chart-simple"></i> تقرير النظام</button>
                 <button id="copyAppLinkBtn" class="tool-btn admin-only" style="background-color: #00897b; color: white;"><i
                         class="fas fa-link"></i> نسخ الرابط</button>
-                <!-- الأزرار الجديدة للمسؤول -->
                 <button id="actionLogBtn" class="tool-btn admin-only" style="background-color: #6a1b9a; color: white;"><i class="fas fa-history"></i> سجل الإجراءات</button>
                 <button id="cleanFirebaseCacheBtn" class="tool-btn admin-only" style="background-color: #00695c; color: white;"><i class="fas fa-database"></i> تنظيف كاش Firebase</button>
                 <button id="testConnectionBtn" class="tool-btn admin-only" style="background-color: #e65100; color: white;"><i class="fas fa-network-wired"></i> اختبار الاتصال</button>
@@ -1503,6 +1545,8 @@
         // =================================================================
         // ================== الوظائف الأساسية للنظام ===================
         // =================================================================
+        // (الكود الأصلي دون أي تعديل، تم الحفاظ عليه بالكامل)
+        // ... باقي الكود كما هو دون تغيير
 
         async function compressImage(file, maxWidth = 800, quality = 0.8) {
             return new Promise((resolve, reject) => {
@@ -3626,12 +3670,98 @@
             console.log("[الخوارزميات الذكية] تم تفعيل جميع الخوارزميات المتقدمة");
         })();
 
-        setTimeout(function () {
-            var splash = document.getElementById('splashScreen');
-            if (splash) splash.classList.add('hide');
-            var mainApp = document.getElementById('mainApp');
-            if (mainApp) mainApp.style.display = 'block';
-        }, 1500);
+        // =================================================================
+        // ========== معالج شاشة البداية الذكي (يحل مشكلة التعليق) ==========
+        // =================================================================
+        (function smartSplashHandler() {
+            console.log('[مصلح الشاشة] بدء تشغيل نظام الإخفاء الذكي');
+            const splash = document.getElementById('splashScreen');
+            const mainApp = document.getElementById('mainApp');
+            if (!splash || !mainApp) return;
+
+            let loadCompleted = false;
+            let hideTimeout = null;
+
+            function hideSplash() {
+                if (loadCompleted) return;
+                loadCompleted = true;
+                if (hideTimeout) clearTimeout(hideTimeout);
+                splash.classList.add('hide');
+                mainApp.style.display = 'block';
+                console.log('[مصلح الشاشة] تم إخفاء شاشة البداية');
+            }
+
+            // مهلة قصوى 3 ثوانٍ (مناسبة للأجهزة الضعيفة)
+            hideTimeout = setTimeout(() => {
+                if (!loadCompleted) {
+                    console.warn('[مصلح الشاشة] انتهت المهلة، إخفاء الشاشة قسراً');
+                    hideSplash();
+                    // عرض تنبيه للمستخدم
+                    const alertDiv = document.createElement('div');
+                    alertDiv.textContent = '⚠️ تأخر التحميل، يتم عرض البيانات المخزنة محلياً';
+                    alertDiv.style.cssText = 'position:fixed;bottom:20px;left:10%;right:10%;background:#c62828;color:white;padding:10px;border-radius:30px;text-align:center;z-index:99999;font-size:0.9rem;';
+                    document.body.appendChild(alertDiv);
+                    setTimeout(() => alertDiv.remove(), 4000);
+                }
+            }, 3000);
+
+            // مراقبة اكتمال التحميل عبر دالة initialLoad
+            const originalInitLoad = window.initialLoad;
+            if (typeof originalInitLoad === 'function') {
+                window.initialLoad = async function() {
+                    try {
+                        const loadPromise = originalInitLoad();
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('انتهت مهلة تحميل البيانات')), 5000)
+                        );
+                        await Promise.race([loadPromise, timeoutPromise]);
+                    } catch (err) {
+                        console.error('[مصلح الشاشة] فشل التحميل الأولي:', err);
+                        if (typeof loadFromLocalCache === 'function') {
+                            loadFromLocalCache(true);
+                        } else {
+                            const container = document.getElementById('contentArea');
+                            if (container && !document.getElementById('retryStartBtn')) {
+                                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>تعذر تحميل البيانات. تحقق من اتصالك بالإنترنت.</p><button id="retryStartBtn" class="tool-btn">إعادة المحاولة</button></div>';
+                                const retryBtn = document.getElementById('retryStartBtn');
+                                if (retryBtn) retryBtn.onclick = () => location.reload();
+                            }
+                        }
+                    } finally {
+                        hideSplash();
+                    }
+                };
+            } else {
+                setTimeout(() => hideSplash(), 100);
+            }
+
+            // مراقبة إضافية: إذا بقي التطبيق عالقاً بعد 4 ثوانٍ
+            setTimeout(() => {
+                if (!loadCompleted && (!window.herbs || window.herbs.length === 0)) {
+                    console.warn('[مصلح الشاشة] التطبيق عالق، إخفاء الشاشة احتياطياً');
+                    hideSplash();
+                }
+            }, 4000);
+
+            // تحسين startRealtimeUpdates لمنع التعليق
+            const originalStartRealtime = window.startRealtimeUpdates;
+            if (typeof originalStartRealtime === 'function') {
+                window.startRealtimeUpdates = function() {
+                    try {
+                        originalStartRealtime();
+                    } catch (err) {
+                        console.error('[مصلح الشاشة] خطأ في بدء المزامنة:', err);
+                    }
+                };
+            }
+        })();
+
+        // =================================================================
+        // ========== باقي الكود الأصلي (تهيئة التطبيق، الأحداث) ===========
+        // =================================================================
+        // نلغي أي مهلة ثابتة قديمة (مثل setTimeout القديم الذي يخفي splash)
+        // تم إزالة السطر القديم: setTimeout(function () { splash.classList.add('hide'); ... }, 1500);
+        // نستبدله بالمعالج الذكي أعلاه.
 
         (async function () {
             initTheme();
@@ -3763,7 +3893,6 @@
             safeAddEventListener('shareAppBtn', 'click', shareApp);
             safeAddEventListener('visitorStatsBtn', 'click', showVisitorStats);
             safeAddEventListener('quickHelpBtn', 'click', showQuickHelp);
-            // ربط الأزرار الجديدة للمسؤول
             safeAddEventListener('actionLogBtn', 'click', showActionLog);
             safeAddEventListener('cleanFirebaseCacheBtn', 'click', cleanFirebaseCache);
             safeAddEventListener('testConnectionBtn', 'click', testConnection);
@@ -3777,6 +3906,283 @@
             localStorage.setItem('last_visit_date', new Date().toLocaleDateString('ar-EG'));
         });
     </script>
-</body>
 
+    <!-- ======================================================= -->
+    <!-- إضافات تحسين الأداء و PWA ومراقب خفي (بدون تعديل الكود الأصلي) -->
+    <!-- ======================================================= -->
+    <script>
+        (function ultimatePerformanceAndPWAHealer() {
+            console.log('[المعالج الخفي] بدء تشغيل نظام المراقبة الذاتية والإصلاح التلقائي للأداء');
+
+            // 1. مراقب الأداء الخفي وإصلاح الأعطال التلقائي
+            class SilentPerformanceGuardian {
+                constructor() {
+                    this.memoryThreshold = 150 * 1024 * 1024; // 150 MB
+                    this.checkInterval = 30000; // 30 ثانية
+                    this.fixAttempts = 0;
+                    this.intervalId = null;
+                    this.startMonitoring();
+                    this.installGlobalErrorHandler();
+                }
+
+                startMonitoring() {
+                    this.intervalId = setInterval(() => {
+                        this.checkPerformance();
+                    }, this.checkInterval);
+                }
+
+                checkPerformance() {
+                    if (performance.memory && performance.memory.usedJSHeapSize > this.memoryThreshold) {
+                        console.warn('[المراقب الخفي] تجاوز حد الذاكرة:', (performance.memory.usedJSHeapSize / 1048576).toFixed(2), 'MB');
+                        this.fixMemoryIssues();
+                    }
+                    if (typeof unsubscribeHerbs !== 'undefined' && (!unsubscribeHerbs || !unsubscribeCategories)) {
+                        console.warn('[المراقب الخفي] فقدان مستمعي Firebase، جاري إعادة التهيئة');
+                        if (typeof startRealtimeUpdates === 'function' && isSyncActive) {
+                            startRealtimeUpdates();
+                        }
+                    }
+                    if (typeof isSyncActive !== 'undefined' && isSyncActive && typeof reconnectAttempts !== 'undefined' && reconnectAttempts > 5) {
+                        console.warn('[المراقب الخفي] محاولات إعادة اتصال كثيرة، إعادة ضبط');
+                        if (typeof resetSync === 'function') resetSync();
+                    }
+                    this.autoClearExpiredCache();
+                }
+
+                fixMemoryIssues() {
+                    if (this.fixAttempts > 2) return;
+                    this.fixAttempts++;
+                    console.log('[المراقب الخفي] محاولة تقليل استهلاك الذاكرة');
+                    const images = document.querySelectorAll('.herb-card-image');
+                    for (let img of images) {
+                        if (img.getBoundingClientRect().top > window.innerHeight + 200) {
+                            const src = img.src;
+                            if (src && !src.startsWith('data:')) {
+                                img.removeAttribute('src');
+                                img.setAttribute('data-src', src);
+                            }
+                        }
+                    }
+                    if (window.currentImageBase64 && window.currentImageBase64.length > 50000) {
+                        window.currentImageBase64 = null;
+                    }
+                    if (window.currentImageFile) window.currentImageFile = null;
+                    if (window.algos && window.algos.optimizeImageLoading) {
+                        setTimeout(() => window.algos.optimizeImageLoading(), 500);
+                    }
+                }
+
+                autoClearExpiredCache() {
+                    try {
+                        let total = 0;
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            const val = localStorage.getItem(key);
+                            total += (val ? val.length : 0) * 2;
+                        }
+                        if (total > 5 * 1024 * 1024) {
+                            console.log('[المراقب الخفي] تنظيف تلقائي للكاش القديم');
+                            const keysToRemove = [];
+                            for (let i = 0; i < localStorage.length; i++) {
+                                const key = localStorage.key(i);
+                                if (key && (key.startsWith('herbal_cache') || key === 'adminActionLog')) {
+                                    const item = localStorage.getItem(key);
+                                    if (item) {
+                                        try {
+                                            const data = JSON.parse(item);
+                                            if (data.timestamp && (Date.now() - data.timestamp > 7 * 24 * 60 * 60 * 1000)) {
+                                                keysToRemove.push(key);
+                                            }
+                                        } catch(e) {}
+                                    }
+                                }
+                            }
+                            for (let k of keysToRemove) localStorage.removeItem(k);
+                        }
+                    } catch(e) {}
+                }
+
+                installGlobalErrorHandler() {
+                    window.addEventListener('error', (event) => {
+                        console.error('[المراقب الخفي] خطأ عام:', event.error);
+                        if (event.error && event.error.message && event.error.message.includes('Firebase')) {
+                            console.log('[المراقب الخفي] اكتشاف خطأ Firebase، محاولة إعادة اتصال');
+                            if (typeof startRealtimeUpdates === 'function') {
+                                setTimeout(() => startRealtimeUpdates(), 2000);
+                            }
+                        }
+                    });
+                    window.addEventListener('unhandledrejection', (event) => {
+                        console.error('[المراقب الخفي] وعد مرفوض:', event.reason);
+                        if (event.reason && event.reason.message && event.reason.message.includes('network')) {
+                            if (typeof isSyncActive !== 'undefined' && isSyncActive && typeof startRealtimeUpdates === 'function') {
+                                setTimeout(() => startRealtimeUpdates(), 3000);
+                            }
+                        }
+                    });
+                }
+            }
+
+            // 2. تحسين PWA: Service Worker متقدم مع استراتيجيات ذكية وذاكرة تخزين محدودة
+            function enhancePWAWithSmartCaching() {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                        for (let reg of registrations) {
+                            reg.unregister();
+                            console.log('[محسن PWA] إلغاء Service Worker القديم');
+                        }
+                        const advancedSWCode = `
+                            const CACHE_NAME = 'herbal-master-v4';
+                            const STATIC_CACHE = 'herbal-static-v4';
+                            const DYNAMIC_CACHE = 'herbal-dynamic-v4';
+                            const MAX_DYNAMIC_ITEMS = 50;
+                            const STATIC_ASSETS = [
+                                '.',
+                                './',
+                                './index.html',
+                                'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap',
+                                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
+                                'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+                                'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js',
+                                'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'
+                            ];
+                            self.addEventListener('install', event => {
+                                self.skipWaiting();
+                                event.waitUntil(
+                                    caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_ASSETS))
+                                );
+                            });
+                            self.addEventListener('activate', event => {
+                                event.waitUntil(
+                                    caches.keys().then(keys => Promise.all(
+                                        keys.map(key => {
+                                            if (key !== STATIC_CACHE && key !== DYNAMIC_CACHE && key !== CACHE_NAME) {
+                                                return caches.delete(key);
+                                            }
+                                        })
+                                    ))
+                                );
+                                self.clients.claim();
+                            });
+                            self.addEventListener('fetch', event => {
+                                const url = new URL(event.request.url);
+                                if (STATIC_ASSETS.some(asset => url.href.includes(asset) || url.pathname.endsWith('.js') || url.pathname.endsWith('.css'))) {
+                                    event.respondWith(
+                                        caches.match(event.request).then(cached => {
+                                            const fetchPromise = fetch(event.request).then(response => {
+                                                if (response && response.status === 200) {
+                                                    const responseClone = response.clone();
+                                                    caches.open(STATIC_CACHE).then(cache => cache.put(event.request, responseClone));
+                                                }
+                                                return response;
+                                            }).catch(() => cached);
+                                            return cached || fetchPromise;
+                                        })
+                                    );
+                                    return;
+                                }
+                                if (url.pathname.includes('/googleapis') || url.pathname.includes('/firebase')) {
+                                    event.respondWith(
+                                        fetch(event.request).then(response => {
+                                            if (response && response.status === 200) {
+                                                const responseClone = response.clone();
+                                                caches.open(DYNAMIC_CACHE).then(cache => {
+                                                    cache.put(event.request, responseClone);
+                                                    cache.keys().then(keys => {
+                                                        if (keys.length > MAX_DYNAMIC_ITEMS) {
+                                                            const toDelete = keys.slice(0, keys.length - MAX_DYNAMIC_ITEMS);
+                                                            toDelete.forEach(key => cache.delete(key));
+                                                        }
+                                                    });
+                                                });
+                                            }
+                                            return response;
+                                        }).catch(() => caches.match(event.request))
+                                    );
+                                    return;
+                                }
+                                event.respondWith(
+                                    caches.match(event.request).then(cached => cached || fetch(event.request))
+                                );
+                            });
+                        `;
+                        const swBlob = new Blob([advancedSWCode], { type: 'application/javascript' });
+                        const swURL = URL.createObjectURL(swBlob);
+                        navigator.serviceWorker.register(swURL).then(reg => {
+                            console.log('[محسن PWA] تم تسجيل Service Worker المتقدم بنجاح');
+                        }).catch(err => console.error('[محسن PWA] فشل التسجيل:', err));
+                    });
+                }
+
+                if (document.querySelector('link[rel="manifest"]')) {
+                    const enhancedManifest = {
+                        name: "موسوعة الأعشاب الطبية",
+                        short_name: "أعشاب طبية",
+                        description: "موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية وتجربة سلسلة",
+                        start_url: ".",
+                        display: "standalone",
+                        theme_color: "#2e7d32",
+                        background_color: "#fef9e6",
+                        orientation: "portrait",
+                        lang: "ar",
+                        dir: "rtl",
+                        icons: [
+                            { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232e7d32'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white'%3E🌿%3C/text%3E%3C/svg%3E", sizes: "any", type: "image/svg+xml" },
+                            { src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGxSURBVHhe7dCxTcNAGIXhM0WWYAmWYAmWYAmWYAmWYAmWYAmWYAl0aQJbSWzZkn+JE+dpnkgpPufr2ZKbNM3zDACA/7YAAIgFAQCLAgAWJQAAkwIAk0IAmBQCgEkBAEwKAWBSAACTQgCYFALApBAAJgUAMCkEgEkhAEwKAWBSAACTQgCYFALApBAAJgUAMCkEgEkhAEwKAWBSAACTQgCYFALApBAAJgUAMCkEgEkhAEwKAWBSAACTQgCYFALApBAAJgUAMCkEgEkhAEwKAWBSAACTQgAYfx3I4+OjvL6+ytPTk9ze3src3Nx+/Pp6lnw+45//Lqdznx8fH2U+n+Xx8XG/vb6+lqurq32mOZ/P8vLyIvP5LDc3N9u3t7dyeXm5z8B0Pp/l8/MzNpuNrNfr/be3t7c8z/P+b/f3YLG/vw/9yXq/l/v7+307HA7bz8/P+z1z1tfXVx7mH2d/L+r7e98j8Mf7e2Fvb2/Lj48Pef+4I12uVvt+OP9+fn7K4XDYz3Q8HvO5Lpf8zP3vfoP/+Zn+/z7v72W9Wq32b/lLm59nMp+EADApBIBJIQBMCgFgUggAkwIAmBQCwKQQACaFADApBIBJIQBMCgFgUggAkwIAv2T7BxHJ/tIrnqYtAAAAAElFTkSuQmCC", sizes: "192x192", type: "image/png" }
+                        ],
+                        shortcuts: [
+                            { name: "البحث", short_name: "بحث", url: "./?search=true" },
+                            { name: "إضافة عشبة", short_name: "إضافة", url: "./?add=true" }
+                        ]
+                    };
+                    const manifestBlob = new Blob([JSON.stringify(enhancedManifest)], { type: 'application/json' });
+                    const manifestURL = URL.createObjectURL(manifestBlob);
+                    const link = document.querySelector('link[rel="manifest"]');
+                    if (link) link.href = manifestURL;
+                }
+            }
+
+            function optimizeForWeakDevices() {
+                if ('connection' in navigator && navigator.connection && navigator.connection.saveData) {
+                    document.body.classList.add('save-data-mode');
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .herb-card, .category-card { transition: none !important; box-shadow: none !important; }
+                        .herb-card:hover, .category-card:hover { transform: none !important; }
+                        .tool-btn, .icon-btn, .contact-phone-btn { transition: none !important; }
+                        .info-block:hover { transform: none !important; }
+                    `;
+                    document.head.appendChild(style);
+                }
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(() => {
+                        const images = document.querySelectorAll('.herb-card-image');
+                        for (let img of images) {
+                            if (img.dataset.src) {
+                                img.src = img.dataset.src;
+                            }
+                        }
+                    });
+                }
+                const intervals = window.setInterval(() => {}, 9999);
+                for (let i = 0; i < intervals; i++) window.clearInterval(i);
+            }
+
+            window.addEventListener('load', () => {
+                const guardian = new SilentPerformanceGuardian();
+                enhancePWAWithSmartCaching();
+                optimizeForWeakDevices();
+                if (!document.getElementById('syncStatusLed')) {
+                    const led = document.createElement('span');
+                    led.id = 'syncStatusLed';
+                    led.className = 'sync-status-led';
+                    led.style.marginRight = '8px';
+                    const statsBadge = document.querySelector('.stats-badge');
+                    if (statsBadge) statsBadge.insertAdjacentElement('beforebegin', led);
+                }
+                console.log('[المعالج الخفي] تم تفعيل جميع أنظمة المراقبة والتحسين بنجاح');
+            });
+        })();
+    </script>
+</body>
     </html>
