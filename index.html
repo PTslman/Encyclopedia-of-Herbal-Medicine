@@ -6,12 +6,12 @@
     <title>موسوعة الأعشاب الطبية | PWA - Android</title>
     <meta name="theme-color" content="#2e7d32">
     <meta name="description" content="موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية - تطبيق Android PWA">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/Encyclopedia-of-Herbal-Medicine/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/Encyclopedia-of-Herbal-Medicine/css/style.css">
 </head>
 <body>
 
@@ -39,6 +39,7 @@
                 <div class="header-buttons">
                     <button class="icon-btn admin-only" id="logoutBtn" title="تسجيل الخروج"><i class="fas fa-sign-out-alt"></i></button>
                     <button class="icon-btn" id="lockIcon" title="تسجيل الدخول كمسؤول"><i class="fas fa-lock"></i></button>
+                    <button class="icon-btn" id="installPwaBtn" title="تثبيت التطبيق" style="display:none;"><i class="fas fa-download"></i></button>
                     <div class="mode-switch" id="themeToggle">
                         <div class="slider-track"></div>
                         <i class="fas fa-sun"></i>
@@ -277,76 +278,133 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/pwa.js"></script>
-    <script src="js/app.js"></script>
-<script>
-// توليد الأيقونات تلقائياً وتخزينها
-(async function generateIconsAutomatically() {
-    const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
-    
-    for (const size of sizes) {
-        // إنشاء canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d');
-        
-        // خلفية خضراء
-        const grad = ctx.createLinearGradient(0, 0, size, size);
-        grad.addColorStop(0, '#1b5e20');
-        grad.addColorStop(1, '#2e7d32');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, size, size);
-        
-        // إطار ذهبي
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = size * 0.04;
-        ctx.beginPath();
-        ctx.arc(size/2, size/2, size * 0.42, 0, Math.PI * 2);
-        ctx.stroke();
-        
-        // رمز الورقة
-        ctx.font = `${size * 0.45}px "Segoe UI Emoji", "Apple Color Emoji"`;
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('🌿', size/2, size/2 - size * 0.05);
-        
-        // النص
-        ctx.font = `bold ${size * 0.1}px "Cairo"`;
-        ctx.fillStyle = '#ffd700';
-        ctx.fillText('أعشاب', size/2, size * 0.85);
-        
-        // تحويل إلى Blob وتحميل
-        canvas.toBlob(async (blob) => {
-            const url = URL.createObjectURL(blob);
-            // تخزين في IndexedDB أو localStorage
-            localStorage.setItem(`icon_${size}`, url);
-            console.log(`✅ Icon ${size}x${size} generated`);
-        }, 'image/png');
-    }
-}) ();
-<script>
-// تسجيل Service Worker فور تحميل الصفحة
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/Encyclopedia-of-Herbal-Medicine/sw.js')
-            .then(function(registration) {
-                console.log('✅ Service Worker registered successfully:', registration);
-            })
-            .catch(function(error) {
-                console.error('❌ Service Worker registration failed:', error);
-            });
-    });
-}
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/firebase-config.js"></script>
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/app.js"></script>
 
-// التحقق من إمكانية التثبيت
-window.addEventListener('beforeinstallprompt', function(e) {
-    e.preventDefault();
-    console.log('✅ قبل تثبيت التطبيق - يمكن التثبيت!');
-    // يمكنك إظهار زر مخصص هنا إذا أردت
-});
-</script>
+    <script>
+    // توليد الأيقونات تلقائياً وتخزينها كملفات blob مؤقتة
+    (function generateIconsAutomatically() {
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        let generatedCount = 0;
+        
+        for (const size of sizes) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // خلفية خضراء متدرجة
+            const grad = ctx.createLinearGradient(0, 0, size, size);
+            grad.addColorStop(0, '#1b5e20');
+            grad.addColorStop(1, '#2e7d32');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, size, size);
+            
+            // إطار ذهبي
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = size * 0.04;
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size * 0.42, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // رمز الورقة
+            ctx.font = `${size * 0.45}px "Segoe UI Emoji", "Apple Color Emoji"`;
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🌿', size/2, size/2 - size * 0.05);
+            
+            // النص
+            ctx.font = `bold ${size * 0.1}px "Cairo"`;
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText('أعشاب', size/2, size * 0.85);
+            
+            // تخزين كـ dataURL في localStorage
+            const dataUrl = canvas.toDataURL('image/png');
+            localStorage.setItem(`icon_${size}`, dataUrl);
+            generatedCount++;
+            
+            if (generatedCount === sizes.length) {
+                console.log(`✅ تم توليد ${sizes.length} أيقونة بنجاح`);
+                // تحديث manifest بالأيقونات المتولدة
+                updateManifestWithIcons();
+            }
+        }
+    })();
+    
+    // تحديث manifest بالأيقونات المخزنة
+    function updateManifestWithIcons() {
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const icons = sizes.map(size => ({
+            src: localStorage.getItem(`icon_${size}`),
+            sizes: `${size}x${size}`,
+            type: "image/png",
+            purpose: size === 192 ? "any maskable" : "any"
+        }));
+        
+        const manifest = {
+            name: "موسوعة الأعشاب الطبية",
+            short_name: "أعشاب طبية",
+            start_url: "/Encyclopedia-of-Herbal-Medicine/",
+            scope: "/Encyclopedia-of-Herbal-Medicine/",
+            display: "standalone",
+            theme_color: "#2e7d32",
+            background_color: "#fef9e6",
+            icons: icons
+        };
+        
+        // تخزين manifest في localStorage للاستخدام
+        localStorage.setItem('dynamic_manifest', JSON.stringify(manifest));
+        console.log('✅ Manifest updated with generated icons');
+    }
+    </script>
+
+    <script>
+    // تسجيل Service Worker فور تحميل الصفحة
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/Encyclopedia-of-Herbal-Medicine/sw.js')
+                .then(function(registration) {
+                    console.log('✅ Service Worker registered successfully:', registration);
+                })
+                .catch(function(error) {
+                    console.error('❌ Service Worker registration failed:', error);
+                });
+        });
+    }
+
+    // التحقق من إمكانية التثبيت وعرض الزر المناسب
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        console.log('✅ التطبيق جاهز للتثبيت!');
+        
+        // إظهار زر التثبيت المخصص
+        const installBtn = document.getElementById('installPwaBtn');
+        if (installBtn) {
+            installBtn.style.display = 'flex';
+            installBtn.onclick = function() {
+                e.prompt();
+                e.userChoice.then(choice => {
+                    if (choice.outcome === 'accepted') {
+                        console.log('✅ تم تثبيت التطبيق بنجاح');
+                    } else {
+                        console.log('❌ تم إلغاء التثبيت');
+                    }
+                    installBtn.style.display = 'none';
+                });
+            };
+        }
+    });
+    
+    // التحقق إذا كان التطبيق مثبتاً بالفعل
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('✅ التطبيق يعمل في وضع standalone');
+        document.body.classList.add('pwa-installed');
+        // إخفاء زر التثبيت إذا كان التطبيق مثبتاً
+        const installBtn = document.getElementById('installPwaBtn');
+        if (installBtn) installBtn.style.display = 'none';
+    }
+    </script>
 </body>
 </html>
