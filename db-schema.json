@@ -1,0 +1,28 @@
+{
+  "databaseName": "harb-f6240 (Firestore)",
+  "version": "1.0.0",
+  "collections": {
+    "categories": {
+      "description": "تصنيفات الأعشاب",
+      "fields": {
+        "name": { "type": "string", "required": true },
+        "createdAt": { "type": "timestamp", "required": true }
+      }
+    },
+    "herbs": {
+      "description": "الأعشاب الطبية",
+      "fields": {
+        "name": { "type": "string", "required": true },
+        "categoryId": { "type": "string", "required": false },
+        "benefits": { "type": "string", "default": "—" },
+        "warnings": { "type": "string", "default": "—" },
+        "harms": { "type": "string", "default": "—" },
+        "usage": { "type": "string", "default": "—" },
+        "notes": { "type": "string", "default": "—" },
+        "imageUrl": { "type": "string", "required": false },
+        "updatedAt": { "type": "timestamp", "required": true }
+      }
+    }
+  },
+  "adminUID": "VwPJ3q2ElUbPmrZR1XyHv1wiI8p2"
+}
