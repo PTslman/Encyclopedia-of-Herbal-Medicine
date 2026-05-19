@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>موسوعة الأعشاب الطبية | PWA</title>
+    <meta name="theme-color" content="#2e7d32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="موسوعة الأعشاب">
+    <meta name="description" content="موسوعة شاملة للأعشاب الطبية مع مزامنة سحابية فورية">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-logo"><i class="fas fa-leaf"></i></div>
+        <div class="splash-title">موسوعة الأعشاب الطبية</div>
+        <div class="splash-spinner"></div>
+        <div class="splash-version">v4.0</div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" style="display: none;">
+        <div class="app-container">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo-area">
+                    <div class="logo-icon"><i class="fas fa-leaf"></i></div>
+                    <div class="logo-text">
+                        <h1>موسوعة الأعشاب الطبية</h1>
+                        <p>مزامنة سحابية فورية</p>
+                    </div>
+                </div>
+                <div class="header-buttons">
+                    <div class="icon-btn admin-only" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></div>
+                    <div class="icon-btn" id="lockIcon"><i class="fas fa-lock"></i></div>
+                    <div class="icon-btn" id="installPwaBtn" style="display:none;"><i class="fas fa-download"></i></div>
+                    <div class="mode-switch" id="themeToggle">
+                        <div class="slider-track"></div>
+                        <i class="fas fa-sun"></i>
+                        <i class="fas fa-moon"></i>
+                        <span id="modeText">نهاري</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="view-toggle" id="viewToggle">
+                    <button data-view="all" class="view-btn active">🌿 جميع الأعشاب</button>
+                    <button data-view="categories" class="view-btn">📂 التصنيفات</button>
+                </div>
+                <button id="searchBtn" class="tool-btn"><i class="fas fa-search"></i> بحث</button>
+                <button id="refreshDataBtn" class="tool-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
+                <button id="manageCategoriesBtn" class="tool-btn admin-only"><i class="fas fa-folder-tree"></i> التصنيفات</button>
+                <button id="addHerbBtn" class="tool-btn admin-only"><i class="fas fa-plus-circle"></i> إضافة عشبة</button>
+                <button id="backupBtn" class="tool-btn admin-only"><i class="fas fa-database"></i> نسخ احتياطي</button>
+                <button id="restoreBtn" class="tool-btn admin-only"><i class="fas fa-upload"></i> استعادة</button>
+                <button id="deleteAllBtn" class="tool-btn admin-only danger-btn"><i class="fas fa-trash-alt"></i> حذف الكل</button>
+                <button id="deleteAllHerbsOnlyBtn" class="tool-btn admin-only warning-btn"><i class="fas fa-leaf"></i> مسح الأعشاب فقط</button>
+                <button id="stopSyncBtn" class="tool-btn admin-only"><i class="fas fa-pause"></i> إيقاف المزامنة</button>
+                <button id="startSyncBtn" class="tool-btn admin-only"><i class="fas fa-play"></i> تشغيل المزامنة</button>
+                <div id="syncStatusLed" class="sync-status-led disconnected"></div>
+                <div class="stats-badge" id="herbCount">0 عشبة</div>
+                <div class="contact-phone-btn" id="whatsappBtn"><i class="fab fa-whatsapp"></i> 0932934273</div>
+                <div class="font-size-btn" id="fontSizeToggleBtn"><i class="fas fa-text-height"></i> <span id="fontSizeLabel">عادي</span></div>
+            </div>
+
+            <!-- Visitor Toolbar -->
+            <div class="visitor-toolbar visitor-only">
+                <button id="visitorCategoriesBtn" class="visitor-btn"><i class="fas fa-folder-open"></i> عرض التصنيفات</button>
+                <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة التطبيق</button>
+                <button id="visitorStatsBtn" class="visitor-btn"><i class="fas fa-chart-line"></i> إحصائيات</button>
+                <button id="quickHelpBtn" class="visitor-btn"><i class="fas fa-question-circle"></i> مساعدة</button>
+            </div>
+
+            <!-- Content Area -->
+            <div id="contentArea"></div>
+            
+            <!-- Footer -->
+            <div class="footer">جميع الحقوق محفوظة © 2026 - تطوير: المعالج الفيزيائي سلمان</div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="categoryModal" class="modal-glass">...</div>
+    <div id="herbModal" class="modal-glass">...</div>
+    <div id="detailModal" class="modal-glass">...</div>
+    <div id="searchModal" class="modal-glass">...</div>
+    <div id="loginModal" class="modal-glass">...</div>
+    <div id="deleteModal" class="modal-glass">...</div>
+    <div id="deleteAllConfirmModal" class="modal-glass">...</div>
+
+    <!-- Progress Indicator -->
+    <div id="inlineProgressIndicator" class="inline-progress-indicator hidden">
+        <div class="inline-progress-spinner"></div>
+        <div class="inline-progress-bar-container">
+            <div class="inline-progress-bar-fill" id="inlineProgressFill"></div>
+        </div>
+        <span class="inline-progress-text" id="inlineProgressText">0%</span>
+    </div>
+
+    <input type="file" id="restoreFile" accept=".json" style="display:none;">
+
+    <!-- Application Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/performance.js"></script>
+    <script src="js/pwa.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
