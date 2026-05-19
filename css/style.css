@@ -1760,3 +1760,30 @@ body.save-data-mode .info-block:hover {
     background: var(--primary);
     color: white;
    }
+/* تحسينات خاصة بـ Android PWA */
+@media (display-mode: standalone) {
+    body {
+        background: var(--light-bg);
+    }
+    
+    .splash-screen {
+        background: linear-gradient(135deg, #0f3b12, #1b5e20);
+    }
+    
+    /* إخفاء شريط التنقل في المتصفح */
+    .app-container {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* زر التثبيت */
+#installPwaBtn {
+    display: none;
+}
+
+#installPwaBtn.show {
+    display: flex;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
