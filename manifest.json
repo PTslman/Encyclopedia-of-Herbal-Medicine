@@ -1,8 +1,8 @@
 {
   "name": "موسوعة الأعشاب الطبية",
   "short_name": "أعشاب طبية",
-  "description": "موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية - تطبيق Android PWA",
-  "start_url": "/",
+  "description": "موسوعة متكاملة للأعشاب الطبية",
+  "start_url": "/index.html",
   "display": "standalone",
   "theme_color": "#2e7d32",
   "background_color": "#fef9e6",
@@ -10,37 +10,31 @@
   "lang": "ar",
   "dir": "rtl",
   "scope": "/",
-  "categories": ["health", "medical", "education", "lifestyle"],
   "icons": [
     {
       "src": "icons/icon-72.png",
       "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icons/icon-96.png",
       "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icons/icon-128.png",
       "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icons/icon-144.png",
       "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icons/icon-152.png",
       "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icons/icon-192.png",
@@ -51,55 +45,12 @@
     {
       "src": "icons/icon-384.png",
       "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "🔍 بحث",
-      "short_name": "بحث",
-      "description": "البحث في موسوعة الأعشاب",
-      "url": "/?search=true",
-      "icons": [
-        {
-          "src": "icons/icon-96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "🌿 جميع الأعشاب",
-      "short_name": "أعشاب",
-      "description": "عرض جميع الأعشاب المسجلة",
-      "url": "/?all=true",
-      "icons": [
-        {
-          "src": "icons/icon-96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "📂 التصنيفات",
-      "short_name": "تصنيفات",
-      "description": "عرض تصنيفات الأعشاب",
-      "url": "/?categories=true",
-      "icons": [
-        {
-          "src": "icons/icon-96.png",
-          "sizes": "96x96"
-        }
-      ]
-    }
-  ],
-  "display_override": ["standalone"],
-  "prefer_related_applications": false,
-  "related_applications": []
+  ]
 }
