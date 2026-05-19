@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+    <!-- شاشة البداية -->
     <div id="splashScreen" class="splash-screen">
         <div class="splash-logo"><i class="fas fa-leaf"></i></div>
         <div class="splash-title">موسوعة الأعشاب الطبية</div>
@@ -23,8 +25,10 @@
         <div class="splash-version">v4.0</div>
     </div>
 
+    <!-- التطبيق الرئيسي -->
     <div id="mainApp" style="display: none;">
         <div class="app-container">
+
             <!-- الهيدر -->
             <div class="header">
                 <div class="logo-area">
@@ -35,8 +39,8 @@
                     </div>
                 </div>
                 <div class="header-buttons">
-                    <div class="icon-btn admin-only" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></div>
-                    <div class="icon-btn" id="lockIcon"><i class="fas fa-lock"></i></div>
+                    <div class="icon-btn admin-only" id="logoutBtn" title="تسجيل الخروج"><i class="fas fa-sign-out-alt"></i></div>
+                    <div class="icon-btn" id="lockIcon" title="تسجيل الدخول كمسؤول"><i class="fas fa-lock"></i></div>
                     <div class="mode-switch" id="themeToggle">
                         <div class="slider-track"></div>
                         <i class="fas fa-sun"></i>
@@ -64,8 +68,8 @@
                 </div>
             </div>
 
-            <!-- شريط الأدوات الثانوي (للمسؤول فقط) -->
-            <div class="toolbar admin-toolbar admin-only">
+            <!-- شريط أدوات المسؤول (يظهر فقط عند تسجيل الدخول) -->
+            <div class="admin-toolbar admin-only" id="adminToolbar">
                 <button id="refreshDataBtn" class="tool-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
                 <button id="manageCategoriesBtn" class="tool-btn"><i class="fas fa-folder-tree"></i> إدارة التصنيفات</button>
                 <button id="addHerbBtn" class="tool-btn"><i class="fas fa-plus-circle"></i> إضافة عشبة</button>
@@ -80,15 +84,16 @@
 
             <input type="file" id="restoreFile" accept=".json" style="display:none;">
 
-            <!-- شريط أدوات الزائر -->
+            <!-- شريط أدوات الزائر (يظهر فقط عند عدم تسجيل الدخول) -->
             <div class="visitor-toolbar visitor-only">
                 <button id="visitorCategoriesBtn" class="visitor-btn"><i class="fas fa-folder-open"></i> عرض التصنيفات</button>
                 <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة التطبيق</button>
                 <button id="quickHelpBtn" class="visitor-btn"><i class="fas fa-question-circle"></i> مساعدة</button>
                 <button id="visitorResyncBtn" class="visitor-btn"><i class="fas fa-sync-alt"></i> إعادة مزامنة</button>
+                <button id="visitorClearTempBtn" class="visitor-btn clear-btn"><i class="fas fa-database"></i> حذف المؤقتة</button>
             </div>
 
-            <!-- منطقة المحتوى الرئيسية -->
+            <!-- منطقة عرض المحتوى (الأعشاب أو التصنيفات) -->
             <div id="contentArea"></div>
 
             <!-- الشريط السفلي -->
@@ -96,35 +101,194 @@
                 <div class="stats-badge" id="herbCount">0 عشبة</div>
                 <div class="contact-phone-btn" id="whatsappBtn"><i class="fab fa-whatsapp"></i> 0932934273</div>
                 <div class="font-size-btn" id="fontSizeToggleBtn"><i class="fas fa-text-height"></i> <span id="fontSizeLabel">عادي</span></div>
-                <div id="syncStatusLed" class="sync-status-led disconnected"></div>
+                <div id="syncStatusLed" class="sync-status-led disconnected" title="حالة المزامنة"></div>
             </div>
 
+            <!-- التذييل -->
             <div class="footer">جميع الحقوق محفوظة © 2026 - تطوير: المعالج الفيزيائي سلمان</div>
+
         </div>
     </div>
 
-    <!-- ========== المودالات ========== -->
-    <div id="categoryModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3><i class="fas fa-folder-tree"></i> إدارة التصنيفات</h3><div class="close-modal-btn" id="closeCategoryModalBtn"><i class="fas fa-times"></i></div></div><div id="categoriesList"></div><div class="form-group"><label>اسم تصنيف جديد</label><input type="text" id="newCategoryName" placeholder="مثال: أعشاب هضمية"></div><div class="modal-actions"><button id="addCategoryBtn" class="btn-primary">إضافة تصنيف</button></div></div></div>
+    <!-- ==================== المودالات (النوافذ المنبثقة) ==================== -->
 
-    <div id="herbModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3 id="herbModalTitle"><i class="fas fa-seedling"></i> إضافة عشبة</h3><div class="close-modal-btn" id="closeHerbModalBtn"><i class="fas fa-times"></i></div></div><div class="form-group"><label><i class="fas fa-leaf"></i> الاسم *</label><input type="text" id="modalHerbName" placeholder="مثال: النعناع"></div><div class="form-group"><label><i class="fas fa-tag"></i> التصنيف</label><select id="modalHerbCategory"></select></div><div class="form-group"><label><i class="fas fa-image"></i> صورة العشبة</label><input type="file" id="herbImageInput" accept="image/jpeg,image/png,image/webp" style="display:none;"><div class="image-actions"><button type="button" id="uploadImageBtn" class="image-btn primary"><i class="fas fa-cloud-upload-alt"></i> رفع صورة</button><button type="button" id="clearImageBtn" class="image-btn danger" style="display:none;"><i class="fas fa-trash-alt"></i> مسح الصورة</button></div><div id="imagePreviewContainer"></div></div><div class="form-group"><label><i class="fas fa-heartbeat"></i> الفوائد الصحية</label><textarea id="modalHerbBenefits" rows="3"></textarea></div><div class="form-group"><label><i class="fas fa-exclamation-triangle"></i> التحذيرات</label><textarea id="modalHerbWarnings" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-skull-crosswalk"></i> الأضرار المحتملة</label><textarea id="modalHerbHarams" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-mug-hot"></i> طريقة الاستخدام</label><textarea id="modalHerbUsage" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-sticky-note"></i> ملاحظات</label><textarea id="modalHerbNotes" rows="2"></textarea></div><div class="modal-actions"><button id="cancelHerbModalBtn" class="btn-secondary">إلغاء</button><button id="saveHerbModalBtn" class="btn-primary">حفظ</button></div></div></div>
+    <!-- نافذة إدارة التصنيفات -->
+    <div id="categoryModal" class="modal-glass">
+        <div class="modal-glass-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-folder-tree"></i> إدارة التصنيفات</h3>
+                <div class="close-modal-btn" id="closeCategoryModalBtn"><i class="fas fa-times"></i></div>
+            </div>
+            <div id="categoriesList" style="max-height:300px; overflow-y:auto; margin-bottom:1rem;"></div>
+            <div class="form-group">
+                <label><i class="fas fa-plus-circle"></i> اسم تصنيف جديد</label>
+                <input type="text" id="newCategoryName" placeholder="مثال: أعشاب هضمية" autocomplete="off">
+            </div>
+            <div class="modal-actions">
+                <button id="addCategoryBtn" class="btn-primary">إضافة تصنيف</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="detailModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>تفاصيل العشبة</h3><div class="close-modal-btn" id="closeDetailModalBtn"><i class="fas fa-times"></i></div></div><div id="detailContent"></div></div></div>
+    <!-- نافذة إضافة/تعديل عشبة -->
+    <div id="herbModal" class="modal-glass">
+        <div class="modal-glass-content">
+            <div class="modal-header">
+                <h3 id="herbModalTitle"><i class="fas fa-seedling"></i> إضافة عشبة</h3>
+                <div class="close-modal-btn" id="closeHerbModalBtn"><i class="fas fa-times"></i></div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-leaf"></i> الاسم <span style="color:var(--danger);">*</span></label>
+                <input type="text" id="modalHerbName" placeholder="مثال: النعناع" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-tag"></i> التصنيف (اختياري)</label>
+                <select id="modalHerbCategory"></select>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-image"></i> صورة العشبة</label>
+                <input type="file" id="herbImageInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                <div class="image-actions">
+                    <button type="button" id="uploadImageBtn" class="image-btn primary"><i class="fas fa-cloud-upload-alt"></i> رفع صورة</button>
+                    <button type="button" id="clearImageBtn" class="image-btn danger" style="display:none;"><i class="fas fa-trash-alt"></i> مسح الصورة</button>
+                </div>
+                <div id="imagePreviewContainer" style="margin-top: 8px;"></div>
+                <div id="compressInfo" style="font-size:0.7rem; color:var(--text-secondary); margin-top: 4px;"></div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-heartbeat"></i> الفوائد الصحية</label>
+                <textarea id="modalHerbBenefits" rows="3" placeholder="اذكر الفوائد..."></textarea>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-exclamation-triangle"></i> التحذيرات الهامة</label>
+                <textarea id="modalHerbWarnings" rows="2" placeholder="تحذيرات..."></textarea>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-skull-crosswalk"></i> الأضرار المحتملة</label>
+                <textarea id="modalHerbHarams" rows="2" placeholder="الأضرار..."></textarea>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-mug-hot"></i> طريقة الاستخدام والجرعات</label>
+                <textarea id="modalHerbUsage" rows="2" placeholder="كيفية الاستخدام..."></textarea>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-sticky-note"></i> ملاحظات إضافية</label>
+                <textarea id="modalHerbNotes" rows="2" placeholder="ملاحظات..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelHerbModalBtn" class="btn-secondary"><i class="fas fa-times"></i> إلغاء</button>
+                <button id="saveHerbModalBtn" class="btn-primary"><i class="fas fa-save"></i> حفظ</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="searchModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>بحث سريع</h3><div class="close-modal-btn" id="closeSearchModalBtn"><i class="fas fa-times"></i></div></div><input type="text" id="searchInput" class="search-input" placeholder="🌿 اكتب اسم العشبة..."><div id="searchResults"></div></div></div>
+    <!-- نافذة تفاصيل العشبة -->
+    <div id="detailModal" class="modal-glass">
+        <div class="modal-glass-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-info-circle"></i> تفاصيل العشبة</h3>
+                <div class="close-modal-btn" id="closeDetailModalBtn"><i class="fas fa-times"></i></div>
+            </div>
+            <div id="detailContent"></div>
+        </div>
+    </div>
 
-    <div id="loginModal" class="modal-glass"><div class="modal-glass-content login-modern"><div class="login-icon"><i class="fas fa-user-shield"></i></div><div class="login-title">بوابة المسؤول</div><div class="login-sub">الوصول إلى لوحة التحكم</div><div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="adminEmail" placeholder="admin@herbal.com"></div><div class="form-group"><label>كلمة المرور</label><input type="password" id="adminPassword" placeholder="••••••••"></div><div class="modal-actions"><button id="cancelLoginBtn" class="btn-secondary">رجوع</button><button id="confirmLoginBtn" class="btn-primary">دخول آمن</button></div></div></div>
+    <!-- نافذة البحث السريع -->
+    <div id="searchModal" class="modal-glass">
+        <div class="modal-glass-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-search"></i> بحث سريع</h3>
+                <div class="close-modal-btn" id="closeSearchModalBtn"><i class="fas fa-times"></i></div>
+            </div>
+            <input type="text" id="searchInput" class="search-input" placeholder="🌿 اكتب اسم العشبة..." autocomplete="off">
+            <div id="searchResults" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+    </div>
 
-    <div id="deleteModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>تأكيد الحذف</h3><div class="close-modal-btn" id="cancelDeleteBtn"><i class="fas fa-times"></i></div></div><p id="deleteMessage"></p><div class="modal-actions"><button id="confirmDeleteBtn" class="danger-btn">حذف</button></div></div></div>
+    <!-- نافذة تسجيل الدخول (المسؤول) -->
+    <div id="loginModal" class="modal-glass">
+        <div class="modal-glass-content login-modern">
+            <div class="login-icon"><i class="fas fa-user-shield"></i></div>
+            <div class="login-title">بوابة المسؤول</div>
+            <div class="login-sub">الوصول إلى لوحة التحكم</div>
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                <input type="email" id="adminEmail" placeholder="admin@herbal.com" autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                <input type="password" id="adminPassword" placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <div class="modal-actions">
+                <button id="cancelLoginBtn" class="btn-secondary"><i class="fas fa-times"></i> إلغاء</button>
+                <button id="confirmLoginBtn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> دخول آمن</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="deleteAllConfirmModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>تحذير</h3><div class="close-modal-btn" id="closeDeleteAllModalBtn"><i class="fas fa-times"></i></div></div><p>حذف جميع الأعشاب والتصنيفات نهائياً؟</p><div class="modal-actions"><button id="cancelDeleteAllBtn" class="btn-secondary">إلغاء</button><button id="confirmDeleteAllBtn" class="danger-btn">حذف الكل</button></div></div></div>
+    <!-- نافذة تأكيد الحذف (عنصر واحد) -->
+    <div id="deleteModal" class="modal-glass">
+        <div class="modal-glass-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-trash-alt"></i> تأكيد الحذف</h3>
+                <div class="close-modal-btn" id="cancelDeleteBtn"><i class="fas fa-times"></i></div>
+            </div>
+            <p id="deleteMessage" style="text-align:center; margin:1rem 0;"></p>
+            <div class="modal-actions">
+                <button id="confirmDeleteBtn" class="danger-btn"><i class="fas fa-trash"></i> حذف</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="installGuideModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>تثبيت التطبيق</h3><div class="close-modal-btn" id="closeInstallGuideBtn"><i class="fas fa-times"></i></div></div><p id="installGuideText" style="text-align:center;">اضغط القائمة ثم "تثبيت التطبيق"</p><div class="modal-actions"><button id="closeInstallGuideActBtn" class="btn-primary">فهمت</button></div></div></div>
+    <!-- نافذة تأكيد حذف جميع البيانات -->
+    <div id="deleteAllConfirmModal" class="modal-glass">
+        <div class="modal-glass-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> تحذير</h3>
+                <div class="close-modal-btn" id="closeDeleteAllModalBtn"><i class="fas fa-times"></i></div>
+            </div>
+            <p style="text-align:center; margin:1rem 0;">⚠️ حذف جميع الأعشاب والتصنيفات نهائياً؟</p>
+            <div class="modal-actions">
+                <button id="cancelDeleteAllBtn" class="btn-secondary"><i class="fas fa-times"></i> إلغاء</button>
+                <button id="confirmDeleteAllBtn" class="danger-btn"><i class="fas fa-trash-alt"></i> حذف الكل</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- نافذة دليل تثبيت التطبيق -->
+    <div id="installGuideModal" class="modal-glass">
+        <div class="modal-glass-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-download"></i> تثبيت التطبيق</h3>
+                <div class="close-modal-btn" id="closeInstallGuideBtn"><i class="fas fa-times"></i></div>
+            </div>
+            <p id="installGuideText" style="text-align:center; line-height:1.8; margin:1rem 0;">اضغط على زر القائمة (⋮) ثم اختر "تثبيت التطبيق"</p>
+            <div class="modal-actions">
+                <button id="closeInstallGuideActBtn" class="btn-primary">فهمت</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة مؤشر التقدم (لحفظ البيانات) -->
+    <div id="saveProgressBar" class="smart-progress-bar" style="display: none;">
+        <div class="progress-icon"><i class="fas fa-spinner fa-pulse"></i></div>
+        <div class="progress-details">
+            <div class="progress-stage" id="saveProgressStage">جاري الحفظ</div>
+            <div class="progress-status" id="saveProgressStatus">جارٍ رفع البيانات...</div>
+            <div class="progress-bar-track">
+                <div id="saveProgressFill" class="progress-bar-fill"></div>
+            </div>
+        </div>
+        <div class="progress-percent" id="saveProgressPercent">0%</div>
+    </div>
+
+    <!-- ==================== السكربتات ==================== -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/pwa.js"></script>
     <script src="js/app.js"></script>
+
 </body>
-</html>
+    </html>
