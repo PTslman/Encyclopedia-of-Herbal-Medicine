@@ -1,10 +1,23 @@
-// ========== دوال مساعدة ==========
+// ========== دوال مساعدة محسنة ==========
 function escapeHtml(str) {
     if (!str) return '—';
     return String(str).replace(/[&<>]/g, function(m) {
         if (m === '&') return '&amp;';
         if (m === '<') return '&lt;';
         if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// تهريب آمن للاستخدام داخل سمات HTML (لمنع XSS)
+function escapeAttr(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        if (m === '"') return '&quot;';
+        if (m === "'") return '&#39;';
         return m;
     });
 }
@@ -86,7 +99,6 @@ let pendingDeleteId = null;
 let pendingDeleteType = null;
 let unsubscribeCategories = null;
 let unsubscribeHerbs = null;
-let isSyncActive = true;
 
 // تحديث العرض
 function updateHerbCount() {
@@ -94,7 +106,7 @@ function updateHerbCount() {
     if (el) el.innerText = herbs.length + ' عشبة';
 }
 
-// عرض المحتوى
+// عرض المحتوى (تم إصلاح XSS في السمات)
 function renderContent() {
     if (currentView === "all") {
         renderAllHerbs();
@@ -116,8 +128,8 @@ function renderAllHerbs() {
         const catName = cat ? cat.name : "بدون تصنيف";
         
         html += `
-            <div class="herb-card" data-id="${herb.id}">
-                ${herb.imageUrl ? `<img src="${escapeHtml(herb.imageUrl)}" class="herb-card-image" loading="lazy">` : ''}
+            <div class="herb-card" data-id="${escapeAttr(herb.id)}">
+                ${herb.imageUrl ? `<img src="${escapeAttr(herb.imageUrl)}" class="herb-card-image" loading="lazy">` : ''}
                 <div class="card-header">
                     <span class="herb-name">🌿 ${escapeHtml(herb.name)}</span>
                     <span>${escapeHtml(catName)}</span>
@@ -128,8 +140,8 @@ function renderAllHerbs() {
                 <div class="info-block"><div class="info-label">🍵 طريقة الاستخدام</div><div class="info-text">${escapeHtml(herb.usage || '—')}</div></div>
                 ${isAdmin ? `
                     <div class="card-actions">
-                        <i class="fas fa-edit edit-herb" data-id="${herb.id}" style="color:var(--primary);"></i>
-                        <i class="fas fa-trash-alt del-herb" data-id="${herb.id}" data-name="${escapeHtml(herb.name)}" style="color:var(--danger);"></i>
+                        <i class="fas fa-edit edit-herb" data-id="${escapeAttr(herb.id)}" style="color:var(--primary);"></i>
+                        <i class="fas fa-trash-alt del-herb" data-id="${escapeAttr(herb.id)}" data-name="${escapeAttr(herb.name)}" style="color:var(--danger);"></i>
                     </div>
                 ` : ''}
             </div>
@@ -138,13 +150,12 @@ function renderAllHerbs() {
     html += '</div>';
     container.innerHTML = html;
     
-    // ربط الأحداث
     if (isAdmin) {
         document.querySelectorAll('.edit-herb').forEach(btn => {
             btn.onclick = (e) => { e.stopPropagation(); editHerb(btn.dataset.id); };
         });
         document.querySelectorAll('.del-herb').forEach(btn => {
-            btn.onclick = (e) => { e.stopPropagation(); pendingDeleteId = btn.dataset.id; pendingDeleteType = 'herb'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف "${btn.dataset.name}"؟`; document.getElementById('deleteModal').classList.add('active'); };
+            btn.onclick = (e) => { e.stopPropagation(); pendingDeleteId = btn.dataset.id; pendingDeleteType = 'herb'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف "${escapeHtml(btn.dataset.name)}"؟`; document.getElementById('deleteModal').classList.add('active'); };
         });
     }
     document.querySelectorAll('.herb-card').forEach(card => {
@@ -163,7 +174,7 @@ function renderCategories() {
     for (const cat of categories) {
         const herbsCount = herbs.filter(h => h.categoryId === cat.id).length;
         html += `
-            <div class="category-card" data-cat-id="${cat.id}">
+            <div class="category-card" data-cat-id="${escapeAttr(cat.id)}">
                 <div class="card-header">
                     <span class="category-name">📁 ${escapeHtml(cat.name)}</span>
                     <span>${herbsCount} عشبة</span>
@@ -171,8 +182,8 @@ function renderCategories() {
                 <div>اضغط لعرض الأعشاب</div>
                 ${isAdmin ? `
                     <div class="card-actions">
-                        <i class="fas fa-edit edit-cat" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}"></i>
-                        <i class="fas fa-trash-alt del-cat" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}"></i>
+                        <i class="fas fa-edit edit-cat" data-id="${escapeAttr(cat.id)}" data-name="${escapeAttr(cat.name)}"></i>
+                        <i class="fas fa-trash-alt del-cat" data-id="${escapeAttr(cat.id)}" data-name="${escapeAttr(cat.name)}"></i>
                     </div>
                 ` : ''}
             </div>
@@ -192,7 +203,7 @@ function renderCategories() {
             btn.onclick = (e) => { e.stopPropagation(); const newName = prompt("تعديل اسم التصنيف", btn.dataset.name); if(newName) updateCategory(btn.dataset.id, newName); };
         });
         document.querySelectorAll('.del-cat').forEach(btn => {
-            btn.onclick = (e) => { e.stopPropagation(); pendingDeleteId = btn.dataset.id; pendingDeleteType = 'category'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف التصنيف "${btn.dataset.name}" وجميع أعشابه؟`; document.getElementById('deleteModal').classList.add('active'); };
+            btn.onclick = (e) => { e.stopPropagation(); pendingDeleteId = btn.dataset.id; pendingDeleteType = 'category'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف التصنيف "${escapeHtml(btn.dataset.name)}" وجميع أعشابه؟`; document.getElementById('deleteModal').classList.add('active'); };
         });
     }
 }
@@ -212,11 +223,11 @@ function showCategoryHerbs(catId) {
     let html = `<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;"><button id="backCatBtn" class="tool-btn"><i class="fas fa-arrow-right"></i> التصنيفات</button><h3>📂 ${escapeHtml(cat.name)}</h3></div><div class="herbs-grid">`;
     for (const herb of catHerbs) {
         html += `
-            <div class="herb-card" data-id="${herb.id}">
-                ${herb.imageUrl ? `<img src="${escapeHtml(herb.imageUrl)}" class="herb-card-image">` : ''}
+            <div class="herb-card" data-id="${escapeAttr(herb.id)}">
+                ${herb.imageUrl ? `<img src="${escapeAttr(herb.imageUrl)}" class="herb-card-image">` : ''}
                 <div class="herb-name">🌿 ${escapeHtml(herb.name)}</div>
                 <div class="info-block"><div class="info-label">💚 الفوائد</div><div class="info-text">${escapeHtml(herb.benefits || '—')}</div></div>
-                ${isAdmin ? `<div class="card-actions"><i class="fas fa-edit edit-herb" data-id="${herb.id}"></i><i class="fas fa-trash-alt del-herb" data-id="${herb.id}" data-name="${escapeHtml(herb.name)}"></i></div>` : ''}
+                ${isAdmin ? `<div class="card-actions"><i class="fas fa-edit edit-herb" data-id="${escapeAttr(herb.id)}"></i><i class="fas fa-trash-alt del-herb" data-id="${escapeAttr(herb.id)}" data-name="${escapeAttr(herb.name)}"></i></div>` : ''}
             </div>
         `;
     }
@@ -225,7 +236,7 @@ function showCategoryHerbs(catId) {
     
     if (isAdmin) {
         document.querySelectorAll('.edit-herb').forEach(btn => { btn.onclick = (e) => { e.stopPropagation(); editHerb(btn.dataset.id); }; });
-        document.querySelectorAll('.del-herb').forEach(btn => { btn.onclick = (e) => { e.stopPropagation(); pendingDeleteId = btn.dataset.id; pendingDeleteType = 'herb'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف "${btn.dataset.name}"؟`; document.getElementById('deleteModal').classList.add('active'); }; });
+        document.querySelectorAll('.del-herb').forEach(btn => { btn.onclick = (e) => { e.stopPropagation(); pendingDeleteId = btn.dataset.id; pendingDeleteType = 'herb'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف "${escapeHtml(btn.dataset.name)}"؟`; document.getElementById('deleteModal').classList.add('active'); }; });
     }
     document.querySelectorAll('.herb-card').forEach(card => { card.onclick = (e) => { if (!e.target.closest('.card-actions')) showHerbDetail(card.dataset.id); }; });
     document.getElementById('backCatBtn')?.addEventListener('click', () => { currentView = 'categories'; renderContent(); updateViewToggle('categories'); });
@@ -242,7 +253,7 @@ function showHerbDetail(id) {
         <div class="info-block"><div class="info-label">التحذيرات</div><div class="info-text">${escapeHtml(herb.warnings || '—')}</div></div>
         <div class="info-block"><div class="info-label">الأضرار</div><div class="info-text">${escapeHtml(herb.harms || '—')}</div></div>
         <div class="info-block"><div class="info-label">الاستخدام</div><div class="info-text">${escapeHtml(herb.usage || '—')}</div></div>
-        ${herb.imageUrl ? `<div class="info-block"><div class="info-label">🖼️ صورة العشبة</div><img src="${escapeHtml(herb.imageUrl)}" style="max-width:100%;border-radius:20px;"></div>` : ''}
+        ${herb.imageUrl ? `<div class="info-block"><div class="info-label">🖼️ صورة العشبة</div><img src="${escapeAttr(herb.imageUrl)}" style="max-width:100%;border-radius:20px;"></div>` : ''}
     `;
     document.getElementById('detailContent').innerHTML = html;
     document.getElementById('detailModal').classList.add('active');
@@ -262,7 +273,7 @@ function editHerb(id) {
     document.getElementById('modalHerbNotes').value = herb.notes || '';
     populateCategorySelect(herb.categoryId || '');
     if (herb.imageUrl) {
-        document.getElementById('imagePreviewContainer').innerHTML = `<img src="${herb.imageUrl}" class="herb-image-preview" onclick="document.getElementById('herbImageInput').click()">`;
+        document.getElementById('imagePreviewContainer').innerHTML = `<img src="${escapeAttr(herb.imageUrl)}" class="herb-image-preview" onclick="document.getElementById('herbImageInput').click()">`;
         document.getElementById('clearImageBtn').style.display = 'inline-flex';
     }
     document.getElementById('herbModalTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل العشبة';
@@ -295,7 +306,7 @@ function populateCategorySelect(selectedId = '') {
     const select = document.getElementById('modalHerbCategory');
     let options = '<option value="">-- بدون تصنيف --</option>';
     for (const cat of categories) {
-        options += `<option value="${cat.id}" ${cat.id === selectedId ? 'selected' : ''}>${escapeHtml(cat.name)}</option>`;
+        options += `<option value="${escapeAttr(cat.id)}" ${cat.id === selectedId ? 'selected' : ''}>${escapeHtml(cat.name)}</option>`;
     }
     select.innerHTML = options;
 }
@@ -368,8 +379,8 @@ function showCategoryManager() {
             <div class="category-item">
                 <div class="category-name-display"><i class="fas fa-folder"></i> ${escapeHtml(cat.name)} <span style="background:var(--primary);color:white;padding:2px 8px;border-radius:30px;">${herbsCount}</span></div>
                 <div class="category-actions">
-                    <i class="fas fa-edit edit-cat-item" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}"></i>
-                    <i class="fas fa-trash-alt del-cat-item" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}"></i>
+                    <i class="fas fa-edit edit-cat-item" data-id="${escapeAttr(cat.id)}" data-name="${escapeAttr(cat.name)}"></i>
+                    <i class="fas fa-trash-alt del-cat-item" data-id="${escapeAttr(cat.id)}" data-name="${escapeAttr(cat.name)}"></i>
                 </div>
             </div>
         `;
@@ -380,7 +391,7 @@ function showCategoryManager() {
         btn.onclick = () => { const newName = prompt("تعديل اسم التصنيف", btn.dataset.name); if(newName) updateCategory(btn.dataset.id, newName); };
     });
     document.querySelectorAll('.del-cat-item').forEach(btn => {
-        btn.onclick = () => { pendingDeleteId = btn.dataset.id; pendingDeleteType = 'category'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف التصنيف "${btn.dataset.name}" وجميع أعشابه؟`; document.getElementById('deleteModal').classList.add('active'); };
+        btn.onclick = () => { pendingDeleteId = btn.dataset.id; pendingDeleteType = 'category'; document.getElementById('deleteMessage').innerHTML = `⚠️ حذف التصنيف "${escapeHtml(btn.dataset.name)}" وجميع أعشابه؟`; document.getElementById('deleteModal').classList.add('active'); };
     });
     document.getElementById('categoryModal').classList.add('active');
 }
@@ -434,7 +445,7 @@ function performSearch() {
     if (results.length) {
         let html = '';
         for (const h of results) {
-            html += `<div class="search-item" onclick="window.showDetailFromSearch('${h.id}')"><b>🌿 ${escapeHtml(h.name)}</b><br><small>${escapeHtml((h.benefits || '').substring(0, 70))}</small></div>`;
+            html += `<div class="search-item" onclick="window.showDetailFromSearch('${escapeAttr(h.id)}')"><b>🌿 ${escapeHtml(h.name)}</b><br><small>${escapeHtml((h.benefits || '').substring(0, 70))}</small></div>`;
         }
         container.innerHTML = html;
     } else {
@@ -508,7 +519,6 @@ function setAdminMode(val) {
     document.body.classList.toggle('viewer-mode', !val);
     document.querySelectorAll('.visitor-only').forEach(el => el.style.display = val ? 'none' : 'flex');
     renderContent();
-    // تم إزالة استدعاء startAdminClock لأنه لا يوجد عنصر ساعة في HTML
 }
 
 async function login(email, password) {
@@ -551,12 +561,10 @@ function cycleFontSize() {
 }
 function initTheme() {
     if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
-    // تم إزالة الكود المتعلق بـ modeText لعدم وجود العنصر في HTML المعدل
 }
 function toggleTheme() {
     document.body.classList.toggle('dark-mode');
     localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    // تم إزالة تحديث modeText
 }
 
 // ========== إحصائيات الزوار ==========
@@ -590,7 +598,7 @@ function showVisitorCategories() {
     let listHtml = '';
     for (const cat of categories) {
         const count = herbs.filter(h => h.categoryId === cat.id).length;
-        listHtml += `<div class="category-item" data-cat-id="${cat.id}" style="cursor:pointer;"><div class="category-name-display"><i class="fas fa-folder"></i> ${escapeHtml(cat.name)} <span style="background:var(--primary);color:white;padding:2px 8px;border-radius:30px;">${count}</span></div><i class="fas fa-chevron-left"></i></div>`;
+        listHtml += `<div class="category-item" data-cat-id="${escapeAttr(cat.id)}" style="cursor:pointer;"><div class="category-name-display"><i class="fas fa-folder"></i> ${escapeHtml(cat.name)} <span style="background:var(--primary);color:white;padding:2px 8px;border-radius:30px;">${count}</span></div><i class="fas fa-chevron-left"></i></div>`;
     }
     const modal = document.createElement('div');
     modal.className = 'modal-glass active';
@@ -602,6 +610,20 @@ function showVisitorCategories() {
             showCategoryHerbs(item.dataset.catId);
         });
     });
+}
+
+// ========== معالجة المزامنة الخلفية من Service Worker ==========
+function initServiceWorkerMessages() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'SYNC_TRIGGERED') {
+                console.log('📡 مزامنة خلفية مطلوبة من Service Worker');
+                if (isOnline()) {
+                    forceFetchFromServer().catch(console.error);
+                }
+            }
+        });
+    }
 }
 
 // ========== معالج شاشة البداية ==========
@@ -619,6 +641,10 @@ function smartSplashHandler() {
         }
     }, 100);
 }
+
+// ========== تصدير دوال للاستخدام من PWA ==========
+window.saveHerbToDB = saveHerb;
+window.deleteHerbById = (herbId) => herbsCol.doc(herbId).delete();
 
 // ========== تهيئة المستمعين (مع الإصلاحات) ==========
 function initEventListeners() {
@@ -649,7 +675,6 @@ function initEventListeners() {
     document.getElementById('saveHerbModalBtn')?.addEventListener('click', saveHerb);
     document.getElementById('closeDetailModalBtn')?.addEventListener('click', () => document.getElementById('detailModal').classList.remove('active'));
     
-    // إصلاح أزرار مودال الحذف (التوافق مع الـ HTML المعدل)
     document.getElementById('cancelDeleteModalBtn')?.addEventListener('click', () => document.getElementById('deleteModal').classList.remove('active'));
     document.getElementById('closeDeleteModalBtn')?.addEventListener('click', () => document.getElementById('deleteModal').classList.remove('active'));
     document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
@@ -694,6 +719,7 @@ async function startApp() {
     initTheme();
     initAuthListener();
     initVisitorCounter();
+    initServiceWorkerMessages();
     await initialLoad();
     initEventListeners();
     smartSplashHandler();
