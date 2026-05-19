@@ -1,7 +1,7 @@
 {
   "name": "موسوعة الأعشاب الطبية",
   "short_name": "أعشاب طبية",
-  "description": "موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية",
+  "description": "موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية وتجربة PWA متطورة",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#2e7d32",
@@ -10,14 +10,36 @@
   "lang": "ar",
   "dir": "rtl",
   "scope": "/",
-  "categories": ["education", "health", "medical"],
+  "categories": ["education", "health", "medical", "reference"],
   "icons": [
-    { "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTM0A1t6AAAAI0lEQVR4Xu3BMQEAAADCoPVPbQdfoAAAAAAAAAAAAAAAAAAAAIC3AYTgAAEAAAAASUVORK5CYII=", "sizes": "72x72", "type": "image/png", "purpose": "any maskable" },
-    { "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHcIAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTM0A1t6AAAAI0lEQVR4Xu3BMQEAAADCoPVPbQdfoAAAAAAAAAAAAAAAAAAAAIC3AYTgAAEAAAAASUVORK5CYII=", "sizes": "96x96", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232e7d32'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white'%3E🌿%3C/text%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGxSURBVHhe7dCxTcNAGIXhM0WWYAmWYAmWYAmWYAmWYAmWYAmWYAl0aQJbSWzZkn+JE+dpnkgpPufr2ZKbNM3zDACA/7YAAIgFAQCLAgAWJQAAkwIAk0IAmBQCgEkBAEwKAWBSAACTQgCYFALApBAAJgUAMCkEgEkhAEwKAWBSAACTQgCYFALApBAAJgUAMCkEgEkhAEwKAWBSAACTQgCYFALApBAAJgUAMCkEgEkhAEwKAWBSAACTQgCYFALApBAAJgUAMCkEgEkhAEwKAWBSAACTQgAYfx3I4+OjvL6+ytPTk9ze3src3Nx+/Pp6lnw+45//Lqdznx8fH2U+n+Xx8XG/vb6+lqurq32mOZ/P8vLyIvP5LDc3N9u3t7dyeXm5z8B0Pp/l8/MzNpuNrNfr/be3t7c8z/P+b/f3YLG/vw/9yXq/l/v7+307HA7bz8/P+z1z1tfXVx7mH2d/L+r7e98j8Mf7e2Fvb2/Lj48Pef+4I12uVvt+OP9+fn7K4XDYz3Q8HvO5Lpf8zP3vfoP/+Zn+/z7v72W9Wq32b/lLm59nMp+EADApBIBJIQBMCgFgUggAkwIAmBQCwKQQACaFADApBIBJIQBMCgFgUggAkwIAv2T7BxHJ/tIrnqYtAAAAAElFTkSuQmCC",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "بحث",
+      "short_name": "بحث",
+      "description": "البحث عن عشبة",
+      "url": "/?search=true"
+    },
+    {
+      "name": "إضافة عشبة",
+      "short_name": "إضافة",
+      "description": "إضافة عشبة جديدة (للمسؤول فقط)",
+      "url": "/?add=true"
+    }
   ],
   "screenshots": [],
-  "shortcuts": [],
   "prefer_related_applications": false,
-  "related_applications": [],
   "display_override": ["window-controls-overlay", "standalone"]
 }
