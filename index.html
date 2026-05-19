@@ -327,6 +327,26 @@
         }, 'image/png');
     }
 }) ();
+<script>
+// تسجيل Service Worker فور تحميل الصفحة
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/Encyclopedia-of-Herbal-Medicine/sw.js')
+            .then(function(registration) {
+                console.log('✅ Service Worker registered successfully:', registration);
+            })
+            .catch(function(error) {
+                console.error('❌ Service Worker registration failed:', error);
+            });
+    });
+}
+
+// التحقق من إمكانية التثبيت
+window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    console.log('✅ قبل تثبيت التطبيق - يمكن التثبيت!');
+    // يمكنك إظهار زر مخصص هنا إذا أردت
+});
 </script>
 </body>
 </html>
