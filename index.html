@@ -25,6 +25,7 @@
 
     <div id="mainApp" style="display: none;">
         <div class="app-container">
+            <!-- الهيدر -->
             <div class="header">
                 <div class="logo-area">
                     <div class="logo-icon"><i class="fas fa-leaf"></i></div>
@@ -36,7 +37,6 @@
                 <div class="header-buttons">
                     <div class="icon-btn admin-only" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></div>
                     <div class="icon-btn" id="lockIcon"><i class="fas fa-lock"></i></div>
-                    <div class="icon-btn" id="installPwaBtn" style="display:none;"><i class="fas fa-download"></i></div>
                     <div class="mode-switch" id="themeToggle">
                         <div class="slider-track"></div>
                         <i class="fas fa-sun"></i>
@@ -46,29 +46,41 @@
                 </div>
             </div>
 
-            <div class="toolbar">
-                <div class="view-toggle" id="viewToggle">
-                    <button data-view="all" class="view-btn active">🌿 جميع الأعشاب</button>
-                    <button data-view="categories" class="view-btn">📂 التصنيفات</button>
+            <!-- شريط الأزرار الرئيسية (بحث + تصنيفات + أعشاب) -->
+            <div class="main-buttons-bar">
+                <button id="mainSearchBtn" class="main-search-btn">
+                    <i class="fas fa-search"></i>
+                    <span>بحث في الموسوعة</span>
+                </button>
+                <div class="view-toggle-large" id="viewToggle">
+                    <button data-view="all" class="view-btn-large active">
+                        <i class="fas fa-leaf"></i>
+                        <span>جميع الأعشاب</span>
+                    </button>
+                    <button data-view="categories" class="view-btn-large">
+                        <i class="fas fa-folder-tree"></i>
+                        <span>التصنيفات</span>
+                    </button>
                 </div>
-                <button id="searchBtn" class="tool-btn"><i class="fas fa-search"></i> بحث</button>
-                <button id="refreshDataBtn" class="tool-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
-                <button id="manageCategoriesBtn" class="tool-btn admin-only"><i class="fas fa-folder-tree"></i> التصنيفات</button>
-                <button id="addHerbBtn" class="tool-btn admin-only"><i class="fas fa-plus-circle"></i> إضافة عشبة</button>
-                <button id="backupBtn" class="tool-btn admin-only"><i class="fas fa-database"></i> نسخ احتياطي</button>
-                <button id="restoreBtn" class="tool-btn admin-only"><i class="fas fa-upload"></i> استعادة</button>
-                <button id="deleteAllBtn" class="tool-btn admin-only danger-btn"><i class="fas fa-trash-alt"></i> حذف الكل</button>
-                <button id="stopSyncBtn" class="tool-btn admin-only"><i class="fas fa-pause"></i> إيقاف المزامنة</button>
-                <button id="startSyncBtn" class="tool-btn admin-only"><i class="fas fa-play"></i> تشغيل المزامنة</button>
-                <button id="resetSyncBtn" class="tool-btn admin-only"><i class="fas fa-sync-alt"></i> إعادة ضبط</button>
-                <div id="adminClock" class="admin-clock admin-only"><i class="far fa-clock"></i> <span>--:--:--</span></div>
-                <input type="file" id="restoreFile" accept=".json" style="display:none;">
-                <div class="stats-badge" id="herbCount">0 عشبة</div>
-                <div class="contact-phone-btn" id="whatsappBtn"><i class="fab fa-whatsapp"></i> 0932934273</div>
-                <div class="font-size-btn" id="fontSizeToggleBtn"><i class="fas fa-text-height"></i> <span id="fontSizeLabel">عادي</span></div>
-                <div id="syncStatusLed" class="sync-status-led disconnected"></div>
             </div>
 
+            <!-- شريط الأدوات الثانوي (للمسؤول فقط) -->
+            <div class="toolbar admin-toolbar admin-only">
+                <button id="refreshDataBtn" class="tool-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
+                <button id="manageCategoriesBtn" class="tool-btn"><i class="fas fa-folder-tree"></i> إدارة التصنيفات</button>
+                <button id="addHerbBtn" class="tool-btn"><i class="fas fa-plus-circle"></i> إضافة عشبة</button>
+                <button id="backupBtn" class="tool-btn"><i class="fas fa-database"></i> نسخ احتياطي</button>
+                <button id="restoreBtn" class="tool-btn"><i class="fas fa-upload"></i> استعادة</button>
+                <button id="deleteAllBtn" class="tool-btn danger-btn"><i class="fas fa-trash-alt"></i> حذف الكل</button>
+                <button id="stopSyncBtn" class="tool-btn"><i class="fas fa-pause"></i> إيقاف المزامنة</button>
+                <button id="startSyncBtn" class="tool-btn"><i class="fas fa-play"></i> تشغيل المزامنة</button>
+                <button id="resetSyncBtn" class="tool-btn"><i class="fas fa-sync-alt"></i> إعادة ضبط</button>
+                <div id="adminClock" class="admin-clock"><i class="far fa-clock"></i> <span>--:--:--</span></div>
+            </div>
+
+            <input type="file" id="restoreFile" accept=".json" style="display:none;">
+
+            <!-- شريط أدوات الزائر -->
             <div class="visitor-toolbar visitor-only">
                 <button id="visitorCategoriesBtn" class="visitor-btn"><i class="fas fa-folder-open"></i> عرض التصنيفات</button>
                 <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة التطبيق</button>
@@ -76,12 +88,22 @@
                 <button id="visitorResyncBtn" class="visitor-btn"><i class="fas fa-sync-alt"></i> إعادة مزامنة</button>
             </div>
 
+            <!-- منطقة المحتوى الرئيسية -->
             <div id="contentArea"></div>
+
+            <!-- الشريط السفلي -->
+            <div class="bottom-bar">
+                <div class="stats-badge" id="herbCount">0 عشبة</div>
+                <div class="contact-phone-btn" id="whatsappBtn"><i class="fab fa-whatsapp"></i> 0932934273</div>
+                <div class="font-size-btn" id="fontSizeToggleBtn"><i class="fas fa-text-height"></i> <span id="fontSizeLabel">عادي</span></div>
+                <div id="syncStatusLed" class="sync-status-led disconnected"></div>
+            </div>
+
             <div class="footer">جميع الحقوق محفوظة © 2026 - تطوير: المعالج الفيزيائي سلمان</div>
         </div>
     </div>
 
-    <!-- المودالات -->
+    <!-- ========== المودالات ========== -->
     <div id="categoryModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3><i class="fas fa-folder-tree"></i> إدارة التصنيفات</h3><div class="close-modal-btn" id="closeCategoryModalBtn"><i class="fas fa-times"></i></div></div><div id="categoriesList"></div><div class="form-group"><label>اسم تصنيف جديد</label><input type="text" id="newCategoryName" placeholder="مثال: أعشاب هضمية"></div><div class="modal-actions"><button id="addCategoryBtn" class="btn-primary">إضافة تصنيف</button></div></div></div>
 
     <div id="herbModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3 id="herbModalTitle"><i class="fas fa-seedling"></i> إضافة عشبة</h3><div class="close-modal-btn" id="closeHerbModalBtn"><i class="fas fa-times"></i></div></div><div class="form-group"><label><i class="fas fa-leaf"></i> الاسم *</label><input type="text" id="modalHerbName" placeholder="مثال: النعناع"></div><div class="form-group"><label><i class="fas fa-tag"></i> التصنيف</label><select id="modalHerbCategory"></select></div><div class="form-group"><label><i class="fas fa-image"></i> صورة العشبة</label><input type="file" id="herbImageInput" accept="image/jpeg,image/png,image/webp" style="display:none;"><div class="image-actions"><button type="button" id="uploadImageBtn" class="image-btn primary"><i class="fas fa-cloud-upload-alt"></i> رفع صورة</button><button type="button" id="clearImageBtn" class="image-btn danger" style="display:none;"><i class="fas fa-trash-alt"></i> مسح الصورة</button></div><div id="imagePreviewContainer"></div></div><div class="form-group"><label><i class="fas fa-heartbeat"></i> الفوائد الصحية</label><textarea id="modalHerbBenefits" rows="3"></textarea></div><div class="form-group"><label><i class="fas fa-exclamation-triangle"></i> التحذيرات</label><textarea id="modalHerbWarnings" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-skull-crosswalk"></i> الأضرار المحتملة</label><textarea id="modalHerbHarams" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-mug-hot"></i> طريقة الاستخدام</label><textarea id="modalHerbUsage" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-sticky-note"></i> ملاحظات</label><textarea id="modalHerbNotes" rows="2"></textarea></div><div class="modal-actions"><button id="cancelHerbModalBtn" class="btn-secondary">إلغاء</button><button id="saveHerbModalBtn" class="btn-primary">حفظ</button></div></div></div>
@@ -97,8 +119,6 @@
     <div id="deleteAllConfirmModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>تحذير</h3><div class="close-modal-btn" id="closeDeleteAllModalBtn"><i class="fas fa-times"></i></div></div><p>حذف جميع الأعشاب والتصنيفات نهائياً؟</p><div class="modal-actions"><button id="cancelDeleteAllBtn" class="btn-secondary">إلغاء</button><button id="confirmDeleteAllBtn" class="danger-btn">حذف الكل</button></div></div></div>
 
     <div id="installGuideModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>تثبيت التطبيق</h3><div class="close-modal-btn" id="closeInstallGuideBtn"><i class="fas fa-times"></i></div></div><p id="installGuideText" style="text-align:center;">اضغط القائمة ثم "تثبيت التطبيق"</p><div class="modal-actions"><button id="closeInstallGuideActBtn" class="btn-primary">فهمت</button></div></div></div>
-
-    <div id="saveProgressBar" class="smart-progress-bar" style="display:none;"><div class="progress-icon"></div><div class="progress-details"><div class="progress-stage">جاري الحفظ</div><div class="progress-status">جارٍ رفع البيانات...</div><div class="progress-bar-track"><div id="saveProgressFill" class="progress-bar-fill"></div></div></div><div class="progress-percent" id="saveProgressPercent">0%</div></div>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
