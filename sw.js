@@ -1,14 +1,10 @@
 // ============================================
 // Service Worker - موسوعة الأعشاب الطبية
-// دعم Android PWA كامل
+// نسخة مبسطة لضمان ظهور زر التثبيت
 // ============================================
 
-const CACHE_NAME = 'herbal-android-v1';
-const STATIC_CACHE = 'herbal-static-v1';
-const DYNAMIC_CACHE = 'herbal-dynamic-v1';
-
-// الملفات الثابتة
-const STATIC_ASSETS = [
+const CACHE_NAME = 'herbal-cache-v1';
+const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
@@ -23,102 +19,43 @@ const STATIC_ASSETS = [
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'
 ];
 
-// تثبيت
+// تثبيت Service Worker
 self.addEventListener('install', event => {
-  console.log('[SW] Installing for Android...');
+  console.log('[SW] Installing...');
   self.skipWaiting();
-  
   event.waitUntil(
-    caches.open(STATIC_CACHE).then(cache => {
-      return cache.addAll(STATIC_ASSETS);
-    }).catch(err => console.error('Cache failed:', err))
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('[SW] Caching assets');
+      return cache.addAll(urlsToCache);
+    })
   );
 });
 
-// تفعيل
+// تفعيل Service Worker
 self.addEventListener('activate', event => {
   console.log('[SW] Activating...');
   event.waitUntil(
-    caches.keys().then(keys => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        keys.map(key => {
-          if (key !== STATIC_CACHE && key !== DYNAMIC_CACHE) {
-            return caches.delete(key);
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('[SW] Ready to fetch');
+      return self.clients.claim();
+    })
   );
 });
 
 // جلب الطلبات
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-  
-  // تجاهل Firebase
-  if (url.href.includes('firebaseio.com') || url.href.includes('googleapis.com')) {
-    return;
-  }
-  
-  // استراتيجية Cache First للملفات الثابتة
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) {
-        return cached;
-      }
-      return fetch(event.request).then(response => {
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(DYNAMIC_CACHE).then(cache => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      });
-    }).catch(() => {
-      return caches.match('/index.html');
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
     })
   );
-});
-
-// مزامنة الخلفية
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-herbs') {
-    event.waitUntil(
-      fetch('/api/sync').catch(err => console.error('Sync failed:', err))
-    );
-  }
-});
-
-// إشعارات
-self.addEventListener('push', event => {
-  let data = {
-    title: '🌿 موسوعة الأعشاب الطبية',
-    body: 'تحديث جديد في الموسوعة!',
-    icon: '/icons/icon-192.png'
-  };
-  
-  if (event.data) {
-    try {
-      data = { ...data, ...event.data.json() };
-    } catch(e) {}
-  }
-  
-  event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: data.icon,
-      vibrate: [200, 100, 200],
-      actions: [
-        { action: 'open', title: 'فتح' }
-      ]
-    })
-  );
-});
-
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  if (event.action === 'open') {
-    event.waitUntil(clients.openWindow('/'));
-  }
 });
