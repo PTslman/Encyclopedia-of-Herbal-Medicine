@@ -306,8 +306,14 @@ async function saveHerb() {
     
     let imageUrl = currentImageBase64;
     if (currentImageFile) {
-        imageUrl = await compressImage(currentImageFile);
-        currentImageFile = null;
+        try {
+            imageUrl = await compressImage(currentImageFile);
+            currentImageFile = null;
+        } catch(e) {
+            console.error('فشل ضغط الصورة:', e);
+            alert('فشل ضغط الصورة، سيتم استخدام الصورة الأصلية إن وجدت');
+            imageUrl = currentImageBase64 || null;
+        }
     }
     
     const herbData = {
@@ -449,12 +455,17 @@ function updateViewToggle(view) {
 
 // ========== Firebase والمزامنة ==========
 async function forceFetchFromServer() {
-    const [catsSnap, herbsSnap] = await Promise.all([categoriesCol.orderBy('name').get(), herbsCol.get()]);
-    categories = catsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    herbs = herbsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    saveToLocalCache('herbal_cache', { categories, herbs });
-    updateHerbCount();
-    renderContent();
+    try {
+        const [catsSnap, herbsSnap] = await Promise.all([categoriesCol.orderBy('name').get(), herbsCol.get()]);
+        categories = catsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        herbs = herbsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        saveToLocalCache('herbal_cache', { categories, herbs });
+        updateHerbCount();
+        renderContent();
+    } catch(e) {
+        console.error('فشل الاتصال بالسيرفر:', e);
+        alert('فشل الاتصال بالسيرفر، يتم عرض البيانات المخزنة محلياً');
+    }
 }
 
 function startRealtimeUpdates() {
@@ -497,15 +508,7 @@ function setAdminMode(val) {
     document.body.classList.toggle('viewer-mode', !val);
     document.querySelectorAll('.visitor-only').forEach(el => el.style.display = val ? 'none' : 'flex');
     renderContent();
-    if (val) startAdminClock();
-}
-
-let adminClockInterval = null;
-function startAdminClock() {
-    if (adminClockInterval) clearInterval(adminClockInterval);
-    const clockSpan = document.querySelector('#adminClock span');
-    if (!clockSpan) return;
-    adminClockInterval = setInterval(() => { clockSpan.innerText = new Date().toLocaleTimeString('ar-EG'); }, 1000);
+    // تم إزالة استدعاء startAdminClock لأنه لا يوجد عنصر ساعة في HTML
 }
 
 async function login(email, password) {
@@ -548,14 +551,12 @@ function cycleFontSize() {
 }
 function initTheme() {
     if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
-    const modeText = document.getElementById('modeText');
-    if (modeText) modeText.innerText = document.body.classList.contains('dark-mode') ? 'ليلي' : 'نهاري';
+    // تم إزالة الكود المتعلق بـ modeText لعدم وجود العنصر في HTML المعدل
 }
 function toggleTheme() {
     document.body.classList.toggle('dark-mode');
     localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    const modeText = document.getElementById('modeText');
-    if (modeText) modeText.innerText = document.body.classList.contains('dark-mode') ? 'ليلي' : 'نهاري';
+    // تم إزالة تحديث modeText
 }
 
 // ========== إحصائيات الزوار ==========
@@ -619,7 +620,7 @@ function smartSplashHandler() {
     }, 100);
 }
 
-// ========== تهيئة المستمعين ==========
+// ========== تهيئة المستمعين (مع الإصلاحات) ==========
 function initEventListeners() {
     document.getElementById('refreshDataBtn')?.addEventListener('click', forceFetchFromServer);
     document.getElementById('addHerbBtn')?.addEventListener('click', showAddHerb);
@@ -647,17 +648,26 @@ function initEventListeners() {
     document.getElementById('cancelHerbModalBtn')?.addEventListener('click', () => document.getElementById('herbModal').classList.remove('active'));
     document.getElementById('saveHerbModalBtn')?.addEventListener('click', saveHerb);
     document.getElementById('closeDetailModalBtn')?.addEventListener('click', () => document.getElementById('detailModal').classList.remove('active'));
-    document.getElementById('cancelDeleteBtn')?.addEventListener('click', () => document.getElementById('deleteModal').classList.remove('active'));
+    
+    // إصلاح أزرار مودال الحذف (التوافق مع الـ HTML المعدل)
+    document.getElementById('cancelDeleteModalBtn')?.addEventListener('click', () => document.getElementById('deleteModal').classList.remove('active'));
+    document.getElementById('closeDeleteModalBtn')?.addEventListener('click', () => document.getElementById('deleteModal').classList.remove('active'));
     document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
+    
     document.getElementById('uploadImageBtn')?.addEventListener('click', () => document.getElementById('herbImageInput').click());
     document.getElementById('herbImageInput')?.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (file && file.type.startsWith('image/')) {
             currentImageFile = file;
-            const compressed = await compressImage(file);
-            currentImageBase64 = compressed;
-            document.getElementById('imagePreviewContainer').innerHTML = `<img src="${compressed}" class="herb-image-preview" onclick="document.getElementById('herbImageInput').click()">`;
-            document.getElementById('clearImageBtn').style.display = 'inline-flex';
+            try {
+                const compressed = await compressImage(file);
+                currentImageBase64 = compressed;
+                document.getElementById('imagePreviewContainer').innerHTML = `<img src="${compressed}" class="herb-image-preview" onclick="document.getElementById('herbImageInput').click()">`;
+                document.getElementById('clearImageBtn').style.display = 'inline-flex';
+            } catch(e) {
+                console.error('فشل ضغط الصورة أثناء المعاينة:', e);
+                alert('تعذر معالجة الصورة');
+            }
         }
     });
     document.getElementById('clearImageBtn')?.addEventListener('click', () => {
