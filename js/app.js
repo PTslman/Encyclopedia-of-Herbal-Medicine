@@ -1,3 +1,248 @@
+// ============================================
+// دمج قاعدة البيانات المحلية مع Firebase
+// نظام التخزين المزدوج - المحلي أولاً
+// ============================================
+
+// متغيرات التحكم
+let useLocalDBFirst = true;
+let syncInProgress = false;
+let localDBCategories = [];
+let localDBHerbs = [];
+
+// دالة لتحميل البيانات من قاعدة البيانات المحلية أولاً
+async function loadFromLocalDB() {
+    console.log('📁 محاولة التحميل من قاعدة البيانات المحلية...');
+    
+    if (window.LocalDB && window.LocalDB.isLoaded) {
+        localDBCategories = window.LocalDB.getCategories();
+        localDBHerbs = window.LocalDB.getHerbs();
+        
+        if (localDBCategories.length > 0 || localDBHerbs.length > 0) {
+            categories = localDBCategories;
+            herbs = localDBHerbs;
+            renderContent();
+            updateHerbCount();
+            console.log(`✅ تم التحميل من قاعدة البيانات المحلية: ${categories.length} تصنيف, ${herbs.length} عشبة`);
+            return true;
+        }
+    }
+    return false;
+}
+
+// دالة للمزامنة مع Firebase (في الخلفية)
+async function syncWithFirebaseBackground() {
+    if (syncInProgress) return;
+    syncInProgress = true;
+    
+    try {
+        if (window.LocalDB) {
+            await window.LocalDB.syncWithFirebase();
+            console.log('🔄 تمت المزامنة مع Firebase بنجاح');
+        }
+    } catch (error) {
+        console.warn('⚠️ فشل المزامنة مع Firebase:', error);
+    } finally {
+        syncInProgress = false;
+    }
+}
+
+// دالة لتحميل البيانات من Firebase (احتياطي)
+async function loadFromFirebaseFallback() {
+    console.log('☁️ محاولة التحميل من Firebase...');
+    
+    if (!window.herbsCol || !window.categoriesCol) {
+        console.warn('⚠️ Firebase غير متاح');
+        return false;
+    }
+    
+    try {
+        const [herbsSnap, categoriesSnap] = await Promise.all([
+            window.herbsCol.get(),
+            window.categoriesCol.get()
+        ]);
+        
+        const fbHerbs = herbsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const fbCategories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        if (fbHerbs.length > 0 || fbCategories.length > 0) {
+            categories = fbHerbs;
+            herbs = fbCategories;
+            renderContent();
+            updateHerbCount();
+            console.log(`✅ تم التحميل من Firebase: ${categories.length} تصنيف, ${herbs.length} عشبة`);
+            
+            // حفظ في LocalDB
+            if (window.LocalDB && window.LocalDB.isLoaded) {
+                for (const herb of fbHerbs) {
+                    window.LocalDB.addHerb(herb);
+                }
+                for (const cat of fbCategories) {
+                    window.LocalDB.addCategory(cat);
+                }
+                window.LocalDB.backupToLocalStorage();
+            }
+            return true;
+        }
+    } catch (error) {
+        console.error('❌ فشل التحميل من Firebase:', error);
+    }
+    return false;
+}
+
+// دالة التحميل الرئيسية (المحلي أولاً)
+async function loadAllData() {
+    // 1. حاول التحميل من قاعدة البيانات المحلية أولاً
+    const loaded = await loadFromLocalDB();
+    
+    // 2. إذا لم تكن هناك بيانات، جرب Firebase
+    if (!loaded && herbs.length === 0) {
+        await loadFromFirebaseFallback();
+    }
+    
+    // 3. مزامنة الخلفية مع Firebase (إذا كان متاحاً)
+    if (window.LocalDB && window.LocalDB.isLoaded) {
+        syncWithFirebaseBackground();
+    }
+}
+
+// تعديل دالة saveHerb لاستخدام LocalDB أولاً
+const originalSaveHerb = window.saveHerb || function() {};
+window.saveHerb = async function() {
+    const name = document.getElementById('modalHerbName')?.value.trim();
+    if (!name) {
+        alert('الاسم مطلوب');
+        return;
+    }
+    
+    let imageUrl = currentImageBase64;
+    if (currentImageFile) {
+        imageUrl = await compressImage(currentImageFile);
+        currentImageFile = null;
+    }
+    
+    const herbData = {
+        name: name,
+        categoryId: document.getElementById('modalHerbCategory')?.value || null,
+        benefits: document.getElementById('modalHerbBenefits')?.value || '—',
+        warnings: document.getElementById('modalHerbWarnings')?.value || '—',
+        harms: document.getElementById('modalHerbHarams')?.value || '—',
+        usage: document.getElementById('modalHerbUsage')?.value || '—',
+        notes: document.getElementById('modalHerbNotes')?.value || '—',
+        imageUrl: imageUrl || null,
+        updatedAt: new Date().toISOString()
+    };
+    
+    showSaveProgress(30, 'تجهيز...', 'حفظ في قاعدة البيانات المحلية');
+    
+    if (currentEditHerbId) {
+        // تعديل
+        if (window.LocalDB && window.LocalDB.isLoaded) {
+            window.LocalDB.updateHerb(currentEditHerbId, herbData);
+        }
+        if (window.herbsCol) {
+            await window.herbsCol.doc(currentEditHerbId).set(herbData, { merge: true });
+        }
+    } else {
+        // إضافة جديدة
+        let newHerb = null;
+        if (window.LocalDB && window.LocalDB.isLoaded) {
+            newHerb = window.LocalDB.addHerb(herbData);
+        }
+        if (window.herbsCol) {
+            const docRef = window.herbsCol.doc();
+            await docRef.set({ ...herbData, id: docRef.id });
+        }
+    }
+    
+    // تحديث المتغيرات المحلية
+    if (window.LocalDB && window.LocalDB.isLoaded) {
+        categories = window.LocalDB.getCategories();
+        herbs = window.LocalDB.getHerbs();
+    }
+    
+    showSaveProgress(100, 'تم', 'انتهى');
+    renderContent();
+    updateHerbCount();
+    
+    document.getElementById('herbModal')?.classList.remove('active');
+    resetHerbForm();
+};
+
+// تعديل دالة confirmDelete
+const originalConfirmDelete = window.confirmDelete || function() {};
+window.confirmDelete = async function() {
+    if (pendingDeleteType === 'category') {
+        if (window.LocalDB && window.LocalDB.isLoaded) {
+            window.LocalDB.deleteCategory(pendingDeleteId);
+        }
+        if (window.categoriesCol) {
+            await window.categoriesCol.doc(pendingDeleteId).delete();
+        }
+    } else if (pendingDeleteType === 'herb') {
+        if (window.LocalDB && window.LocalDB.isLoaded) {
+            window.LocalDB.deleteHerb(pendingDeleteId);
+        }
+        if (window.herbsCol) {
+            await window.herbsCol.doc(pendingDeleteId).delete();
+        }
+    }
+    
+    // تحديث المتغيرات المحلية
+    if (window.LocalDB && window.LocalDB.isLoaded) {
+        categories = window.LocalDB.getCategories();
+        herbs = window.LocalDB.getHerbs();
+    }
+    
+    renderContent();
+    updateHerbCount();
+    document.getElementById('deleteModal')?.classList.remove('active');
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+};
+
+// تعديل دالة addCategory
+const originalAddCategory = window.addCategory || function() {};
+window.addCategory = async function(name) {
+    const newCategory = {
+        name: name,
+        createdAt: new Date().toISOString()
+    };
+    
+    if (window.LocalDB && window.LocalDB.isLoaded) {
+        window.LocalDB.addCategory(newCategory);
+    }
+    
+    if (window.categoriesCol) {
+        await window.categoriesCol.add(newCategory);
+    }
+    
+    // تحديث المتغيرات المحلية
+    if (window.LocalDB && window.LocalDB.isLoaded) {
+        categories = window.LocalDB.getCategories();
+        herbs = window.LocalDB.getHerbs();
+    }
+    
+    renderContent();
+};
+
+// تعديل التحميل الأولي
+const originalInitialLoad = window.initialLoad || function() {};
+window.initialLoad = async function() {
+    // تحميل من قاعدة البيانات المحلية أولاً
+    await loadAllData();
+    
+    // بدء المزامنة المباشرة إذا كان Firebase متاحاً
+    if (window.startRealtimeUpdates) {
+        window.startRealtimeUpdates();
+    }
+};
+
+// تصدير الدوال المعدلة
+window.loadFromLocalDB = loadFromLocalDB;
+window.syncWithFirebaseBackground = syncWithFirebaseBackground;
+window.loadAllData = loadAllData;
+
+console.log('✅ تم تحميل نظام قاعدة البيانات المزدوج (محلي + Firebase)');
 // =================================================================
 // ================== الوظائف الأساسية للنظام ===================
 // =================================================================
