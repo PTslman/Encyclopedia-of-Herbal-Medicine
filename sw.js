@@ -1,4 +1,88 @@
-// sw.js - Service Worker متقدم لموسوعة الأعشاب الطبية
+// sw.js - Service Worker متطور لموسوعة الأعشاب الطبية
+const CACHE_NAME = 'herbal-master-v4';
+const STATIC_CACHE = 'herbal-static-v4';
+const DYNAMIC_CACHE = 'herbal-dynamic-v4';
+const MAX_DYNAMIC_ITEMS = 50;
+const STATIC_ASSETS = [
+    '.',
+    './',
+    './index.html',
+    './manifest.json',
+    './css/style.css',
+    './js/firebase-config.js',
+    './js/app.js',
+    './js/pwa.js',
+    'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js',
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'
+];
+
+self.addEventListener('install', event => {
+    self.skipWaiting();
+    event.waitUntil(
+        caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_ASSETS))
+    );
+});
+
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(keys => Promise.all(
+            keys.map(key => {
+                if (key !== STATIC_CACHE && key !== DYNAMIC_CACHE && key !== CACHE_NAME) {
+                    return caches.delete(key);
+                }
+            })
+        ))
+    );
+    self.clients.claim();
+});
+
+self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+    
+    if (STATIC_ASSETS.some(asset => url.href.includes(asset) || url.pathname.endsWith('.js') || url.pathname.endsWith('.css'))) {
+        event.respondWith(
+            caches.match(event.request).then(cached => {
+                const fetchPromise = fetch(event.request).then(response => {
+                    if (response && response.status === 200) {
+                        const responseClone = response.clone();
+                        caches.open(STATIC_CACHE).then(cache => cache.put(event.request, responseClone));
+                    }
+                    return response;
+                }).catch(() => cached);
+                return cached || fetchPromise;
+            })
+        );
+        return;
+    }
+    
+    if (url.pathname.includes('/googleapis') || url.pathname.includes('/firebase')) {
+        event.respondWith(
+            fetch(event.request).then(response => {
+                if (response && response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(DYNAMIC_CACHE).then(cache => {
+                        cache.put(event.request, responseClone);
+                        cache.keys().then(keys => {
+                            if (keys.length > MAX_DYNAMIC_ITEMS) {
+                                const toDelete = keys.slice(0, keys.length - MAX_DYNAMIC_ITEMS);
+                                toDelete.forEach(key => cache.delete(key));
+                            }
+                        });
+                    });
+                }
+                return response;
+            }).catch(() => caches.match(event.request))
+        );
+        return;
+    }
+    
+    event.respondWith(
+        caches.match(event.request).then(cached => cached || fetch(event.request))
+    );
+});// sw.js - Service Worker متقدم لموسوعة الأعشاب الطبية
 const CACHE_VERSION = 'v5';
 const STATIC_CACHE = `herbal-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `herbal-dynamic-${CACHE_VERSION}`;
