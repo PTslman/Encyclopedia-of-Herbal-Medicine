@@ -1,17 +1,13 @@
-// ============================================
-// Service Worker - موسوعة الأعشاب الطبية
-// نسخة مبسطة لضمان ظهور زر التثبيت
-// ============================================
-
-const CACHE_NAME = 'herbal-cache-v1';
+// Service Worker لموسوعة الأعشاب الطبية
+const CACHE_NAME = 'herbal-pwa-v2';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/css/style.css',
-  '/js/firebase-config.js',
-  '/js/app.js',
-  '/js/pwa.js',
+  '/Encyclopedia-of-Herbal-Medicine/',
+  '/Encyclopedia-of-Herbal-Medicine/index.html',
+  '/Encyclopedia-of-Herbal-Medicine/manifest.json',
+  '/Encyclopedia-of-Herbal-Medicine/css/style.css',
+  '/Encyclopedia-of-Herbal-Medicine/js/firebase-config.js',
+  '/Encyclopedia-of-Herbal-Medicine/js/app.js',
+  '/Encyclopedia-of-Herbal-Medicine/js/pwa.js',
   'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
@@ -19,7 +15,6 @@ const urlsToCache = [
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'
 ];
 
-// تثبيت Service Worker
 self.addEventListener('install', event => {
   console.log('[SW] Installing...');
   self.skipWaiting();
@@ -27,31 +22,26 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME).then(cache => {
       console.log('[SW] Caching assets');
       return cache.addAll(urlsToCache);
-    })
+    }).catch(err => console.error('[SW] Cache failed:', err))
   );
 });
 
-// تفعيل Service Worker
 self.addEventListener('activate', event => {
   console.log('[SW] Activating...');
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then(keys => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', key);
+            return caches.delete(key);
           }
         })
       );
-    }).then(() => {
-      console.log('[SW] Ready to fetch');
-      return self.clients.claim();
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// جلب الطلبات
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
