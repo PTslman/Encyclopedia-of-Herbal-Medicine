@@ -1,13 +1,15 @@
 // Service Worker لموسوعة الأعشاب الطبية
-const CACHE_NAME = 'herbal-pwa-v2';
+const CACHE_NAME = 'herbal-pwa-v3';
+const BASE_PATH = '/Encyclopedia-of-Herbal-Medicine/';
+
 const urlsToCache = [
-  '/Encyclopedia-of-Herbal-Medicine/',
-  '/Encyclopedia-of-Herbal-Medicine/index.html',
-  '/Encyclopedia-of-Herbal-Medicine/manifest.json',
-  '/Encyclopedia-of-Herbal-Medicine/css/style.css',
-  '/Encyclopedia-of-Herbal-Medicine/js/firebase-config.js',
-  '/Encyclopedia-of-Herbal-Medicine/js/app.js',
-  '/Encyclopedia-of-Herbal-Medicine/js/pwa.js',
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'manifest.json',
+  BASE_PATH + 'css/style.css',
+  BASE_PATH + 'js/firebase-config.js',
+  BASE_PATH + 'js/app.js',
+  BASE_PATH + 'js/pwa.js',
   'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
