@@ -12,95 +12,11 @@
   "scope": "/",
   "categories": ["education", "health", "medical"],
   "icons": [
-    {
-      "src": "icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTM0A1t6AAAAI0lEQVR4Xu3BMQEAAADCoPVPbQdfoAAAAAAAAAAAAAAAAAAAAIC3AYTgAAEAAAAASUVORK5CYII=", "sizes": "72x72", "type": "image/png", "purpose": "any maskable" },
+    { "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHcIAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTM0A1t6AAAAI0lEQVR4Xu3BMQEAAADCoPVPbQdfoAAAAAAAAAAAAAAAAAAAAIC3AYTgAAEAAAAASUVORK5CYII=", "sizes": "96x96", "type": "image/png", "purpose": "any maskable" }
   ],
-  "screenshots": [
-    {
-      "src": "screenshots/desktop.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    },
-    {
-      "src": "screenshots/mobile.png",
-      "sizes": "360x640",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "بحث",
-      "short_name": "بحث",
-      "description": "البحث عن عشبة",
-      "url": "/?search=true",
-      "icons": [
-        {
-          "src": "icons/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "إضافة عشبة",
-      "short_name": "إضافة",
-      "description": "إضافة عشبة جديدة (للمسؤول فقط)",
-      "url": "/?add=true",
-      "icons": [
-        {
-          "src": "icons/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    }
-  ],
+  "screenshots": [],
+  "shortcuts": [],
   "prefer_related_applications": false,
   "related_applications": [],
   "display_override": ["window-controls-overlay", "standalone"]
