@@ -280,6 +280,53 @@
     <script src="js/firebase-config.js"></script>
     <script src="js/pwa.js"></script>
     <script src="js/app.js"></script>
-
+<script>
+// توليد الأيقونات تلقائياً وتخزينها
+(async function generateIconsAutomatically() {
+    const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+    
+    for (const size of sizes) {
+        // إنشاء canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        // خلفية خضراء
+        const grad = ctx.createLinearGradient(0, 0, size, size);
+        grad.addColorStop(0, '#1b5e20');
+        grad.addColorStop(1, '#2e7d32');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, size);
+        
+        // إطار ذهبي
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = size * 0.04;
+        ctx.beginPath();
+        ctx.arc(size/2, size/2, size * 0.42, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // رمز الورقة
+        ctx.font = `${size * 0.45}px "Segoe UI Emoji", "Apple Color Emoji"`;
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🌿', size/2, size/2 - size * 0.05);
+        
+        // النص
+        ctx.font = `bold ${size * 0.1}px "Cairo"`;
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText('أعشاب', size/2, size * 0.85);
+        
+        // تحويل إلى Blob وتحميل
+        canvas.toBlob(async (blob) => {
+            const url = URL.createObjectURL(blob);
+            // تخزين في IndexedDB أو localStorage
+            localStorage.setItem(`icon_${size}`, url);
+            console.log(`✅ Icon ${size}x${size} generated`);
+        }, 'image/png');
+    }
+}) ();
+</script>
 </body>
 </html>
