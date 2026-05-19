@@ -1,7 +1,7 @@
 {
   "name": "موسوعة الأعشاب الطبية",
   "short_name": "أعشاب طبية",
-  "description": "موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية وتجربة تطبيق ويب متكامل",
+  "description": "موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية - تطبيق Android PWA",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#2e7d32",
@@ -61,17 +61,9 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "screenshots/mobile.png",
-      "sizes": "360x640",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ],
   "shortcuts": [
     {
-      "name": "بحث",
+      "name": "🔍 بحث",
       "short_name": "بحث",
       "description": "البحث في موسوعة الأعشاب",
       "url": "/?search=true",
@@ -83,7 +75,7 @@
       ]
     },
     {
-      "name": "جميع الأعشاب",
+      "name": "🌿 جميع الأعشاب",
       "short_name": "أعشاب",
       "description": "عرض جميع الأعشاب المسجلة",
       "url": "/?all=true",
@@ -93,9 +85,21 @@
           "sizes": "96x96"
         }
       ]
+    },
+    {
+      "name": "📂 التصنيفات",
+      "short_name": "تصنيفات",
+      "description": "عرض تصنيفات الأعشاب",
+      "url": "/?categories=true",
+      "icons": [
+        {
+          "src": "icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ],
-  "display_override": ["window-controls-overlay", "standalone"],
+  "display_override": ["standalone"],
   "prefer_related_applications": false,
   "related_applications": []
 }
