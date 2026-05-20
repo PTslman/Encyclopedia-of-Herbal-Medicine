@@ -643,6 +643,40 @@
         const installBtn = document.getElementById('installPwaBtn');
         if (installBtn) installBtn.style.display = 'none';
     }
-    </script>
+<script>
+// إعدادات الاتصال بالخادم
+const API_URL = 'https://herbal-api.onrender.com'; // غيّر إلى رابط الخادم الخاص بك
+
+// دالة لجلب الأعشاب من الخادم
+async function fetchHerbsFromServer() {
+    try {
+        const response = await fetch(`${API_URL}/api/herbs`);
+        const herbs = await response.json();
+        console.log('✅ تم جلب الأعشاب من الخادم:', herbs.length);
+        return herbs;
+    } catch (error) {
+        console.error('❌ فشل الاتصال بالخادم:', error);
+        return [];
+    }
+}
+
+// دالة لإضافة عشبة إلى الخادم
+async function addHerbToServer(herbData, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/herbs`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(herbData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('فشل الإضافة:', error);
+        return null;
+    }
+}
+</script>
 </body>
 </html>
