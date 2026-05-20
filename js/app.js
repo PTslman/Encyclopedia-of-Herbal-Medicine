@@ -1792,5 +1792,153 @@ function updateConnectionStatusLED() {
 
 setInterval(updateConnectionStatusLED, 3000);
 setTimeout(updateConnectionStatusLED, 500);
+// ============================================
+// الميزات الجديدة: المزامنة، التحديث الإجباري، شريط التقدم
+// ============================================
 
+// تحديث شريط تقدم المزامنة
+function updateSyncProgress(percent, status) {
+    const fill = document.getElementById('syncProgressFill');
+    const percentSpan = document.getElementById('syncProgressPercent');
+    const statusSpan = document.getElementById('syncStatusText');
+    
+    if (fill) fill.style.width = Math.min(percent, 100) + '%';
+    if (percentSpan) percentSpan.innerText = Math.floor(percent) + '%';
+    if (statusSpan) statusSpan.innerText = status || (percent >= 100 ? '✅ مزامن' : '🔄 جاري المزامنة...');
+    
+    if (percent >= 100) {
+        setTimeout(() => {
+            if (fill) fill.style.width = '0%';
+            if (percentSpan) percentSpan.innerText = '0%';
+            if (statusSpan) statusSpan.innerText = '✅ متصل';
+        }, 2000);
+    }
+}
+
+// دالة التحديث الإجباري للبيانات (للمستخدم العادي)
+async function forceSyncData() {
+    if (!navigator.onLine) {
+        alert('⚠️ لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك ثم حاول مرة أخرى.');
+        return false;
+    }
+    
+    updateSyncProgress(10, '🔄 جاري الاتصال بالسحابة...');
+    
+    try {
+        // جلب البيانات من Firebase
+        updateSyncProgress(30, '📡 جلب البيانات من الخادم...');
+        
+        const [herbsSnap, categoriesSnap] = await Promise.all([
+            herbsCol.get(),
+            categoriesCol.get()
+        ]);
+        
+        const fbHerbs = herbsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const fbCategories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        updateSyncProgress(70, '💾 حفظ البيانات محلياً...');
+        
+        // حفظ في LocalDB إذا كان موجوداً
+        if (window.LocalDB && window.LocalDB.isLoaded) {
+            for (const herb of fbHerbs) {
+                window.LocalDB.addHerb(herb);
+            }
+            for (const cat of fbCategories) {
+                window.LocalDB.addCategory(cat);
+            }
+            window.LocalDB.backupToLocalStorage();
+            categories = window.LocalDB.getCategories();
+            herbs = window.LocalDB.getHerbs();
+        } else {
+            // حفظ مباشرة في localStorage
+            const cacheData = {
+                categories: fbCategories,
+                herbs: fbHerbs,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+            categories = fbCategories;
+            herbs = fbHerbs;
+        }
+        
+        updateSyncProgress(100, '✅ تم تحديث البيانات بنجاح');
+        
+        // تحديث العرض
+        renderContent();
+        updateHerbCount();
+        
+        // إظهار إشعار نجاح
+        const toast = document.createElement('div');
+        toast.textContent = '✅ تم تحديث البيانات بنجاح';
+        toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#4caf50;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;animation:fadeInUp 0.3s ease;';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+        
+        return true;
+    } catch (error) {
+        console.error('فشل التحديث الإجباري:', error);
+        updateSyncProgress(0, '❌ فشل التحديث');
+        alert('❌ فشل تحديث البيانات: ' + error.message);
+        return false;
+    }
+}
+
+// مراقبة حالة الاتصال وتحديث شريط التقدم
+function initSyncMonitor() {
+    // تحديث حالة LED وشريط التقدم
+    function updateSyncUI() {
+        const led = document.getElementById('syncStatusLed');
+        const statusSpan = document.getElementById('syncStatusText');
+        
+        if (!navigator.onLine) {
+            if (led) led.className = 'sync-status-led disconnected';
+            if (statusSpan) statusSpan.innerHTML = '📡 غير متصل - بيانات مخزنة محلياً';
+        } else if (isSyncActive) {
+            if (led) led.className = 'sync-status-led connected';
+            if (statusSpan) statusSpan.innerHTML = '✅ متصل ومزامن';
+        } else {
+            if (led) led.className = 'sync-status-led syncing';
+            if (statusSpan) statusSpan.innerHTML = '🔄 جاري المزامنة...';
+        }
+    }
+    
+    setInterval(updateSyncUI, 3000);
+    updateSyncUI();
+    
+    // عند عودة الاتصال، مزامنة تلقائية
+    window.addEventListener('online', async () => {
+        console.log('🟢 تم استعادة الاتصال - جاري المزامنة التلقائية');
+        updateSyncProgress(20, '🔄 مزامنة تلقائية...');
+        
+        // محاولة مزامنة العمليات المعلقة
+        if (window.LocalDB) {
+            await window.LocalDB.syncWithFirebase();
+        }
+        
+        // تحديث البيانات من Firebase
+        await forceSyncData();
+        
+        const toast = document.createElement('div');
+        toast.textContent = '✅ تمت المزامنة التلقائية بنجاح';
+        toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#4caf50;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;animation:fadeInUp 0.3s ease;';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    });
+}
+
+// تهيئة المزامنة عند تحميل الصفحة
+setTimeout(() => {
+    initSyncMonitor();
+}, 1000);
+
+// ربط زر التحديث الإجباري في شريط الزائر
+document.addEventListener('DOMContentLoaded', function() {
+    const forceSyncBtn = document.getElementById('visitorForceSyncBtn');
+    if (forceSyncBtn) {
+        forceSyncBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            forceSyncData();
+        });
+    }
+});
 console.log('✅ تم تحميل التطبيق بنجاح');
