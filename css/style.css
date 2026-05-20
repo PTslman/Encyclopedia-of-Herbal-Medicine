@@ -1914,3 +1914,54 @@ body.offline-mode::after {
         transform: translateY(0);
     }
 }
+/* ============================================
+   تحسين الأداء للأجهزة الضعيفة
+   ============================================ */
+
+/* تحسين الأداء العام */
+* {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* تحسين أداء البطاقات */
+.herb-card, .category-card {
+    will-change: transform;
+    transform: translateZ(0);
+    contain: layout style paint;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 300px;
+}
+
+/* للأجهزة الضعيفة */
+@media (max-width: 768px) {
+    .herb-card, .category-card {
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .herb-card:hover, .category-card:hover {
+        transform: translateY(-2px);
+    }
+    .header, .toolbar, .visitor-toolbar {
+        backdrop-filter: blur(10px);
+    }
+    .splash-logo {
+        animation: none;
+    }
+}
+
+/* وضع توفير الطاقة */
+body.power-saving .herb-card {
+    box-shadow: none !important;
+    border: 1px solid var(--separator);
+}
+body.power-saving .herb-card-image {
+    filter: grayscale(0.3);
+}
+
+/* كشف FPS */
+body.fps-low .herb-card {
+    transition: none !important;
+}
+body.fps-low .tool-btn, body.fps-low .icon-btn {
+    transition: none !important;
+}
