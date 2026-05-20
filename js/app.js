@@ -1949,5 +1949,106 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+// ============================================
+// إصلاح دالة التحديث الإجباري للبيانات من Firebase
+// ============================================
 
+window.forceSyncData = async function() {
+    console.log('🔄 بدء التحديث الإجباري من Firebase...');
+    
+    if (!navigator.onLine) {
+        alert('⚠️ لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك ثم حاول مرة أخرى.');
+        return false;
+    }
+    
+    // التحقق من وجود Firebase
+    if (typeof herbsCol === 'undefined' || typeof categoriesCol === 'undefined') {
+        console.error('❌ Firebase غير متاح - herbsCol أو categoriesCol غير معرفين');
+        alert('❌ خطأ: Firebase غير متاح. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
+        return false;
+    }
+    
+    updateSyncProgress(10, '🔄 جاري الاتصال بـ Firebase...');
+    
+    try {
+        // جلب التصنيفات من Firebase
+        updateSyncProgress(20, '📡 جلب التصنيفات من Firebase...');
+        const categoriesSnapshot = await categoriesCol.get();
+        const fbCategories = [];
+        categoriesSnapshot.forEach(doc => {
+            fbCategories.push({ id: doc.id, ...doc.data() });
+        });
+        console.log(`✅ تم جلب ${fbCategories.length} تصنيف من Firebase`);
+        
+        // جلب الأعشاب من Firebase
+        updateSyncProgress(40, '📡 جلب الأعشاب من Firebase...');
+        const herbsSnapshot = await herbsCol.get();
+        const fbHerbs = [];
+        herbsSnapshot.forEach(doc => {
+            fbHerbs.push({ id: doc.id, ...doc.data() });
+        });
+        console.log(`✅ تم جلب ${fbHerbs.length} عشبة من Firebase`);
+        
+        updateSyncProgress(70, '💾 حفظ البيانات محلياً...');
+        
+        // حفظ في localStorage
+        const cacheData = {
+            categories: fbCategories,
+            herbs: fbHerbs,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+        
+        // تحديث المتغيرات العامة
+        categories = fbCategories;
+        herbs = fbHerbs;
+        
+        // تحديث الواجهة
+        renderContent();
+        updateHerbCount();
+        
+        updateSyncProgress(100, '✅ تم تحديث البيانات بنجاح');
+        
+        // إظهار إشعار بالنتيجة
+        const toast = document.createElement('div');
+        toast.innerHTML = `✅ تم تحديث البيانات بنجاح<br>📚 ${fbHerbs.length} عشبة | 📂 ${fbCategories.length} تصنيف`;
+        toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#4caf50;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;font-size:0.85rem;direction:rtl;box-shadow:0 4px 15px rgba(0,0,0,0.2);';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+        
+        console.log('✅ تم تحديث البيانات بنجاح من Firebase');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ فشل التحديث من Firebase:', error);
+        updateSyncProgress(0, '❌ فشل التحديث');
+        
+        let errorMessage = error.message;
+        if (error.code === 'permission-denied') {
+            errorMessage = 'ليس لديك صلاحية الوصول إلى قاعدة البيانات';
+        } else if (error.code === 'unavailable') {
+            errorMessage = 'خدمة Firebase غير متاحة حالياً';
+        }
+        
+        alert(`❌ فشل تحديث البيانات: ${errorMessage}`);
+        return false;
+    }
+};
+
+// دالة بديلة للتحقق من اتصال Firebase
+async function testFirebaseConnection() {
+    try {
+        const test = await herbsCol.limit(1).get();
+        console.log('✅ الاتصال بـ Firebase يعمل');
+        return true;
+    } catch (error) {
+        console.error('❌ فشل الاتصال بـ Firebase:', error);
+        return false;
+    }
+}
+
+// اختبار الاتصال عند تحميل الصفحة
+setTimeout(() => {
+    testFirebaseConnection();
+}, 2000);
 console.log('✅ تم تحميل التطبيق بنجاح');
