@@ -16,158 +16,89 @@
         
         body {
             font-family: 'Cairo', sans-serif;
-            background: var(--bg-color, #fef9e6);
-            color: var(--text-color, #3e2723);
-            transition: all 0.3s ease;
-        }
-        
-        :root {
-            --bg-color: #fef9e6;
-            --text-color: #3e2723;
-            --card-bg: #ffffff;
-            --border-color: #e0d6b5;
-            --primary: #2e7d32;
-        }
-        
-        body.dark-mode {
-            --bg-color: #1a1a2e;
-            --text-color: #f5f0e0;
-            --card-bg: #2d2d44;
-            --border-color: #3d3d5c;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #43a047 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
         
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
         }
         
-        .header {
-            text-align: center;
-            padding: 30px 0 20px;
-            background: linear-gradient(135deg, #1b5e20, #2e7d32);
-            border-radius: 0 0 30px 30px;
-            color: white;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-        }
-        
-        .header i {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-        
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .section {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        
-        .section h2 {
-            color: var(--primary);
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 8px;
-        }
-        
-        .section h2 i {
-            font-size: 1.2rem;
-        }
-        
+        /* بطاقات المساعدة */
         .help-card {
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         
-        .help-card:last-child {
-            border-bottom: none;
+        .help-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+        }
+        
+        .help-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2e7d32;
         }
         
         .help-icon {
-            width: 45px;
-            height: 45px;
-            background: var(--primary);
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1.2rem;
-            flex-shrink: 0;
+            font-size: 1.4rem;
         }
         
-        .help-content h3 {
-            font-size: 1rem;
-            margin-bottom: 5px;
-            color: var(--primary);
+        .help-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #2e7d32;
+        }
+        
+        .help-content {
+            color: #3e2723;
+            line-height: 1.7;
+            padding-right: 10px;
         }
         
         .help-content p {
-            font-size: 0.85rem;
-            opacity: 0.8;
-            line-height: 1.5;
+            margin: 8px 0;
         }
         
-        .step {
-            display: flex;
-            gap: 15px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
+        .help-content ul {
+            padding-right: 25px;
+            margin: 8px 0;
         }
         
-        .step-number {
-            width: 35px;
-            height: 35px;
-            background: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            flex-shrink: 0;
+        .help-content li {
+            margin: 5px 0;
+        }
+        
+        .help-content i {
+            color: #2e7d32;
+            width: 25px;
+            margin-left: 8px;
         }
         
         .back-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: var(--primary);
-            color: white;
+            background: #ffd700;
+            color: #1b5e20;
             border: none;
-            padding: 15px;
+            padding: 14px 25px;
             border-radius: 60px;
             font-size: 1rem;
             font-weight: bold;
@@ -176,243 +107,195 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            font-family: 'Cairo', sans-serif;
+            width: 100%;
+            margin-top: 20px;
             transition: all 0.3s ease;
-            z-index: 100;
+            font-family: 'Cairo', sans-serif;
         }
         
         .back-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(46,125,50,0.4);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
         }
         
         .footer {
             text-align: center;
-            padding: 20px;
+            margin-top: 30px;
+            color: rgba(255,255,255,0.6);
             font-size: 0.7rem;
-            opacity: 0.6;
-            margin-bottom: 70px;
         }
         
         @media (max-width: 600px) {
-            .container {
+            .help-card {
                 padding: 15px;
             }
             .help-icon {
-                width: 38px;
-                height: 38px;
-                font-size: 1rem;
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
             }
+            .help-title {
+                font-size: 1.1rem;
+            }
+            .help-content {
+                font-size: 0.9rem;
+            }
+        }
+        
+        body.dark-mode {
+            background: linear-gradient(135deg, #0a3b12 0%, #1a5e20 50%, #2e7d32 100%);
+        }
+        
+        body.dark-mode .help-card {
+            background: rgba(30,30,46,0.95);
+            color: #f5f0e0;
+        }
+        
+        body.dark-mode .help-title {
+            color: #81c784;
+        }
+        
+        body.dark-mode .help-content {
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .help-header {
+            border-bottom-color: #81c784;
         }
     </style>
 </head>
 <body>
-    <div class="theme-toggle" id="themeToggle">
-        <i class="fas fa-moon" id="themeIcon"></i>
-    </div>
-    
-    <div class="header">
-        <i class="fas fa-question-circle"></i>
-        <h1>📖 دليل المساعدة</h1>
-        <p>موسوعة الأعشاب الطبية - دليل الاستخدام السريع</p>
-    </div>
-    
     <div class="container">
-        <!-- الأزرار الرئيسية -->
-        <div class="section">
-            <h2><i class="fas fa-bars"></i> الأزرار الرئيسية</h2>
-            
-            <div class="help-card">
+        <div class="header">
+            <h1>📖 دليل المساعدة</h1>
+            <p>موسوعة الأعشاب الطبية - دليل سريع للاستخدام</p>
+        </div>
+
+        <!-- بطاقة: البحث -->
+        <div class="help-card">
+            <div class="help-header">
                 <div class="help-icon"><i class="fas fa-search"></i></div>
-                <div class="help-content">
-                    <h3>بحث في الموسوعة</h3>
-                    <p>زر عريض في أعلى الصفحة - يفتح نافذة بحث سريع للعثور على أي عشبة بسهولة</p>
-                </div>
+                <div class="help-title">البحث في الموسوعة</div>
             </div>
-            
-            <div class="help-card">
+            <div class="help-content">
+                <p>🔍 اضغط على زر <strong>"بحث في الموسوعة"</strong> (الأزرق الكبير) لفتح نافذة البحث السريع.</p>
+                <p>✏️ اكتب اسم العشبة التي تبحث عنها، وستظهر النتائج فوراً.</p>
+                <p>🌿 اضغط على أي نتيجة لعرض تفاصيل العشبة كاملة.</p>
+            </div>
+        </div>
+
+        <!-- بطاقة: جميع الأعشاب -->
+        <div class="help-card">
+            <div class="help-header">
                 <div class="help-icon"><i class="fas fa-leaf"></i></div>
-                <div class="help-content">
-                    <h3>جميع الأعشاب</h3>
-                    <p>يعرض جميع الأعشاب المسجلة في الموسوعة مع صورها وفوائدها</p>
-                </div>
+                <div class="help-title">جميع الأعشاب</div>
             </div>
-            
-            <div class="help-card">
+            <div class="help-content">
+                <p>🌿 اضغط على زر <strong>"جميع الأعشاب"</strong> لعرض كل الأعشاب المسجلة في الموسوعة.</p>
+                <p>📋 تظهر العشبة مع صورتها وفوائدها الرئيسية.</p>
+                <p>👆 اضغط على أي عشبة لرؤية التفاصيل الكاملة (الفوائد، التحذيرات، الأضرار، طريقة الاستخدام).</p>
+            </div>
+        </div>
+
+        <!-- بطاقة: التصنيفات -->
+        <div class="help-card">
+            <div class="help-header">
                 <div class="help-icon"><i class="fas fa-folder-tree"></i></div>
-                <div class="help-content">
-                    <h3>التصنيفات</h3>
-                    <p>عرض الأعشاب مصنفة حسب أنواعها (أعشاب هضمية، مهدئة، مناعية...)</p>
-                </div>
+                <div class="help-title">التصنيفات</div>
+            </div>
+            <div class="help-content">
+                <p>📂 اضغط على زر <strong>"التصنيفات"</strong> لعرض الأعشاب مصنفة حسب أنواعها.</p>
+                <p>🍃 يمكنك تصفح أعشاب هضمية، مهدئة، مناعية، وغيرها.</p>
+                <p>👆 اضغط على أي تصنيف لعرض الأعشاب التابعة له فقط.</p>
             </div>
         </div>
-        
-        <!-- كيفية الاستخدام -->
-        <div class="section">
-            <h2><i class="fas fa-play-circle"></i> كيفية الاستخدام</h2>
-            
-            <div class="step">
-                <div class="step-number">1</div>
-                <div class="help-content">
-                    <h3>تصفح الأعشاب</h3>
-                    <p>اضغط على أي عشبة لرؤية التفاصيل الكاملة (الفوائد، التحذيرات، الأضرار، طريقة الاستخدام)</p>
-                </div>
+
+        <!-- بطاقة: المظهر وحجم الخط -->
+        <div class="help-card">
+            <div class="help-header">
+                <div class="help-icon"><i class="fas fa-palette"></i></div>
+                <div class="help-title">تخصيص المظهر</div>
             </div>
-            
-            <div class="step">
-                <div class="step-number">2</div>
-                <div class="help-content">
-                    <h3>البحث</h3>
-                    <p>استخدم زر "بحث في الموسوعة" واكتب اسم العشبة التي تبحث عنها</p>
-                </div>
-            </div>
-            
-            <div class="step">
-                <div class="step-number">3</div>
-                <div class="help-content">
-                    <h3>التبديل بين الوضعين</h3>
-                    <p>اضغط على أيقونة ☀️/🌙 لتبديل بين الوضع النهاري والليلي</p>
-                </div>
-            </div>
-            
-            <div class="step">
-                <div class="step-number">4</div>
-                <div class="help-content">
-                    <h3>تغيير حجم الخط</h3>
-                    <p>اضغط على زر "Aa" لتكبير أو تصغير حجم الخط لسهولة القراءة</p>
-                </div>
-            </div>
-            
-            <div class="step">
-                <div class="step-number">5</div>
-                <div class="help-content">
-                    <h3>الاتصال بالدعم</h3>
-                    <p>اضغط على رقم واتساب (0932934273) للتواصل المباشر مع الدعم الفني</p>
-                </div>
+            <div class="help-content">
+                <p>🌙 <strong>الوضع الليلي/النهاري:</strong> اضغط على زر القمر/الشمس ☀️/🌙 لتغيير مظهر التطبيق.</p>
+                <p>🔊 <strong>حجم الخط:</strong> اضغط على زر "Aa" لتكبير أو تصغير حجم النص.</p>
+                <p>📱 التطبيق متوافق مع جميع أحجام الشاشات ويعمل بشكل مثالي على الجوال.</p>
             </div>
         </div>
-        
-        <!-- وضع المسؤول -->
-        <div class="section">
-            <h2><i class="fas fa-user-shield"></i> وضع المسؤول</h2>
-            
-            <div class="help-card">
-                <div class="help-icon"><i class="fas fa-lock"></i></div>
-                <div class="help-content">
-                    <h3>تسجيل الدخول</h3>
-                    <p>اضغط على أيقونة القفل 🔒 وأدخل بيانات المسؤول للوصول إلى لوحة التحكم</p>
-                </div>
+
+        <!-- بطاقة: الاتصال والتواصل -->
+        <div class="help-card">
+            <div class="help-header">
+                <div class="help-icon"><i class="fas fa-phone-alt"></i></div>
+                <div class="help-title">التواصل والدعم</div>
             </div>
-            
-            <div class="help-card">
-                <div class="help-icon"><i class="fas fa-plus-circle"></i></div>
-                <div class="help-content">
-                    <h3>إضافة عشبة</h3>
-                    <p>بعد تسجيل الدخول، يمكنك إضافة أعشاب جديدة مع صور وفوائد وتحذيرات</p>
-                </div>
-            </div>
-            
-            <div class="help-card">
-                <div class="help-icon"><i class="fas fa-folder-plus"></i></div>
-                <div class="help-content">
-                    <h3>إدارة التصنيفات</h3>
-                    <p>إضافة أو تعديل أو حذف التصنيفات (أعشاب هضمية، مهدئة، مناعية...)</p>
-                </div>
-            </div>
-            
-            <div class="help-card">
-                <div class="help-icon"><i class="fas fa-database"></i></div>
-                <div class="help-content">
-                    <h3>نسخ احتياطي واستعادة</h3>
-                    <p>عمل نسخة احتياطية من البيانات أو استعادتها من ملف سابق</p>
-                </div>
+            <div class="help-content">
+                <p>📞 <strong>واتساب:</strong> اضغط على رقم 0932934273 لمراسلة الدعم الفني مباشرة.</p>
+                <p>🔄 <strong>إعادة المزامنة:</strong> إذا كانت البيانات قديمة، استخدم زر "إعادة مزامنة" لتحديثها.</p>
+                <p>💾 <strong>البيانات المخزنة:</strong> التطبيق يعمل دون إنترنت ويعرض البيانات المحفوظة مسبقاً.</p>
             </div>
         </div>
-        
-        <!-- مشاكل وحلول -->
-        <div class="section">
-            <h2><i class="fas fa-wrench"></i> مشاكل وحلول</h2>
-            
-            <div class="help-card">
-                <div class="help-icon"><i class="fas fa-wifi"></i></div>
-                <div class="help-content">
-                    <h3>لا يوجد اتصال بالإنترنت</h3>
-                    <p>التطبيق يعرض البيانات المخزنة محلياً. عند عودة الإنترنت، ستتم المزامنة تلقائياً</p>
-                </div>
+
+        <!-- بطاقة: معلومات التطبيق -->
+        <div class="help-card">
+            <div class="help-header">
+                <div class="help-icon"><i class="fas fa-info-circle"></i></div>
+                <div class="help-title">معلومات التطبيق</div>
             </div>
-            
-            <div class="help-card">
-                <div class="help-icon"><i class="fas fa-sync-alt"></i></div>
-                <div class="help-content">
-                    <h3>البيانات لا تظهر</h3>
-                    <p>اضغط على زر "تحديث" لإعادة تحميل البيانات من السحابة</p>
-                </div>
-            </div>
-            
-            <div class="help-card">
-                <div class="help-icon"><i class="fas fa-trash-alt"></i></div>
-                <div class="help-content">
-                    <h3>مسح البيانات المؤقتة</h3>
-                    <p>استخدم زر "حذف المؤقتة" لمسح الكاش وإعادة تحميل التطبيق</p>
-                </div>
+            <div class="help-content">
+                <p>🌿 <strong>الإصدار:</strong> 4.0 - PWA متكامل لنظام Android</p>
+                <p>⚡ <strong>المزامنة:</strong> البيانات متزامنة مع السحابة لجميع المستخدمين</p>
+                <p>👨‍💻 <strong>التطوير:</strong> المعالج الفيزيائي سلمان</p>
+                <p>📅 <strong>جميع الحقوق محفوظة © 2026</strong></p>
             </div>
         </div>
-        
-        <!-- معلومات التطبيق -->
-        <div class="section">
-            <h2><i class="fas fa-info-circle"></i> معلومات التطبيق</h2>
-            
-            <div class="help-card">
-                <div class="help-icon"><i class="fas fa-leaf"></i></div>
-                <div class="help-content">
-                    <h3>الإصدار</h3>
-                    <p>الإصدار 4.0 - PWA متكامل لنظام Android</p>
-                </div>
-            </div>
-            
-            <div class="help-card">
-                <div class="help-icon"><i class="fas fa-code"></i></div>
-                <div class="help-content">
-                    <h3>التطوير</h3>
-                    <p>تطوير: المعالج الفيزيائي سلمان</p>
-                </div>
-            </div>
-            
-            <div class="help-card">
-                <div class="help-icon"><i class="fas fa-database"></i></div>
-                <div class="help-content">
-                    <h3>مزامنة سحابية</h3>
-                    <p>البيانات متزامنة مع Firebase سحابياً ومتاحة لجميع المستخدمين</p>
-                </div>
-            </div>
-        </div>
+
+        <button class="back-btn" onclick="goBack()">
+            <i class="fas fa-arrow-right"></i> العودة إلى التطبيق
+        </button>
         
         <div class="footer">
-            © 2026 موسوعة الأعشاب الطبية - جميع الحقوق محفوظة
+            <i class="fas fa-leaf"></i> موسوعة الأعشاب الطبية - دليل المستخدم
         </div>
     </div>
-    
-    <button class="back-btn" onclick="location.href='/Encyclopedia-of-Herbal-Medicine/'">
-        <i class="fas fa-arrow-right"></i> العودة للتطبيق
-    </button>
-    
+
     <script>
-        // الثيم المظلم
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        
-        // تحميل الثيم المحفوظ
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-            themeIcon.className = 'fas fa-sun';
+        // العودة إلى التطبيق
+        function goBack() {
+            window.location.href = '/Encyclopedia-of-Herbal-Medicine/';
         }
         
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        // كشف الثيم المظلم من التطبيق الرئيسي
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+        
+        // مراقبة تغيير الثيم (إذا فتح من التطبيق)
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'theme') {
+                if (e.newValue === 'dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            }
         });
     </script>
 </body>
-                      </html>
+</html>
