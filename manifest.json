@@ -64,7 +64,7 @@
   ],
   "shortcuts": [
     {
-      "name": "🔍 بحث",
+      "name": "بحث",
       "short_name": "بحث",
       "description": "البحث في موسوعة الأعشاب",
       "url": "/Encyclopedia-of-Herbal-Medicine/?search=true",
@@ -76,34 +76,10 @@
       ]
     },
     {
-      "name": "🌿 جميع الأعشاب",
+      "name": "جميع الأعشاب",
       "short_name": "أعشاب",
       "description": "عرض جميع الأعشاب المسجلة",
       "url": "/Encyclopedia-of-Herbal-Medicine/?all=true",
-      "icons": [
-        {
-          "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "📂 التصنيفات",
-      "short_name": "تصنيفات",
-      "description": "عرض تصنيفات الأعشاب",
-      "url": "/Encyclopedia-of-Herbal-Medicine/?categories=true",
-      "icons": [
-        {
-          "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "➕ إضافة عشبة",
-      "short_name": "إضافة",
-      "description": "إضافة عشبة جديدة (للمسؤول)",
-      "url": "/Encyclopedia-of-Herbal-Medicine/?add=true",
       "icons": [
         {
           "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-96.png",
@@ -114,22 +90,19 @@
   ],
   "screenshots": [
     {
-      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/mobile-home.png",
-      "sizes": "360x640",
+      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/desktop.png",
+      "sizes": "1280x720",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "الشاشة الرئيسية للأعشاب"
+      "form_factor": "wide"
     },
     {
-      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/mobile-categories.png",
+      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/mobile.png",
       "sizes": "360x640",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "شاشة التصنيفات"
+      "form_factor": "narrow"
     }
   ],
   "prefer_related_applications": false,
-  "related_applications": [],
   "edge_side_panel": {
     "preferred_width": 400
   }
