@@ -28,7 +28,16 @@ async function loadFromLocalDB() {
     }
     return false;
 }
+// ============================================
+// دالة تحديث عدد الأعشاب في الشريط
+// ============================================
 
+function updateHerbCount() {
+    const herbCountSpan = document.getElementById('herbCount');
+    if (herbCountSpan) {
+        herbCountSpan.innerText = herbs.length + ' عشبة';
+    }
+}
 // دالة للمزامنة مع Firebase (في الخلفية)
 async function syncWithFirebaseBackground() {
     if (syncInProgress) return;
