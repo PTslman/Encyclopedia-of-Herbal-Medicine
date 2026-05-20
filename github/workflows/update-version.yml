@@ -1,0 +1,28 @@
+name: Update Version on Push
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'version.json'
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Update version.json
+        run: |
+          NEW_HASH=$(date +%s | sha256sum | head -c 32)
+          NEW_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          NEW_VERSION=$(cat version.json | grep -o '"version": "[^"]*"' | cut -d'"' -f4 | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+          sed -i "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" version.json
+          sed -i "s/\"lastUpdate\": \".*\"/\"lastUpdate\": \"$NEW_DATE\"/" version.json
+          sed -i "s/\"hash\": \".*\"/\"hash\": \"$NEW_HASH\"/" version.json
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add version.json
+          git commit -m "Auto-update version.json [skip ci]" || exit 0
+          git push
