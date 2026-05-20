@@ -211,7 +211,36 @@
 <script src="/Encyclopedia-of-Herbal-Medicine/js/update-handler.js"></script>  <!-- جديد -->
 <script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
 <script src="/Encyclopedia-of-Herbal-Medicine/js/app.js"></script>
-    <script>
+<script>
+// ============================================
+// إصلاح زر المساعدة - يفتح help.html
+// ============================================
+(function fixHelpButton() {
+    // انتظار تحميل الصفحة
+    function init() {
+        const helpBtn = document.getElementById('quickHelpBtn');
+        if (helpBtn) {
+            // إزالة أي مستمعات قديمة
+            const newBtn = helpBtn.cloneNode(true);
+            helpBtn.parentNode.replaceChild(newBtn, helpBtn);
+            
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = '/Encyclopedia-of-Herbal-Medicine/help.html';
+            });
+            console.log('✅ زر المساعدة يعمل الآن');
+        } else {
+            console.log('⚠️ زر المساعدة غير موجود');
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>
     // شاشة البداية
     (function smartSplashHandler() {
         const splash = document.getElementById('splashScreen');
