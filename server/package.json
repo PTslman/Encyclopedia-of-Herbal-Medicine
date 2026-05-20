@@ -1,0 +1,17 @@
+{
+  "name": "herbal-database-api",
+  "version": "1.0.0",
+  "description": "API لقاعدة بيانات موسوعة الأعشاب الطبية",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0",
+    "fs-extra": "^11.1.0"
+  }
+}
