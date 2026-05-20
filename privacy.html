@@ -15,19 +15,49 @@
             padding: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 600px;
             margin: 0 auto;
             background: white;
             border-radius: 24px;
-            padding: 30px;
+            padding: 25px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-        h1 { color: #2e7d32; margin-bottom: 20px; border-bottom: 2px solid #2e7d32; padding-bottom: 10px; }
-        h2 { color: #2e7d32; margin: 20px 0 10px; font-size: 1.2rem; }
-        p { line-height: 1.7; margin: 10px 0; color: #333; }
-        ul { padding-right: 25px; margin: 10px 0; }
-        li { margin: 8px 0; }
-        .back-btn {
+        h1 { 
+            color: #2e7d32; 
+            margin-bottom: 20px; 
+            border-bottom: 3px solid #2e7d32; 
+            padding-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        p { 
+            line-height: 1.7; 
+            margin: 15px 0; 
+            color: #333;
+            font-size: 1rem;
+        }
+        .highlight {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 16px;
+            margin: 15px 0;
+            border-right: 4px solid #2e7d32;
+        }
+        .thankyou {
+            background: linear-gradient(135deg, #1b5e20, #2e7d32);
+            color: white;
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .developer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+        button {
             background: #2e7d32;
             color: white;
             border: none;
@@ -35,58 +65,62 @@
             border-radius: 50px;
             font-size: 1rem;
             cursor: pointer;
-            margin-top: 20px;
             width: 100%;
+            margin-top: 20px;
             font-family: 'Cairo', sans-serif;
         }
-        .footer { text-align: center; margin-top: 20px; font-size: 0.7rem; color: #666; }
-        @media (max-width: 600px) { .container { padding: 20px; } }
+        .signature {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔒 سياسة الخصوصية</h1>
-        <p>نحن في <strong>موسوعة الأعشاب الطبية</strong> نلتزم بحماية خصوصية بياناتك. توضح هذه السياسة كيفية جمع واستخدام وحماية معلوماتك.</p>
+        <h1>🌿 كلمة مطور التطبيق</h1>
         
-        <h2>📌 المعلومات التي نجمعها</h2>
-        <p>لا نجمع أي معلومات شخصية عنك إلا إذا قدمتها طواعية (مثل تسجيل الدخول كمسؤول). نقوم بجمع:</p>
-        <ul>
-            <li>🔐 بيانات تسجيل الدخول (البريد الإلكتروني وكلمة المرور - للمسؤول فقط)</li>
-            <li>🌿 الأعشاب والتصنيفات التي تضيفها (للمسؤول فقط)</li>
-            <li>📊 إحصائيات الاستخدام الأساسية (عدد الزيارات)</li>
-        </ul>
+        <div class="highlight">
+            <p><strong>السلام عليكم،</strong></p>
+            <p><strong>أنا سلمان</strong>، مطور موسوعة الأعشاب الطبية والمعالج الفيزيائي.</p>
+            <p>🔒 <strong>أنا لا أسحب أي بيانات شخصية من أي مستخدم.</strong></p>
+            <p>📚 <strong>أنا أنشأت هذه الموسوعة للاستفادة والتعليم فقط.</strong></p>
+            <p>🛡️ <strong>أنا أؤكد لكم أن جميع البيانات آمنة جداً ومحمية.</strong></p>
+        </div>
         
-        <h2>☁️ كيفية استخدام بياناتك</h2>
-        <ul>
-            <li>📚 عرض الأعشاب والتصنيفات في الموسوعة</li>
-            <li>🔄 مزامنة البيانات بين المستخدمين عبر Firebase</li>
-            <li>🛠️ إدارة المحتوى (للمسؤول فقط)</li>
-        </ul>
+        <p><strong>✅ ماذا أجمع؟</strong><br>
+        <strong>أنا لا أجمع أي معلومات شخصية عنك.</strong> التطبيق لا يطلب منك أي بيانات خاصة (لا اسم، لا رقم هاتف، لا بريد إلكتروني).</p>
         
-        <h2>🔐 أمان البيانات</h2>
-        <p>نستخدم إجراءات أمان متطورة لحماية بياناتك، بما في ذلك:</p>
-        <ul>
-            <li>🔒 اتصال مشفر (HTTPS)</li>
-            <li>🗄️ تخزين آمن في Firebase</li>
-            <li>👑 صلاحيات المسؤول فقط لتعديل المحتوى</li>
-        </ul>
+        <p><strong>🔐 كيف أحمي بياناتكم؟</strong><br>
+        <strong>أنا أستخدم</strong> أحدث تقنيات الحماية والتشفير. جميع بيانات الأعشاب محفوظة في قاعدة بيانات آمنة. <strong>أنا وحدي من يمكنه</strong> تعديل المحتوى.</p>
         
-        <h2>📱 التخزين المحلي</h2>
-        <p>يستخدم التطبيق التخزين المحلي (LocalStorage) لتخزين البيانات مؤقتاً لتحسين الأداء والعمل دون اتصال بالإنترنت.</p>
+        <p><strong>🌐 التخزين المحلي</strong><br>
+        <strong>أنا أحفظ</strong> بعض البيانات على جهازك لتسريع التحميل وتحسين الأداء، وهذه البيانات <strong>لا تخرج من هاتفك أبداً</strong>.</p>
         
-        <h2>👶 خصوصية الأطفال</h2>
-        <p>خدمتنا موجهة للجميع، بما في ذلك الأطفال. لا نقوم بجمع معلومات شخصية عن الأطفال عن علم.</p>
+        <p><strong>📞 تواصل معي</strong><br>
+        إذا كان لديك أي استفسار، <strong>يمكنك مراسلتي</strong> عبر واتساب: <strong>0932934273</strong></p>
         
-        <h2>📧 الاتصال بنا</h2>
-        <p>للاستفسارات المتعلقة بالخصوصية، يرجى التواصل عبر واتساب: <strong>0932934273</strong></p>
+        <div class="thankyou">
+            🌟 <strong>أنا أتقدم بالشكر الجزيل لمطوري DeepSeek</strong> 🌟<br>
+            على دعمهم وتقنياتهم المتطورة التي ساعدتني في تطوير هذا التطبيق
+        </div>
         
-        <h2>🔄 التحديثات</h2>
-        <p>قد يتم تحديث سياسة الخصوصية من وقت لآخر. سيتم إعلامك بأي تغييرات جوهرية.</p>
+        <p style="font-size: 0.9rem; text-align: center; margin: 10px 0;">
+            <strong>مع تحياتي،</strong><br>
+            <span class="signature">سلمان</span><br>
+            المعالج الفيزيائي
+        </p>
         
-        <p><strong>آخر تحديث:</strong> 15 يناير 2026</p>
+        <p style="font-size: 0.7rem; text-align: center;">آخر تحديث: 20 يناير 2026</p>
         
-        <button class="back-btn" onclick="window.location.href='/Encyclopedia-of-Herbal-Medicine/'">🏠 العودة إلى التطبيق</button>
-        <div class="footer">© 2026 موسوعة الأعشاب الطبية - جميع الحقوق محفوظة</div>
+        <button onclick="window.location.href='/Encyclopedia-of-Herbal-Medicine/'">
+            🏠 العودة إلى الموسوعة
+        </button>
+        
+        <div class="developer">
+            <p>بتطوير: <strong>المعالج الفيزيائي سلمان</strong></p>
+            <p>جميع الحقوق محفوظة © 2026</p>
+        </div>
     </div>
 </body>
 </html>
