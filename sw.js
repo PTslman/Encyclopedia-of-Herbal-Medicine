@@ -6,6 +6,7 @@ const IMAGE_CACHE = 'herbal-images-v5';
 
 // الملفات الأساسية التي يتم تخزينها عند التثبيت
 const STATIC_ASSETS = [
+  '/Encyclopedia-of-Herbal-Medicine/offline.html',
   '/Encyclopedia-of-Herbal-Medicine/',
   '/Encyclopedia-of-Herbal-Medicine/index.html',
   '/Encyclopedia-of-Herbal-Medicine/manifest.json',
