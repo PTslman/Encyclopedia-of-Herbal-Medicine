@@ -1,40 +1,47 @@
 {
   "name": "موسوعة الأعشاب الطبية",
   "short_name": "أعشاب طبية",
-  "description": "موسوعة متكاملة للأعشاب الطبية",
+  "description": "موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية",
   "start_url": "/Encyclopedia-of-Herbal-Medicine/",
   "scope": "/Encyclopedia-of-Herbal-Medicine/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "theme_color": "#2e7d32",
   "background_color": "#fef9e6",
   "orientation": "portrait",
   "lang": "ar",
   "dir": "rtl",
+  "categories": ["health", "medical", "education", "lifestyle"],
   "icons": [
     {
       "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-72.png",
       "sizes": "72x72",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-96.png",
       "sizes": "96x96",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-128.png",
       "sizes": "128x128",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-144.png",
       "sizes": "144x144",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-152.png",
       "sizes": "152x152",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-192.png",
@@ -45,12 +52,85 @@
     {
       "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-384.png",
       "sizes": "384x384",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "🔍 بحث",
+      "short_name": "بحث",
+      "description": "البحث في موسوعة الأعشاب",
+      "url": "/Encyclopedia-of-Herbal-Medicine/?search=true",
+      "icons": [
+        {
+          "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "🌿 جميع الأعشاب",
+      "short_name": "أعشاب",
+      "description": "عرض جميع الأعشاب المسجلة",
+      "url": "/Encyclopedia-of-Herbal-Medicine/?all=true",
+      "icons": [
+        {
+          "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "📂 التصنيفات",
+      "short_name": "تصنيفات",
+      "description": "عرض تصنيفات الأعشاب",
+      "url": "/Encyclopedia-of-Herbal-Medicine/?categories=true",
+      "icons": [
+        {
+          "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "➕ إضافة عشبة",
+      "short_name": "إضافة",
+      "description": "إضافة عشبة جديدة (للمسؤول)",
+      "url": "/Encyclopedia-of-Herbal-Medicine/?add=true",
+      "icons": [
+        {
+          "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/mobile-home.png",
+      "sizes": "360x640",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "الشاشة الرئيسية للأعشاب"
+    },
+    {
+      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/mobile-categories.png",
+      "sizes": "360x640",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "شاشة التصنيفات"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }
