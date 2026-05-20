@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>غير متصل - موسوعة الأعشاب الطبية</title>
     <meta name="theme-color" content="#2e7d32">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -92,18 +94,28 @@
             color: #ffecb3;
         }
         
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
         button {
             background: #ffd700;
             color: #1b5e20;
             border: none;
-            padding: 14px 30px;
+            padding: 14px 25px;
             border-radius: 60px;
             font-size: 1rem;
             font-weight: bold;
             font-family: 'Cairo', sans-serif;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         
@@ -122,10 +134,8 @@
             border: 1px solid #ffd700;
         }
         
-        .footer {
-            margin-top: 30px;
-            font-size: 0.7rem;
-            color: rgba(255,249,224,0.5);
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
         }
         
         .cached-data {
@@ -134,9 +144,31 @@
             padding: 15px;
             margin: 20px 0;
             font-size: 0.85rem;
+            text-align: center;
+        }
+        
+        .cached-data i {
+            margin-left: 8px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 0.7rem;
+            color: rgba(255,249,224,0.5);
+        }
+        
+        @media (max-width: 480px) {
+            .button-group {
+                flex-direction: column;
+            }
+            button {
+                justify-content: center;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="offline-container">
@@ -167,14 +199,20 @@
         </div>
         
         <div class="cached-data" id="cachedInfo">
-            🔄 جاري التحقق من البيانات المخزنة...
+            <i class="fas fa-spinner fa-pulse"></i> جاري التحقق من البيانات المخزنة...
         </div>
         
-        <button onclick="location.reload()">🔄 إعادة المحاولة</button>
-        <button class="btn-secondary" onclick="location.href='/Encyclopedia-of-Herbal-Medicine/'">🏠 العودة للتطبيق</button>
+        <div class="button-group">
+            <button onclick="goToApp()">
+                <i class="fas fa-home"></i> العودة للتطبيق
+            </button>
+            <button class="btn-secondary" onclick="location.reload()">
+                <i class="fas fa-sync-alt"></i> إعادة المحاولة
+            </button>
+        </div>
         
         <div class="footer">
-            موسوعة الأعشاب الطبية - الإصدار 4.0
+            <i class="fas fa-leaf"></i> موسوعة الأعشاب الطبية - الإصدار 4.0
         </div>
     </div>
     
@@ -182,31 +220,59 @@
         // عرض معلومات البيانات المخزنة
         function showCachedInfo() {
             const cachedDiv = document.getElementById('cachedInfo');
+            if (!cachedDiv) return;
+            
             try {
+                // محاولة قراءة الكاش من localStorage
                 const cacheData = localStorage.getItem('herbal_cache_v2');
                 if (cacheData) {
                     const data = JSON.parse(cacheData);
                     const herbsCount = data.herbs?.length || 0;
                     const categoriesCount = data.categories?.length || 0;
+                    const lastUpdate = data.timestamp ? new Date(data.timestamp).toLocaleString('ar-EG') : 'غير معروف';
+                    
                     cachedDiv.innerHTML = `
-                        📦 البيانات المخزنة محلياً:<br>
+                        <i class="fas fa-database"></i> البيانات المخزنة محلياً:<br>
                         🌿 ${herbsCount} عشبة | 📂 ${categoriesCount} تصنيف<br>
-                        📅 آخر تحديث: ${new Date(data.timestamp).toLocaleString('ar-EG')}
+                        📅 آخر تحديث: ${lastUpdate}
                     `;
                 } else {
-                    cachedDiv.innerHTML = '⚠️ لا توجد بيانات مخزنة محلياً. يرجى الاتصال بالإنترنت لتحميل البيانات.';
+                    cachedDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ⚠️ لا توجد بيانات مخزنة محلياً. يرجى الاتصال بالإنترنت لتحميل البيانات.';
                 }
             } catch(e) {
-                cachedDiv.innerHTML = '⚠️ لا توجد بيانات مخزنة محلياً';
+                console.error('خطأ في قراءة الكاش:', e);
+                cachedDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ⚠️ لا توجد بيانات مخزنة محلياً';
             }
         }
         
+        // العودة إلى التطبيق
+        function goToApp() {
+            // محاولة العودة إلى التطبيق
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                // إذا كان التطبيق مثبتاً
+                window.location.href = '/Encyclopedia-of-Herbal-Medicine/';
+            } else {
+                window.location.href = '/Encyclopedia-of-Herbal-Medicine/';
+            }
+        }
+        
+        // عرض المعلومات عند تحميل الصفحة
         showCachedInfo();
         
         // محاولة الكشف عن عودة الإنترنت تلقائياً
         window.addEventListener('online', () => {
-            location.reload();
+            console.log('🟢 تم استعادة الاتصال');
+            const cachedDiv = document.getElementById('cachedInfo');
+            if (cachedDiv) {
+                cachedDiv.innerHTML = '<i class="fas fa-check-circle"></i> ✅ تم استعادة الاتصال! جاري إعادة التوجيه...';
+                cachedDiv.style.background = 'rgba(76,175,80,0.3)';
+            }
+            setTimeout(() => {
+                window.location.href = '/Encyclopedia-of-Herbal-Medicine/';
+            }, 1500);
         });
+        
+        console.log('📱 صفحة offline.html تم تحميلها بنجاح');
     </script>
 </body>
 </html>
