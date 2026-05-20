@@ -164,7 +164,7 @@ self.addEventListener('fetch', event => {
     }).catch(() => {
       return caches.match(event.request).then(cached => {
         return cached || new Response(OFFLINE_PAGE, {
-          headers: { 'Content-Type':text/html' }
+          headers: { 'Content-Type':'text/html' }
         });
       });
     })
