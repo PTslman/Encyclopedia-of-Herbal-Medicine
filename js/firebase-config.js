@@ -1,6 +1,5 @@
 // ============================================
-// إعدادات Firebase - موسوعة الأعشاب الطبية
-// نسخة متوافقة مع نظام المزامنة المتقدم
+// إعدادات Firebase - نسخة محسنة وسريعة
 // ============================================
 
 const firebaseConfig = {
@@ -12,276 +11,100 @@ const firebaseConfig = {
     appId: "1:798448784800:web:459459715617c4c1a980c5"
 };
 
-// ========== تهيئة Firebase ==========
+// ========== تهيئة Firebase مع إعدادات السرعة ==========
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
-    console.log("✅ Firebase initialized successfully");
-} else {
-    console.log("⚠️ Firebase already initialized");
+    console.log("✅ Firebase initialized");
 }
 
-// ========== الحصول على مراجع الخدمات ==========
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// ========== إعدادات Firestore المحسنة ==========
+// ========== إعدادات Firestore لتسريع الأداء ==========
 db.settings({
-    ignoreUndefinedProperties: true,      // تجاهل الخصائص غير المعرفة
-    merge: true,                          // دمج البيانات بدلاً من استبدالها
-    cacheSizeBytes: 50 * 1024 * 1024      // 50 MB - حجم كاش التخزين المحلي
+    ignoreUndefinedProperties: true,           // تجاهل الخصائص غير المعرفة
+    merge: true,                               // دمج البيانات
+    cacheSizeBytes: 100 * 1024 * 1024          // 100 MB كاش (زيادة من 50MB)
 });
 
-// ========== تفعيل التخزين المحلي والمزامنة بين التبويبات ==========
-db.enablePersistence({ synchronizeTabs: true })
-    .then(() => {
-        console.log("✅ Offline persistence enabled successfully");
-        console.log("🔄 Multi-tab synchronization is active");
-    })
-    .catch((err) => {
-        if (err.code === 'failed-precondition') {
-            console.warn("⚠️ Failed to enable persistence: Multiple tabs are open");
-            console.warn("   Only one tab can use persistence at a time");
-        } else if (err.code === 'unimplemented') {
-            console.warn("⚠️ Browser does not support persistence");
-            console.warn("   Offline features will not be available");
-        } else {
-            console.error("❌ Unexpected error enabling persistence:", err);
-        }
-    });
+// ========== تفعيل التخزين المحلي مع إعدادات أسرع ==========
+db.enablePersistence({ 
+    synchronizeTabs: true,
+    experimentalForceOwningTab: true           // قوة التبويب الرئيسي
+})
+.then(() => {
+    console.log("✅ Offline persistence enabled (100MB cache)");
+})
+.catch((err) => {
+    if (err.code === 'failed-precondition') {
+        console.warn("⚠️ Multiple tabs open, using memory cache only");
+    } else if (err.code === 'unimplemented') {
+        console.warn("⚠️ Browser does not support persistence");
+    }
+});
 
-// ========== مراجع المجموعات (Collections) ==========
+// ========== إعدادات المصادقة السريعة ==========
+auth.useDeviceLanguage();
+auth.settings.appVerificationDisabledForTesting = false;
+
+// ========== مراجع المجموعات ==========
 const categoriesCol = db.collection("categories");
 const herbsCol = db.collection("herbs");
 
-// ========== معلومات المسؤول ==========
-// UID المسؤول - يمكن الحصول عليه من Firebase Console -> Authentication -> Users
+// ========== إنشاء فهارس مسبقة (للسرعة) ==========
+// ملاحظة: هذه الفهارس يجب إنشاؤها في Firebase Console
+// اذهب إلى Firestore -> Indexes -> Add Composite Index
+
+// الفهرس الموصى به للأعشاب:
+// Collection: herbs
+// Fields: name (Ascending), categoryId (Ascending)
+
+// ========== UID المسؤول ==========
 const ADMIN_UID = "VwPJ3q2ElUbPmrZR1XyHv1wiI8p2";
 
-// قائمة UIDs المسموح لهم بالدخول كمسؤولين (للمستقبل - إضافة أكثر من مسؤول)
-const ADMIN_UIDS = [
-    "VwPJ3q2ElUbPmrZR1XyHv1wiI8p2",  // المسؤول الرئيسي
-    // يمكن إضافة المزيد من UIDs هنا عند الحاجة
-];
-
-// ========== دوال مساعدة للتحقق من الصلاحيات ==========
-/**
- * التحقق مما إذا كان المستخدم مسؤولاً
- * @param {firebase.User} user - مستخدم Firebase
- * @returns {boolean} - true إذا كان المستخدم مسؤولاً
- */
+// ========== دوال مساعدة سريعة ==========
 function isUserAdmin(user) {
-    if (!user) return false;
-    return ADMIN_UIDS.includes(user.uid);
+    return user && user.uid === ADMIN_UID;
 }
 
-/**
- * التحقق من صلاحيات المسؤول مع عرض رسالة خطأ
- * @param {firebase.User} user - مستخدم Firebase
- * @returns {boolean} - true إذا كان المستخدم مسؤولاً
- */
-function requireAdmin(user) {
-    const isAdmin = isUserAdmin(user);
-    if (!isAdmin) {
-        console.warn("⛔ Access denied: User is not an administrator");
-        alert("⛔ عذراً، هذه الصفحة مخصصة للمسؤولين فقط");
-    }
-    return isAdmin;
-}
-
-// ========== إعدادات المصادقة (Authentication) ==========
-// تكوين إعدادات المصادقة
-auth.useDeviceLanguage(); // استخدام لغة الجهاز
-
-// مراقبة حالة المصادقة
-let currentUser = null;
-
-auth.onAuthStateChanged((user) => {
-    currentUser = user;
-    if (user) {
-        console.log(`🔐 User signed in: ${user.email} (${user.uid})`);
-        console.log(`👑 Is admin: ${isUserAdmin(user)}`);
-    } else {
-        console.log("🔓 User signed out");
-        currentUser = null;
-    }
-});
-
-// ========== دوال مساعدة للتعامل مع Firebase ==========
-
-/**
- * إضافة سجل إجراء إلى قاعدة البيانات (للمسؤولين فقط)
- * @param {string} action - نوع الإجراء
- * @param {object} details - تفاصيل الإجراء
- * @returns {Promise} - نتيجة الإضافة
- */
-async function addAdminLog(action, details) {
-    if (!currentUser || !isUserAdmin(currentUser)) {
-        console.warn("Cannot add log: User is not admin");
-        return null;
-    }
-    
+// دالة جلب سريعة مع Cache First
+async function fastFetch(collection, limit = 100) {
     try {
-        const logsCol = db.collection("admin_logs");
-        const logEntry = {
-            action: action,
-            details: details,
-            adminEmail: currentUser.email,
-            adminUid: currentUser.uid,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            date: new Date().toISOString()
-        };
-        const docRef = await logsCol.add(logEntry);
-        console.log(`📝 Admin log added: ${action}`);
-        return docRef;
+        const snapshot = await collection.limit(limit).get();
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
-        console.error("Failed to add admin log:", error);
-        return null;
+        console.error("Fast fetch failed:", error);
+        return [];
     }
 }
 
-/**
- * الحصول على إحصائيات سريعة من قاعدة البيانات
- * @returns {Promise<object>} - إحصائيات
- */
-async function getQuickStats() {
-    try {
-        const [herbsSnap, categoriesSnap] = await Promise.all([
-            herbsCol.get(),
-            categoriesCol.get()
-        ]);
-        
-        return {
-            totalHerbs: herbsSnap.size,
-            totalCategories: categoriesSnap.size,
-            timestamp: new Date().toISOString()
-        };
-    } catch (error) {
-        console.error("Failed to get stats:", error);
-        return {
-            totalHerbs: 0,
-            totalCategories: 0,
-            error: error.message
-        };
-    }
-}
-
-/**
- * اختبار الاتصال بقاعدة البيانات
- * @returns {Promise<boolean>} - true إذا كان الاتصال يعمل
- */
-async function testFirebaseConnection() {
-    try {
-        const startTime = performance.now();
-        await herbsCol.limit(1).get();
-        const endTime = performance.now();
-        const latency = (endTime - startTime).toFixed(0);
-        console.log(`✅ Firebase connection successful (${latency}ms)`);
-        return true;
-    } catch (error) {
-        console.error("❌ Firebase connection failed:", error);
-        return false;
-    }
-}
-
-/**
- * جلب جميع البيانات من Firebase (للإستخدام في forceSyncData)
- * @returns {Promise<object>} - { herbs, categories }
- */
-async function fetchAllDataFromFirebase() {
-    console.log('📡 جلب البيانات من Firebase...');
-    
-    try {
-        const [herbsSnapshot, categoriesSnapshot] = await Promise.all([
-            herbsCol.get(),
-            categoriesCol.get()
-        ]);
-        
-        const herbs = [];
-        herbsSnapshot.forEach(doc => {
-            herbs.push({ id: doc.id, ...doc.data() });
-        });
-        
-        const categories = [];
-        categoriesSnapshot.forEach(doc => {
-            categories.push({ id: doc.id, ...doc.data() });
-        });
-        
-        console.log(`✅ تم جلب ${herbs.length} عشبة و ${categories.length} تصنيف من Firebase`);
-        return { herbs, categories };
-    } catch (error) {
-        console.error('❌ فشل جلب البيانات من Firebase:', error);
-        throw error;
-    }
-}
-
-/**
- * حفظ البيانات إلى Firebase (للمسؤولين فقط)
- * @param {object} data - { herbs, categories }
- * @returns {Promise<boolean>}
- */
-async function saveAllDataToFirebase(data) {
-    if (!currentUser || !isUserAdmin(currentUser)) {
-        console.warn("Cannot save data: User is not admin");
-        return false;
-    }
-    
-    try {
-        const batch = db.batch();
-        
-        // حذف البيانات القديمة
-        const oldHerbs = await herbsCol.get();
-        oldHerbs.forEach(doc => batch.delete(doc.ref));
-        
-        const oldCategories = await categoriesCol.get();
-        oldCategories.forEach(doc => batch.delete(doc.ref));
-        
-        // إضافة البيانات الجديدة
-        for (const herb of data.herbs) {
-            const docRef = herbsCol.doc(herb.id);
-            batch.set(docRef, herb);
+// دالة جلب جميع الأعشاب مع تحسين الأداء
+async function fastFetchAllHerbs() {
+    const cached = localStorage.getItem('herbs_cache_fast');
+    if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < 30000) { // 30 ثانية كاش
+            console.log('⚡ Using cached herbs (fast mode)');
+            return data;
         }
-        
-        for (const category of data.categories) {
-            const docRef = categoriesCol.doc(category.id);
-            batch.set(docRef, category);
-        }
-        
-        await batch.commit();
-        console.log('✅ تم حفظ البيانات في Firebase بنجاح');
-        return true;
-    } catch (error) {
-        console.error('❌ فشل حفظ البيانات في Firebase:', error);
-        return false;
     }
+    
+    const herbs = await fastFetch(herbsCol, 500);
+    localStorage.setItem('herbs_cache_fast', JSON.stringify({
+        data: herbs,
+        timestamp: Date.now()
+    }));
+    return herbs;
 }
 
-// ========== تصدير المتغيرات والدوال للنطاق العام ==========
+// ========== تصدير المتغيرات ==========
 window.db = db;
 window.auth = auth;
 window.categoriesCol = categoriesCol;
 window.herbsCol = herbsCol;
 window.ADMIN_UID = ADMIN_UID;
-window.ADMIN_UIDS = ADMIN_UIDS;
 window.isUserAdmin = isUserAdmin;
-window.requireAdmin = requireAdmin;
-window.addAdminLog = addAdminLog;
-window.getQuickStats = getQuickStats;
-window.testFirebaseConnection = testFirebaseConnection;
-window.fetchAllDataFromFirebase = fetchAllDataFromFirebase;
-window.saveAllDataToFirebase = saveAllDataToFirebase;
+window.fastFetch = fastFetch;
+window.fastFetchAllHerbs = fastFetchAllHerbs;
 
-// ========== تسجيل معلومات التهيئة ==========
-console.log("=========================================");
-console.log("🌿 موسوعة الأعشاب الطبية - Firebase Config");
-console.log("=========================================");
-console.log(`📁 Project ID: ${firebaseConfig.projectId}`);
-console.log(`🗄️ Firestore: ${db ? "✅ Initialized" : "❌ Failed"}`);
-console.log(`🔐 Auth: ${auth ? "✅ Initialized" : "❌ Failed"}`);
-console.log(`👑 Admin UID: ${ADMIN_UID}`);
-console.log(`📊 Admin count: ${ADMIN_UIDS.length}`);
-console.log("=========================================");
-
-// اختبار الاتصال التلقائي بعد 2 ثانية (اختياري)
-setTimeout(() => {
-    testFirebaseConnection();
-}, 2000);
+console.log("⚡ Firebase config loaded (fast mode)");
