@@ -279,13 +279,13 @@
             <input type="file" id="restoreFile" accept=".json" style="display:none;">
 
             <!-- شريط الزائر -->
-<div class="visitor-toolbar visitor-only">
-    <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة</button>
-    <button id="quickHelpBtn" class="visitor-btn" onclick="window.location.href='/Encyclopedia-of-Herbal-Medicine/help.html'">
-    <i class="fas fa-question-circle"></i> مساعدة
-   <button id="visitorResyncBtn" class="visitor-btn"><i class="fas fa-sync-alt"></i> إعادة مزامنة</button>
-    <button id="visitorClearTempBtn" class="visitor-btn clear-btn"><i class="fas fa-database"></i> حذف المؤقتة</button>
-</div>
+            <div class="visitor-toolbar visitor-only">
+                <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة</button>
+                <button id="quickHelpBtn" class="visitor-btn"><i class="fas fa-question-circle"></i> مساعدة</button>
+                <button id="visitorResyncBtn" class="visitor-btn"><i class="fas fa-sync-alt"></i> إعادة مزامنة</button>
+                <button id="visitorClearTempBtn" class="visitor-btn clear-btn"><i class="fas fa-database"></i> حذف المؤقتة</button>
+            </div>
+            
             <!-- منطقة المحتوى -->
             <div id="contentArea"></div>
 
@@ -488,7 +488,6 @@
         let progress = 0;
         let loadCompleted = false;
         
-        // تحديث شريط التقدم
         function updateProgress(percent) {
             progress = Math.min(percent, 100);
             if (progressBar) {
@@ -496,7 +495,6 @@
             }
         }
         
-        // إخفاء شاشة البداية
         function hideSplash() {
             if (loadCompleted) return;
             loadCompleted = true;
@@ -505,14 +503,12 @@
             console.log('✅ Splash screen hidden');
         }
         
-        // محاكاة تقدم التحميل
         let progressInterval = setInterval(() => {
             if (progress < 90) {
                 updateProgress(progress + 5);
             }
         }, 100);
         
-        // انتظار تحميل Firebase والبيانات
         const checkInterval = setInterval(() => {
             if (window.herbs && window.herbs.length > 0) {
                 updateProgress(100);
@@ -527,7 +523,6 @@
             }
         }, 100);
         
-        // مهلة قصوى 5 ثوانٍ
         setTimeout(() => {
             if (!loadCompleted) {
                 updateProgress(100);
@@ -538,7 +533,6 @@
             }
         }, 5000);
         
-        // إخفاء شاشة البداية عند اكتمال تحميل window
         window.addEventListener('load', function() {
             setTimeout(() => {
                 if (!loadCompleted) {
@@ -658,114 +652,56 @@
         const installBtn = document.getElementById('installPwaBtn');
         if (installBtn) installBtn.style.display = 'none';
     }
-<script>
-// إعدادات الاتصال بالخادم
-const API_URL = 'https://herbal-api.onrender.com'; // غيّر إلى رابط الخادم الخاص بك
-
-// دالة لجلب الأعشاب من الخادم
-async function fetchHerbsFromServer() {
-    try {
-        const response = await fetch(`${API_URL}/api/herbs`);
-        const herbs = await response.json();
-        console.log('✅ تم جلب الأعشاب من الخادم:', herbs.length);
-        return herbs;
-    } catch (error) {
-        console.error('❌ فشل الاتصال بالخادم:', error);
-        return [];
-    }
-}
-
-// دالة لإضافة عشبة إلى الخادم
-async function addHerbToServer(herbData, token) {
-    try {
-        const response = await fetch(`${API_URL}/api/herbs`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(herbData)
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('فشل الإضافة:', error);
-        return null;
-    }
-}
-<script>
-// ============================================
-// إصلاح نهائي لزر البحث - يمنع أي تعارض
-// ============================================
-(function fixSearchButton() {
-    // الانتظار حتى يتم تحميل الصفحة بالكامل
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', fixSearchButtonNow);
-    } else {
-        fixSearchButtonNow();
-    }
+    </script>
     
-    function fixSearchButtonNow() {
-        console.log('🔧 جاري إصلاح زر البحث...');
-        
-        // البحث عن زر البحث
-        const searchBtn = document.getElementById('mainSearchBtn');
-        if (!searchBtn) {
-            console.error('❌ زر البحث غير موجود');
-            return;
+    <script>
+    // ============================================
+    // إصلاح نهائي لزر البحث - يمنع أي تعارض
+    // ============================================
+    (function fixSearchButton() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fixSearchButtonNow);
+        } else {
+            fixSearchButtonNow();
         }
         
-        // إزالة جميع المستمعات القديمة (طريقة قوية)
-        const newSearchBtn = searchBtn.cloneNode(true);
-        searchBtn.parentNode.replaceChild(newSearchBtn, searchBtn);
-        
-        // إضافة المستمع الجديد
-        newSearchBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        function fixSearchButtonNow() {
+            console.log('🔧 جاري إصلاح زر البحث...');
             
-            // فتح نافذة البحث
-            const searchModal = document.getElementById('searchModal');
-            if (searchModal) {
-                searchModal.classList.add('active');
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput) {
-                    searchInput.value = '';
-                    setTimeout(() => searchInput.focus(), 100);
-                }
-                const searchResults = document.getElementById('searchResults');
-                if (searchResults) searchResults.innerHTML = '';
-                console.log('✅ تم فتح نافذة البحث');
-            } else {
-                console.error('❌ نافذة البحث غير موجودة');
+            const searchBtn = document.getElementById('mainSearchBtn');
+            if (!searchBtn) {
+                console.error('❌ زر البحث غير موجود');
+                return;
             }
-        });
-        
-        console.log('✅ تم إصلاح زر البحث بنجاح');
-    }
-})();
-
-// إصلاح زر المساعدة لفتح صفحة المساعدة
-(function fixHelpButton() {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', fixHelpButtonNow);
-    } else {
-        fixHelpButtonNow();
-    }
-    
-    function fixHelpButtonNow() {
-        const helpBtn = document.getElementById('quickHelpBtn');
-        if (helpBtn) {
-            const newHelpBtn = helpBtn.cloneNode(true);
-            helpBtn.parentNode.replaceChild(newHelpBtn, helpBtn);
             
-            newHelpBtn.addEventListener('click', function(e) {
+            // إزالة جميع المستمعات القديمة
+            const newSearchBtn = searchBtn.cloneNode(true);
+            searchBtn.parentNode.replaceChild(newSearchBtn, searchBtn);
+            
+            // إضافة المستمع الجديد
+            newSearchBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.href = '/Encyclopedia-of-Herbal-Medicine/help.html';
+                e.stopPropagation();
+                
+                const searchModal = document.getElementById('searchModal');
+                if (searchModal) {
+                    searchModal.classList.add('active');
+                    const searchInput = document.getElementById('searchInput');
+                    if (searchInput) {
+                        searchInput.value = '';
+                        setTimeout(() => searchInput.focus(), 100);
+                    }
+                    const searchResults = document.getElementById('searchResults');
+                    if (searchResults) searchResults.innerHTML = '';
+                    console.log('✅ تم فتح نافذة البحث');
+                } else {
+                    console.error('❌ نافذة البحث غير موجودة');
+                }
             });
-            console.log('✅ تم إصلاح زر المساعدة');
+            
+            console.log('✅ تم إصلاح زر البحث بنجاح');
         }
-    }
-})();
-</script>
+    })();
+    </script>
 </body>
 </html>
