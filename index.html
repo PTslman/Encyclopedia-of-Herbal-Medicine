@@ -692,6 +692,80 @@ async function addHerbToServer(herbData, token) {
         return null;
     }
 }
+<script>
+// ============================================
+// إصلاح نهائي لزر البحث - يمنع أي تعارض
+// ============================================
+(function fixSearchButton() {
+    // الانتظار حتى يتم تحميل الصفحة بالكامل
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fixSearchButtonNow);
+    } else {
+        fixSearchButtonNow();
+    }
+    
+    function fixSearchButtonNow() {
+        console.log('🔧 جاري إصلاح زر البحث...');
+        
+        // البحث عن زر البحث
+        const searchBtn = document.getElementById('mainSearchBtn');
+        if (!searchBtn) {
+            console.error('❌ زر البحث غير موجود');
+            return;
+        }
+        
+        // إزالة جميع المستمعات القديمة (طريقة قوية)
+        const newSearchBtn = searchBtn.cloneNode(true);
+        searchBtn.parentNode.replaceChild(newSearchBtn, searchBtn);
+        
+        // إضافة المستمع الجديد
+        newSearchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // فتح نافذة البحث
+            const searchModal = document.getElementById('searchModal');
+            if (searchModal) {
+                searchModal.classList.add('active');
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.value = '';
+                    setTimeout(() => searchInput.focus(), 100);
+                }
+                const searchResults = document.getElementById('searchResults');
+                if (searchResults) searchResults.innerHTML = '';
+                console.log('✅ تم فتح نافذة البحث');
+            } else {
+                console.error('❌ نافذة البحث غير موجودة');
+            }
+        });
+        
+        console.log('✅ تم إصلاح زر البحث بنجاح');
+    }
+})();
+
+// إصلاح زر المساعدة لفتح صفحة المساعدة
+(function fixHelpButton() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fixHelpButtonNow);
+    } else {
+        fixHelpButtonNow();
+    }
+    
+    function fixHelpButtonNow() {
+        const helpBtn = document.getElementById('quickHelpBtn');
+        if (helpBtn) {
+            const newHelpBtn = helpBtn.cloneNode(true);
+            helpBtn.parentNode.replaceChild(newHelpBtn, helpBtn);
+            
+            newHelpBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = '/Encyclopedia-of-Herbal-Medicine/help.html';
+            });
+            console.log('✅ تم إصلاح زر المساعدة');
+        }
+    }
+})();
 </script>
 </body>
 </html>
