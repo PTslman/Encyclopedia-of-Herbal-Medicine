@@ -1,9 +1,13 @@
-// Service Worker متقدم - موسوعة الأعشاب الطبية
-const CACHE_NAME = 'herbal-pwa-v6';
-const STATIC_CACHE = 'herbal-static-v6';
-const DYNAMIC_CACHE = 'herbal-dynamic-v6';
-const IMAGE_CACHE = 'herbal-images-v6';
+// ============================================
+// Service Worker متقدم - تحديث ديناميكي
+// ============================================
 
+const CACHE_NAME = 'herbal-pwa-v8';
+const STATIC_CACHE = 'herbal-static-v8';
+const DYNAMIC_CACHE = 'herbal-dynamic-v8';
+const VERSION_CHECK_INTERVAL = 60 * 60 * 1000; // كل ساعة
+
+// الملفات الأساسية
 const STATIC_ASSETS = [
   '/Encyclopedia-of-Herbal-Medicine/',
   '/Encyclopedia-of-Herbal-Medicine/index.html',
@@ -11,10 +15,12 @@ const STATIC_ASSETS = [
   '/Encyclopedia-of-Herbal-Medicine/help.html',
   '/Encyclopedia-of-Herbal-Medicine/privacy.html',
   '/Encyclopedia-of-Herbal-Medicine/manifest.json',
+  '/Encyclopedia-of-Herbal-Medicine/version.json',
   '/Encyclopedia-of-Herbal-Medicine/css/style.css',
   '/Encyclopedia-of-Herbal-Medicine/js/firebase-config.js',
   '/Encyclopedia-of-Herbal-Medicine/js/app.js',
   '/Encyclopedia-of-Herbal-Medicine/js/pwa.js',
+  '/Encyclopedia-of-Herbal-Medicine/js/update-handler.js',
   'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
@@ -22,23 +28,108 @@ const STATIC_ASSETS = [
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'
 ];
 
-const OFFLINE_PAGE = `<!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>غير متصل - موسوعة الأعشاب</title><style>body{font-family:'Cairo',sans-serif;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center}.offline-container{padding:20px}.offline-icon{font-size:80px;margin-bottom:20px}button{background:#ffd700;color:#1b5e20;border:none;padding:12px 24px;border-radius:50px;font-size:16px;font-weight:bold;margin-top:20px;cursor:pointer}</style></head><body><div class="offline-container"><div class="offline-icon">🌿</div><h1>غير متصل بالإنترنت</h1><p>يرجى التحقق من اتصالك بالإنترنت</p><button onclick="location.reload()">إعادة المحاولة</button></div></body></html>`;
-
+// تثبيت Service Worker
 self.addEventListener('install', event => {
+  console.log('[SW] Installing...');
   self.skipWaiting();
-  event.waitUntil(caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_ASSETS)));
+  event.waitUntil(
+    caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_ASSETS))
+  );
 });
 
+// تفعيل Service Worker مع تنظيف الكاش القديم
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.map(key => {
-    if (key !== STATIC_CACHE && key !== DYNAMIC_CACHE && key !== IMAGE_CACHE) return caches.delete(key);
-  }))).then(() => self.clients.claim()));
+  console.log('[SW] Activating...');
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.map(key => {
+          if (key !== STATIC_CACHE && key !== DYNAMIC_CACHE) {
+            console.log('[SW] Deleting old cache:', key);
+            return caches.delete(key);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
 });
 
+// ========== التحقق من وجود تحديثات ==========
+async function checkForUpdates() {
+  try {
+    const response = await fetch('/Encyclopedia-of-Herbal-Medicine/version.json?t=' + Date.now());
+    const newVersion = await response.json();
+    
+    const cache = await caches.open(STATIC_CACHE);
+    const cachedResponse = await cache.match('/Encyclopedia-of-Herbal-Medicine/version.json');
+    
+    if (cachedResponse) {
+      const oldVersion = await cachedResponse.json();
+      if (oldVersion.hash !== newVersion.hash) {
+        console.log('[SW] تحديث جديد متاح!');
+        
+        // إرسال إشعار للتطبيق
+        const clients = await self.clients.matchAll();
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'UPDATE_AVAILABLE',
+            version: newVersion.version,
+            files: newVersion.files
+          });
+        });
+        
+        // تحديث الكاش تلقائياً
+        await updateCache(newVersion.files);
+      }
+    }
+  } catch (error) {
+    console.error('[SW] فشل التحقق من التحديثات:', error);
+  }
+}
+
+// ========== تحديث الكاش ==========
+async function updateCache(files) {
+  const cache = await caches.open(STATIC_CACHE);
+  for (const file of files) {
+    try {
+      const response = await fetch('/Encyclopedia-of-Herbal-Medicine/' + file + '?t=' + Date.now());
+      if (response.ok) {
+        await cache.put('/Encyclopedia-of-Herbal-Medicine/' + file, response);
+        console.log('[SW] تم تحديث:', file);
+      }
+    } catch (error) {
+      console.error('[SW] فشل تحديث:', file, error);
+    }
+  }
+}
+
+// التحقق الدوري من التحديثات
+setInterval(checkForUpdates, VERSION_CHECK_INTERVAL);
+
+// التحقق عند استلام رسالة
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'CHECK_FOR_UPDATES') {
+    checkForUpdates();
+  }
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// ========== استراتيجيات التخزين المؤقت ==========
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  if (url.href.includes('firebaseio.com') || url.href.includes('googleapis.com')) return;
+  
+  // تجاهل Firebase
+  if (url.href.includes('firebaseio.com') || url.href.includes('googleapis.com')) {
+    return;
+  }
+  
+  // ملف version.json - دائماً من الشبكة
+  if (url.pathname.includes('version.json')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
   
   event.respondWith(
     caches.match(event.request).then(cached => {
@@ -47,18 +138,10 @@ self.addEventListener('fetch', event => {
         const clone = response.clone();
         caches.open(DYNAMIC_CACHE).then(cache => cache.put(event.request, clone));
         return response;
-      }).catch(() => new Response(OFFLINE_PAGE, { headers: { 'Content-Type': 'text/html' } }));
+      });
     })
   );
 });
 
-self.addEventListener('push', event => {
-  let data = { title: '🌿 موسوعة الأعشاب الطبية', body: 'تحديث جديد في الموسوعة!', icon: '/Encyclopedia-of-Herbal-Medicine/icons/icon-192.png', badge: '/Encyclopedia-of-Herbal-Medicine/icons/icon-72.png', vibrate: [200,100,200] };
-  if (event.data) try { data = { ...data, ...event.data.json() }; } catch(e) {}
-  event.waitUntil(self.registration.showNotification(data.title, { body: data.body, icon: data.icon, badge: data.badge, vibrate: data.vibrate, actions: [{ action: 'open', title: 'فتح التطبيق' }] }));
-});
-
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  if (event.action === 'open') event.waitUntil(clients.openWindow('/Encyclopedia-of-Herbal-Medicine/'));
-});
+// التحقق من التحديثات عند التفعيل
+checkForUpdates();
