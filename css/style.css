@@ -1786,4 +1786,85 @@ body.save-data-mode .info-block:hover {
     display: flex;
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
+/* تحسينات PWA - جعله كتطبيق حقيقي */
+
+/* إخفاء شريط التمرير عند عدم الحاجة */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+/* تحسين اللمس للأزرار */
+button, .tool-btn, .icon-btn, .herb-card, .category-card {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* تأثير الضغط على العناصر */
+button:active, .tool-btn:active, .icon-btn:active {
+    transform: scale(0.97);
+    transition: transform 0.05s;
+}
+
+/* تحسين الشفافية في وضع PWA */
+@media (display-mode: standalone) {
+    body {
+        background: var(--light-bg);
+    }
+    
+    /* إخفاء أي عناصر خاصة بالمتصفح */
+    .browser-only {
+        display: none !important;
+    }
+    
+    /* تحسين المسافات للأجهزة ذات الشاشات الطويلة */
+    .app-container {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+/* منع التحديد العشوائي */
+* {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* السماح بتحديد النص في حقول الإدخال فقط */
+input, textarea {
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+/* تحسين سرعة ظهور التطبيق */
+.splash-screen {
+    transition: opacity 0.3s ease;
+}
+
+/* تأثيرات حركية سلسة */
+.herb-card, .category-card, .tool-btn, .icon-btn {
+    transition: all 0.12s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    will-change: transform;
+}
+
+/* وضع عدم الاتصال */
+body.offline-mode {
+    opacity: 0.95;
+}
+
+body.offline-mode::after {
+    content: "⚠️ وضع غير متصل";
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    background: #ff9800;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    border-radius: 50px;
+    font-size: 12px;
+    z-index: 9999;
 }
