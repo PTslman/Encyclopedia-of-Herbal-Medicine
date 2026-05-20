@@ -9,6 +9,17 @@ let syncInProgress = false;
 let localDBCategories = [];
 let localDBHerbs = [];
 
+// ============================================
+// دالة تحديث عدد الأعشاب في الشريط
+// ============================================
+
+function updateHerbCount() {
+    const herbCountSpan = document.getElementById('herbCount');
+    if (herbCountSpan) {
+        herbCountSpan.innerText = herbs.length + ' عشبة';
+    }
+}
+
 // دالة لتحميل البيانات من قاعدة البيانات المحلية أولاً
 async function loadFromLocalDB() {
     console.log('📁 محاولة التحميل من قاعدة البيانات المحلية...');
@@ -28,16 +39,7 @@ async function loadFromLocalDB() {
     }
     return false;
 }
-// ============================================
-// دالة تحديث عدد الأعشاب في الشريط
-// ============================================
 
-function updateHerbCount() {
-    const herbCountSpan = document.getElementById('herbCount');
-    if (herbCountSpan) {
-        herbCountSpan.innerText = herbs.length + ' عشبة';
-    }
-}
 // دالة للمزامنة مع Firebase (في الخلفية)
 async function syncWithFirebaseBackground() {
     if (syncInProgress) return;
@@ -358,8 +360,7 @@ function loadFromLocalCache(allowEmpty) {
             if (data.categories && data.herbs && (data.categories.length > 0 || data.herbs.length > 0 || allowEmpty)) {
                 categories = data.categories;
                 herbs = data.herbs;
-                const herbCountSpan = document.getElementById('herbCount');
-                if (herbCountSpan) herbCountSpan.innerText = herbs.length + ' عشبة';
+                updateHerbCount();
                 renderContent();
                 return true;
             }
@@ -400,8 +401,7 @@ async function forceFetchFromServer() {
         categories = catsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         herbs = herbsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         saveToLocalCache(categories, herbs);
-        const herbCountSpan = document.getElementById('herbCount');
-        if (herbCountSpan) herbCountSpan.innerText = herbs.length + ' عشبة';
+        updateHerbCount();
         renderContent();
         return true;
     } catch (error) {
@@ -429,8 +429,7 @@ async function initialLoad() {
         categories = result.cats;
         herbs = result.herbs;
         saveToLocalCache(categories, herbs);
-        const herbCountSpan = document.getElementById('herbCount');
-        if (herbCountSpan) herbCountSpan.innerText = herbs.length + ' عشبة';
+        updateHerbCount();
         renderContent();
     } catch (error) {
         console.error("خطأ في التحميل:", error);
@@ -466,8 +465,7 @@ function startRealtimeUpdates() {
             if (!isSyncActive) return;
             herbs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             saveToLocalCache(categories, herbs);
-            const herbCountSpan = document.getElementById('herbCount');
-            if (herbCountSpan) herbCountSpan.innerText = herbs.length + ' عشبة';
+            updateHerbCount();
             renderContent();
             reconnectAttempts = 0;
         }, handleError);
@@ -1801,6 +1799,7 @@ function updateConnectionStatusLED() {
 
 setInterval(updateConnectionStatusLED, 3000);
 setTimeout(updateConnectionStatusLED, 500);
+
 // ============================================
 // الميزات الجديدة: المزامنة، التحديث الإجباري، شريط التقدم
 // ============================================
@@ -1950,4 +1949,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
 console.log('✅ تم تحميل التطبيق بنجاح');
