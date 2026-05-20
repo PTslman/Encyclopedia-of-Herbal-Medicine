@@ -1664,3 +1664,25 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.setItem('last_visit_date', new Date().toLocaleDateString('ar-EG'));
     
 });
+// كشف حالة الاتصال
+window.addEventListener('online', () => {
+    console.log('🟢 الاتصال بالإنترنت恢复了');
+    document.body.classList.remove('offline-mode');
+    const toast = document.createElement('div');
+    toast.textContent = '✅ تم استعادة الاتصال بالإنترنت';
+    toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#4caf50;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+    // إعادة محاولة المزامنة
+    if (window.syncWithFirebaseBackground) syncWithFirebaseBackground();
+});
+
+window.addEventListener('offline', () => {
+    console.log('🔴 فقدان الاتصال بالإنترنت');
+    document.body.classList.add('offline-mode');
+    const toast = document.createElement('div');
+    toast.textContent = '⚠️ لا يوجد اتصال بالإنترنت - يتم عرض البيانات المخزنة محلياً';
+    toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#ff9800;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+});
