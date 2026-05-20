@@ -247,8 +247,8 @@
             <!-- الأزرار الرئيسية -->
             <div class="main-buttons-bar">
                 <button id="mainSearchBtn" class="main-search-btn">
-                    <i class="fas fa-search"></i>
-                    <span>بحث في الموسوعة</span>
+                    <i class="fas fa-question-circle"></i>
+                    <span>مساعدة</span>
                 </button>
                 <div class="view-toggle-large" id="viewToggle">
                     <button data-view="all" class="view-btn-large active">
@@ -281,7 +281,6 @@
             <!-- شريط الزائر -->
             <div class="visitor-toolbar visitor-only">
                 <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة</button>
-                <button id="quickHelpBtn" class="visitor-btn"><i class="fas fa-question-circle"></i> مساعدة</button>
                 <button id="visitorResyncBtn" class="visitor-btn"><i class="fas fa-sync-alt"></i> إعادة مزامنة</button>
                 <button id="visitorClearTempBtn" class="visitor-btn clear-btn"><i class="fas fa-database"></i> حذف المؤقتة</button>
             </div>
@@ -303,7 +302,7 @@
         </div>
     </div>
 
-    <!-- المودالات (نفسها بدون تغيير) -->
+    <!-- المودالات -->
     <div id="categoryModal" class="modal-glass">
         <div class="modal-glass-content">
             <div class="modal-header">
@@ -477,7 +476,7 @@
     <script src="/Encyclopedia-of-Herbal-Medicine/js/app.js"></script>
 
     <script>
-    // معالج شاشة البداية المتطور مع شريط تقدم
+    // معالج شاشة البداية
     (function smartSplashHandler() {
         const splash = document.getElementById('splashScreen');
         const mainApp = document.getElementById('mainApp');
@@ -490,9 +489,7 @@
         
         function updateProgress(percent) {
             progress = Math.min(percent, 100);
-            if (progressBar) {
-                progressBar.style.width = progress + '%';
-            }
+            if (progressBar) progressBar.style.width = progress + '%';
         }
         
         function hideSplash() {
@@ -504,18 +501,11 @@
         }
         
         let progressInterval = setInterval(() => {
-            if (progress < 90) {
-                updateProgress(progress + 5);
-            }
+            if (progress < 90) updateProgress(progress + 5);
         }, 100);
         
         const checkInterval = setInterval(() => {
-            if (window.herbs && window.herbs.length > 0) {
-                updateProgress(100);
-                clearInterval(checkInterval);
-                clearInterval(progressInterval);
-                setTimeout(hideSplash, 300);
-            } else if (window.categories && window.categories.length > 0) {
+            if ((window.herbs && window.herbs.length > 0) || (window.categories && window.categories.length > 0)) {
                 updateProgress(100);
                 clearInterval(checkInterval);
                 clearInterval(progressInterval);
@@ -529,11 +519,10 @@
                 clearInterval(checkInterval);
                 clearInterval(progressInterval);
                 hideSplash();
-                console.warn('⚠️ Splash screen timeout - forcing hide');
             }
         }, 5000);
         
-        window.addEventListener('load', function() {
+        window.addEventListener('load', () => {
             setTimeout(() => {
                 if (!loadCompleted) {
                     updateProgress(100);
@@ -608,7 +597,7 @@
         };
         
         localStorage.setItem('dynamic_manifest', JSON.stringify(manifest));
-        console.log('✅ Manifest updated with generated icons');
+        console.log('✅ Manifest updated');
     }
     </script>
 
@@ -618,10 +607,10 @@
         window.addEventListener('load', function() {
             navigator.serviceWorker.register('/Encyclopedia-of-Herbal-Medicine/sw.js')
                 .then(function(registration) {
-                    console.log('✅ Service Worker registered successfully:', registration);
+                    console.log('✅ Service Worker registered');
                 })
                 .catch(function(error) {
-                    console.error('❌ Service Worker registration failed:', error);
+                    console.error('❌ Service Worker failed:', error);
                 });
         });
     }
@@ -637,9 +626,7 @@
             installBtn.onclick = function() {
                 e.prompt();
                 e.userChoice.then(choice => {
-                    if (choice.outcome === 'accepted') {
-                        console.log('✅ تم تثبيت التطبيق بنجاح');
-                    }
+                    if (choice.outcome === 'accepted') console.log('✅ تم التثبيت');
                     installBtn.style.display = 'none';
                 });
             };
@@ -647,7 +634,7 @@
     });
     
     if (window.matchMedia('(display-mode: standalone)').matches) {
-        console.log('✅ التطبيق يعمل في وضع standalone');
+        console.log('✅ يعمل في وضع standalone');
         document.body.classList.add('pwa-installed');
         const installBtn = document.getElementById('installPwaBtn');
         if (installBtn) installBtn.style.display = 'none';
@@ -656,52 +643,40 @@
     
     <script>
     // ============================================
-    // إصلاح نهائي لزر البحث - يمنع أي تعارض
+    // زر البحث يفتح صفحة help.html
     // ============================================
-    (function fixSearchButton() {
+    (function setupButtons() {
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', fixSearchButtonNow);
+            document.addEventListener('DOMContentLoaded', setupButtonsNow);
         } else {
-            fixSearchButtonNow();
+            setupButtonsNow();
         }
         
-        function fixSearchButtonNow() {
-            console.log('🔧 جاري إصلاح زر البحث...');
-            
-            const searchBtn = document.getElementById('mainSearchBtn');
-            if (!searchBtn) {
-                console.error('❌ زر البحث غير موجود');
-                return;
+        function setupButtonsNow() {
+            // زر المساعدة الرئيسي (الأزرق الكبير) - يفتح help.html
+            const mainHelpBtn = document.getElementById('mainSearchBtn');
+            if (mainHelpBtn) {
+                const newBtn = mainHelpBtn.cloneNode(true);
+                mainHelpBtn.parentNode.replaceChild(newBtn, mainHelpBtn);
+                newBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = '/Encyclopedia-of-Herbal-Medicine/help.html';
+                });
+                console.log('✅ زر المساعدة الرئيسي يعمل');
             }
             
-            // إزالة جميع المستمعات القديمة
-            const newSearchBtn = searchBtn.cloneNode(true);
-            searchBtn.parentNode.replaceChild(newSearchBtn, searchBtn);
-            
-            // إضافة المستمع الجديد
-            newSearchBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const searchModal = document.getElementById('searchModal');
-                if (searchModal) {
-                    searchModal.classList.add('active');
-                    const searchInput = document.getElementById('searchInput');
-                    if (searchInput) {
-                        searchInput.value = '';
-                        setTimeout(() => searchInput.focus(), 100);
-                    }
-                    const searchResults = document.getElementById('searchResults');
-                    if (searchResults) searchResults.innerHTML = '';
-                    console.log('✅ تم فتح نافذة البحث');
-                } else {
-                    console.error('❌ نافذة البحث غير موجودة');
-                }
-            });
-            
-            console.log('✅ تم إصلاح زر البحث بنجاح');
+            // زر البحث القديم (في حالة وجوده) - يفتح help.html أيضاً
+            const searchBtn = document.getElementById('searchBtn');
+            if (searchBtn) {
+                const newSearchBtn = searchBtn.cloneNode(true);
+                searchBtn.parentNode.replaceChild(newSearchBtn, searchBtn);
+                newSearchBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = '/Encyclopedia-of-Herbal-Medicine/help.html';
+                });
+            }
         }
     })();
     </script>
 </body>
-</html>
+    </html>
