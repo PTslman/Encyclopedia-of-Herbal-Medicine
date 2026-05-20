@@ -65,8 +65,8 @@ async function loadFromFirebaseFallback() {
         const fbCategories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
         if (fbHerbs.length > 0 || fbCategories.length > 0) {
-            categories = fbHerbs;
-            herbs = fbCategories;
+            categories = fbCategories;
+            herbs = fbHerbs;
             renderContent();
             updateHerbCount();
             console.log(`✅ تم التحميل من Firebase: ${categories.length} تصنيف, ${herbs.length} عشبة`);
@@ -243,6 +243,7 @@ window.syncWithFirebaseBackground = syncWithFirebaseBackground;
 window.loadAllData = loadAllData;
 
 console.log('✅ تم تحميل نظام قاعدة البيانات المزدوج (محلي + Firebase)');
+
 // =================================================================
 // ================== الوظائف الأساسية للنظام ===================
 // =================================================================
@@ -1664,25 +1665,132 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.setItem('last_visit_date', new Date().toLocaleDateString('ar-EG'));
     
 });
-// كشف حالة الاتصال
-window.addEventListener('online', () => {
-    console.log('🟢 الاتصال بالإنترنت恢复了');
-    document.body.classList.remove('offline-mode');
+
+// =================================================================
+// ========== كشف حالة الاتصال بالإنترنت ===========================
+// =================================================================
+
+// إضافة نمط لوضع عدم الاتصال
+const offlineStyle = document.createElement('style');
+offlineStyle.textContent = `
+    body.offline-mode {
+        opacity: 0.98;
+    }
+    body.offline-mode::after {
+        content: "⚠️ وضع غير متصل - يتم عرض البيانات المحفوظة";
+        position: fixed;
+        bottom: 80px;
+        left: 10px;
+        right: 10px;
+        background: #ff9800;
+        color: white;
+        text-align: center;
+        padding: 10px;
+        border-radius: 50px;
+        font-size: 12px;
+        z-index: 9999;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+        from { transform: translateY(100px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(offlineStyle);
+
+// دالة عرض إشعار مؤقت
+function showConnectionToast(message, type = 'info') {
+    const colors = {
+        success: '#4caf50',
+        warning: '#ff9800',
+        error: '#f44336',
+        info: '#2196f3'
+    };
+    
     const toast = document.createElement('div');
-    toast.textContent = '✅ تم استعادة الاتصال بالإنترنت';
-    toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#4caf50;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        left: 20px;
+        right: 20px;
+        background: ${colors[type]};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 60px;
+        text-align: center;
+        z-index: 10001;
+        font-size: 0.85rem;
+        direction: rtl;
+        font-family: 'Cairo', sans-serif;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        animation: slideUp 0.3s ease;
+    `;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-    // إعادة محاولة المزامنة
-    if (window.syncWithFirebaseBackground) syncWithFirebaseBackground();
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(100px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+// مراقبة حالة الاتصال
+window.addEventListener('online', () => {
+    console.log('🟢 تم استعادة الاتصال بالإنترنت');
+    document.body.classList.remove('offline-mode');
+    showConnectionToast('✅ تم استعادة الاتصال بالإنترنت - جاري المزامنة...', 'success');
+    
+    if (typeof forceFetchFromServer === 'function') {
+        forceFetchFromServer().then(() => {
+            showConnectionToast('🔄 تم تحديث البيانات بنجاح', 'success');
+        }).catch(() => {
+            showConnectionToast('⚠️ فشل تحديث البيانات، سيتم المحاولة مرة أخرى', 'warning');
+        });
+    }
+    
+    if (typeof startRealtimeUpdates === 'function' && !isSyncActive) {
+        setTimeout(() => {
+            startRealtimeUpdates();
+            showConnectionToast('🔄 تم إعادة تشغيل المزامنة المباشرة', 'info');
+        }, 1000);
+    }
 });
 
 window.addEventListener('offline', () => {
     console.log('🔴 فقدان الاتصال بالإنترنت');
     document.body.classList.add('offline-mode');
-    const toast = document.createElement('div');
-    toast.textContent = '⚠️ لا يوجد اتصال بالإنترنت - يتم عرض البيانات المخزنة محلياً';
-    toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#ff9800;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
+    showConnectionToast('⚠️ لا يوجد اتصال بالإنترنت - يتم عرض البيانات المخزنة محلياً', 'warning');
 });
+
+// التحقق من حالة الاتصال عند تحميل الصفحة
+if (!navigator.onLine) {
+    document.body.classList.add('offline-mode');
+    showConnectionToast('⚠️ لا يوجد اتصال بالإنترنت - يتم عرض البيانات المخزنة محلياً', 'warning');
+}
+
+// مؤشر LED لحالة المزامنة
+function updateConnectionStatusLED() {
+    const led = document.getElementById('syncStatusLed');
+    if (!led) return;
+    
+    if (!navigator.onLine) {
+        led.className = 'sync-status-led disconnected';
+        led.title = 'غير متصل بالإنترنت';
+    } else if (isSyncActive && reconnectAttempts === 0) {
+        led.className = 'sync-status-led connected';
+        led.title = 'متصل ومزامن';
+    } else if (isSyncActive) {
+        led.className = 'sync-status-led syncing';
+        led.title = 'جاري المزامنة...';
+    } else {
+        led.className = 'sync-status-led disconnected';
+        led.title = 'المزامنة متوقفة';
+    }
+}
+
+setInterval(updateConnectionStatusLED, 3000);
+setTimeout(updateConnectionStatusLED, 500);
+
+console.log('✅ تم تحميل التطبيق بنجاح');
