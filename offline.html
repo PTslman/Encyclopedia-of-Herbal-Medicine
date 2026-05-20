@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>غير متصل - موسوعة الأعشاب الطبية</title>
+    <meta name="theme-color" content="#2e7d32">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #43a047 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .offline-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 25px;
+            animation: bounce 0.8s ease-out;
+        }
+        
+        @keyframes bounce {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .offline-icon svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 8px 20px rgba(0,0,0,0.2));
+        }
+        
+        h1 {
+            color: #fff9e0;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+        
+        p {
+            color: rgba(255,249,224,0.9);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        .offline-message {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .offline-message ul {
+            text-align: right;
+            padding-right: 20px;
+            margin: 15px 0;
+        }
+        
+        .offline-message li {
+            margin: 8px 0;
+            color: #ffecb3;
+        }
+        
+        button {
+            background: #ffd700;
+            color: #1b5e20;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 0.7rem;
+            color: rgba(255,249,224,0.5);
+        }
+        
+        .cached-data {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.85rem;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#ffd700;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#ffecb3;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect width="100" height="100" rx="22" fill="url(#iconGrad)"/>
+                <text x="50" y="65" font-size="48" text-anchor="middle" fill="#2e7d32">📡</text>
+                <text x="50" y="85" font-size="11" text-anchor="middle" fill="#1b5e20" font-weight="bold">غير متصل</text>
+            </svg>
+        </div>
+        
+        <h1>🌿 لا يوجد اتصال بالإنترنت</h1>
+        
+        <div class="offline-message">
+            <p>⚠️ عذراً، لا يمكن الاتصال بالإنترنت حالياً.</p>
+            <p>💡 يمكنك الاستمرار باستخدام:</p>
+            <ul>
+                <li>📚 عرض الأعشاب التي تم تحميلها سابقاً</li>
+                <li>🔍 البحث في البيانات المخزنة محلياً</li>
+                <li>📖 تصفح التصنيفات المحفوظة</li>
+            </ul>
+        </div>
+        
+        <div class="cached-data" id="cachedInfo">
+            🔄 جاري التحقق من البيانات المخزنة...
+        </div>
+        
+        <button onclick="location.reload()">🔄 إعادة المحاولة</button>
+        <button class="btn-secondary" onclick="location.href='/Encyclopedia-of-Herbal-Medicine/'">🏠 العودة للتطبيق</button>
+        
+        <div class="footer">
+            موسوعة الأعشاب الطبية - الإصدار 4.0
+        </div>
+    </div>
+    
+    <script>
+        // عرض معلومات البيانات المخزنة
+        function showCachedInfo() {
+            const cachedDiv = document.getElementById('cachedInfo');
+            try {
+                const cacheData = localStorage.getItem('herbal_cache_v2');
+                if (cacheData) {
+                    const data = JSON.parse(cacheData);
+                    const herbsCount = data.herbs?.length || 0;
+                    const categoriesCount = data.categories?.length || 0;
+                    cachedDiv.innerHTML = `
+                        📦 البيانات المخزنة محلياً:<br>
+                        🌿 ${herbsCount} عشبة | 📂 ${categoriesCount} تصنيف<br>
+                        📅 آخر تحديث: ${new Date(data.timestamp).toLocaleString('ar-EG')}
+                    `;
+                } else {
+                    cachedDiv.innerHTML = '⚠️ لا توجد بيانات مخزنة محلياً. يرجى الاتصال بالإنترنت لتحميل البيانات.';
+                }
+            } catch(e) {
+                cachedDiv.innerHTML = '⚠️ لا توجد بيانات مخزنة محلياً';
+            }
+        }
+        
+        showCachedInfo();
+        
+        // محاولة الكشف عن عودة الإنترنت تلقائياً
+        window.addEventListener('online', () => {
+            location.reload();
+        });
+    </script>
+</body>
+</html>
