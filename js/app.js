@@ -1801,178 +1801,27 @@ setInterval(updateConnectionStatusLED, 3000);
 setTimeout(updateConnectionStatusLED, 500);
 
 // ============================================
-// الميزات الجديدة: المزامنة، التحديث الإجباري، شريط التقدم
+// المزامنة مع Firebase - جميع المستخدمين يشتركون في نفس البيانات
 // ============================================
 
-// تحديث شريط تقدم المزامنة
-function updateSyncProgress(percent, status) {
-    const fill = document.getElementById('syncProgressFill');
-    const percentSpan = document.getElementById('syncProgressPercent');
-    const statusSpan = document.getElementById('syncStatusText');
-    
-    if (fill) fill.style.width = Math.min(percent, 100) + '%';
-    if (percentSpan) percentSpan.innerText = Math.floor(percent) + '%';
-    if (statusSpan) statusSpan.innerText = status || (percent >= 100 ? '✅ مزامن' : '🔄 جاري المزامنة...');
-    
-    if (percent >= 100) {
-        setTimeout(() => {
-            if (fill) fill.style.width = '0%';
-            if (percentSpan) percentSpan.innerText = '0%';
-            if (statusSpan) statusSpan.innerText = '✅ متصل';
-        }, 2000);
-    }
-}
-
-// دالة التحديث الإجباري للبيانات (للمستخدم العادي)
-async function forceSyncData() {
-    if (!navigator.onLine) {
-        alert('⚠️ لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك ثم حاول مرة أخرى.');
-        return false;
-    }
-    
-    updateSyncProgress(10, '🔄 جاري الاتصال بالسحابة...');
-    
-    try {
-        // جلب البيانات من Firebase
-        updateSyncProgress(30, '📡 جلب البيانات من الخادم...');
-        
-        const [herbsSnap, categoriesSnap] = await Promise.all([
-            herbsCol.get(),
-            categoriesCol.get()
-        ]);
-        
-        const fbHerbs = herbsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const fbCategories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        updateSyncProgress(70, '💾 حفظ البيانات محلياً...');
-        
-        // حفظ في LocalDB إذا كان موجوداً
-        if (window.LocalDB && window.LocalDB.isLoaded) {
-            for (const herb of fbHerbs) {
-                window.LocalDB.addHerb(herb);
-            }
-            for (const cat of fbCategories) {
-                window.LocalDB.addCategory(cat);
-            }
-            window.LocalDB.backupToLocalStorage();
-            categories = window.LocalDB.getCategories();
-            herbs = window.LocalDB.getHerbs();
-        } else {
-            // حفظ مباشرة في localStorage
-            const cacheData = {
-                categories: fbCategories,
-                herbs: fbHerbs,
-                timestamp: Date.now()
-            };
-            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-            categories = fbCategories;
-            herbs = fbHerbs;
-        }
-        
-        updateSyncProgress(100, '✅ تم تحديث البيانات بنجاح');
-        
-        // تحديث العرض
-        renderContent();
-        updateHerbCount();
-        
-        // إظهار إشعار نجاح
-        const toast = document.createElement('div');
-        toast.textContent = '✅ تم تحديث البيانات بنجاح';
-        toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#4caf50;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;animation:fadeInUp 0.3s ease;';
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-        
-        return true;
-    } catch (error) {
-        console.error('فشل التحديث الإجباري:', error);
-        updateSyncProgress(0, '❌ فشل التحديث');
-        alert('❌ فشل تحديث البيانات: ' + error.message);
-        return false;
-    }
-}
-
-// مراقبة حالة الاتصال وتحديث شريط التقدم
-function initSyncMonitor() {
-    // تحديث حالة LED وشريط التقدم
-    function updateSyncUI() {
-        const led = document.getElementById('syncStatusLed');
-        const statusSpan = document.getElementById('syncStatusText');
-        
-        if (!navigator.onLine) {
-            if (led) led.className = 'sync-status-led disconnected';
-            if (statusSpan) statusSpan.innerHTML = '📡 غير متصل - بيانات مخزنة محلياً';
-        } else if (isSyncActive) {
-            if (led) led.className = 'sync-status-led connected';
-            if (statusSpan) statusSpan.innerHTML = '✅ متصل ومزامن';
-        } else {
-            if (led) led.className = 'sync-status-led syncing';
-            if (statusSpan) statusSpan.innerHTML = '🔄 جاري المزامنة...';
-        }
-    }
-    
-    setInterval(updateSyncUI, 3000);
-    updateSyncUI();
-    
-    // عند عودة الاتصال، مزامنة تلقائية
-    window.addEventListener('online', async () => {
-        console.log('🟢 تم استعادة الاتصال - جاري المزامنة التلقائية');
-        updateSyncProgress(20, '🔄 مزامنة تلقائية...');
-        
-        // محاولة مزامنة العمليات المعلقة
-        if (window.LocalDB) {
-            await window.LocalDB.syncWithFirebase();
-        }
-        
-        // تحديث البيانات من Firebase
-        await forceSyncData();
-        
-        const toast = document.createElement('div');
-        toast.textContent = '✅ تمت المزامنة التلقائية بنجاح';
-        toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#4caf50;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;animation:fadeInUp 0.3s ease;';
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    });
-}
-
-// تهيئة المزامنة عند تحميل الصفحة
-setTimeout(() => {
-    initSyncMonitor();
-}, 1000);
-
-// ربط زر التحديث الإجباري في شريط الزائر
-document.addEventListener('DOMContentLoaded', function() {
-    const forceSyncBtn = document.getElementById('visitorForceSyncBtn');
-    if (forceSyncBtn) {
-        forceSyncBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            forceSyncData();
-        });
-    }
-});
-// ============================================
-// إصلاح دالة التحديث الإجباري للبيانات من Firebase
-// ============================================
-
-window.forceSyncData = async function() {
-    console.log('🔄 بدء التحديث الإجباري من Firebase...');
+// دالة التحديث الإجباري للبيانات من Firebase (للمستخدم العادي والمسؤول)
+window.forceSyncData = async function(showToast = true) {
+    console.log('🔄 بدء جلب البيانات من Firebase...');
     
     if (!navigator.onLine) {
-        alert('⚠️ لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك ثم حاول مرة أخرى.');
+        if (showToast) alert('⚠️ لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك ثم حاول مرة أخرى.');
         return false;
     }
     
-    // التحقق من وجود Firebase
-    if (typeof herbsCol === 'undefined' || typeof categoriesCol === 'undefined') {
-        console.error('❌ Firebase غير متاح - herbsCol أو categoriesCol غير معرفين');
-        alert('❌ خطأ: Firebase غير متاح. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
-        return false;
+    // تحديث شريط التقدم - بدء التحميل
+    if (typeof updateSyncProgress === 'function') {
+        updateSyncProgress(5, '🔄 جاري الاتصال بقاعدة البيانات...');
     }
-    
-    updateSyncProgress(10, '🔄 جاري الاتصال بـ Firebase...');
     
     try {
-        // جلب التصنيفات من Firebase
-        updateSyncProgress(20, '📡 جلب التصنيفات من Firebase...');
+        // ========== 1. جلب التصنيفات من Firebase ==========
+        if (typeof updateSyncProgress === 'function') updateSyncProgress(15, '📡 جلب التصنيفات من السحابة...');
+        
         const categoriesSnapshot = await categoriesCol.get();
         const fbCategories = [];
         categoriesSnapshot.forEach(doc => {
@@ -1980,8 +1829,9 @@ window.forceSyncData = async function() {
         });
         console.log(`✅ تم جلب ${fbCategories.length} تصنيف من Firebase`);
         
-        // جلب الأعشاب من Firebase
-        updateSyncProgress(40, '📡 جلب الأعشاب من Firebase...');
+        // ========== 2. جلب الأعشاب من Firebase ==========
+        if (typeof updateSyncProgress === 'function') updateSyncProgress(30, '📡 جلب الأعشاب من السحابة...');
+        
         const herbsSnapshot = await herbsCol.get();
         const fbHerbs = [];
         herbsSnapshot.forEach(doc => {
@@ -1989,9 +1839,10 @@ window.forceSyncData = async function() {
         });
         console.log(`✅ تم جلب ${fbHerbs.length} عشبة من Firebase`);
         
-        updateSyncProgress(70, '💾 حفظ البيانات محلياً...');
+        // ========== 3. حفظ البيانات محلياً ==========
+        if (typeof updateSyncProgress === 'function') updateSyncProgress(70, '💾 حفظ البيانات وتحديث الواجهة...');
         
-        // حفظ في localStorage
+        // حفظ في localStorage للاستخدام المستقبلي
         const cacheData = {
             categories: fbCategories,
             herbs: fbHerbs,
@@ -1999,56 +1850,222 @@ window.forceSyncData = async function() {
         };
         localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
         
-        // تحديث المتغيرات العامة
+        // ========== 4. تحديث المتغيرات العامة ==========
         categories = fbCategories;
         herbs = fbHerbs;
         
-        // تحديث الواجهة
+        // ========== 5. تحديث الواجهة فوراً ==========
         renderContent();
         updateHerbCount();
         
-        updateSyncProgress(100, '✅ تم تحديث البيانات بنجاح');
+        // ========== 6. انتهى التحميل ==========
+        if (typeof updateSyncProgress === 'function') {
+            updateSyncProgress(100, '✅ تم التحميل بنجاح');
+            // إخفاء شريط التقدم بعد 2 ثانية
+            setTimeout(() => {
+                if (typeof updateSyncProgress === 'function') {
+                    updateSyncProgress(0, '✅ متصل');
+                }
+            }, 2000);
+        }
         
         // إظهار إشعار بالنتيجة
-        const toast = document.createElement('div');
-        toast.innerHTML = `✅ تم تحديث البيانات بنجاح<br>📚 ${fbHerbs.length} عشبة | 📂 ${fbCategories.length} تصنيف`;
-        toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#4caf50;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;font-size:0.85rem;direction:rtl;box-shadow:0 4px 15px rgba(0,0,0,0.2);';
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+        if (showToast) {
+            const toast = document.createElement('div');
+            toast.innerHTML = `✅ تم تحديث البيانات بنجاح<br>📚 ${fbHerbs.length} عشبة | 📂 ${fbCategories.length} تصنيف`;
+            toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#4caf50;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10000;font-size:0.85rem;direction:rtl;box-shadow:0 4px 15px rgba(0,0,0,0.2);animation:fadeInUp 0.3s ease;';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
         
-        console.log('✅ تم تحديث البيانات بنجاح من Firebase');
+        console.log(`✅ تم تحديث البيانات بنجاح: ${fbHerbs.length} عشبة, ${fbCategories.length} تصنيف`);
         return true;
         
     } catch (error) {
-        console.error('❌ فشل التحديث من Firebase:', error);
-        updateSyncProgress(0, '❌ فشل التحديث');
+        console.error('❌ فشل جلب البيانات من Firebase:', error);
         
-        let errorMessage = error.message;
-        if (error.code === 'permission-denied') {
-            errorMessage = 'ليس لديك صلاحية الوصول إلى قاعدة البيانات';
-        } else if (error.code === 'unavailable') {
-            errorMessage = 'خدمة Firebase غير متاحة حالياً';
+        if (typeof updateSyncProgress === 'function') {
+            updateSyncProgress(0, '❌ فشل التحميل');
         }
         
-        alert(`❌ فشل تحديث البيانات: ${errorMessage}`);
+        if (showToast) {
+            let errorMessage = error.message;
+            if (error.code === 'permission-denied') {
+                errorMessage = 'ليس لديك صلاحية الوصول إلى قاعدة البيانات';
+            } else if (error.code === 'unavailable') {
+                errorMessage = 'خدمة Firebase غير متاحة حالياً. تأكد من اتصالك بالإنترنت';
+            }
+            alert(`❌ فشل تحديث البيانات: ${errorMessage}`);
+        }
         return false;
     }
 };
 
-// دالة بديلة للتحقق من اتصال Firebase
-async function testFirebaseConnection() {
-    try {
-        const test = await herbsCol.limit(1).get();
-        console.log('✅ الاتصال بـ Firebase يعمل');
-        return true;
-    } catch (error) {
-        console.error('❌ فشل الاتصال بـ Firebase:', error);
-        return false;
+// ============================================
+// المزامنة التلقائية عند فتح التطبيق (لجميع المستخدمين)
+// ============================================
+
+let autoSyncDone = false;
+
+async function autoSyncOnStart() {
+    if (autoSyncDone) return;
+    autoSyncDone = true;
+    
+    console.log('🔄 مزامنة تلقائية عند فتح التطبيق...');
+    
+    // انتظار قليلاً حتى يتم تحميل التطبيق بالكامل
+    setTimeout(async () => {
+        // فقط إذا كان هناك اتصال بالإنترنت
+        if (navigator.onLine) {
+            // تحديث شريط التقدم
+            if (typeof updateSyncProgress === 'function') {
+                updateSyncProgress(5, '🔄 مزامنة تلقائية...');
+            }
+            
+            // جلب البيانات من Firebase (بدون إظهار إشعار)
+            const result = await window.forceSyncData(false);
+            
+            if (result && typeof updateSyncProgress === 'function') {
+                updateSyncProgress(100, '✅ مزامن');
+                setTimeout(() => {
+                    if (typeof updateSyncProgress === 'function') {
+                        updateSyncProgress(0, '');
+                    }
+                }, 2000);
+            }
+        } else {
+            console.log('📡 لا يوجد اتصال بالإنترنت - عرض البيانات المخزنة محلياً');
+            if (typeof updateSyncProgress === 'function') {
+                updateSyncProgress(0, '📡 غير متصل');
+            }
+        }
+    }, 1500);
+}
+
+// ============================================
+// دالة تحديث شريط التقدم
+// ============================================
+
+if (typeof updateSyncProgress !== 'function') {
+    window.updateSyncProgress = function(percent, status) {
+        const fill = document.getElementById('syncProgressFill');
+        const percentSpan = document.getElementById('syncProgressPercent');
+        const statusSpan = document.getElementById('syncStatusText');
+        
+        if (fill) {
+            fill.style.width = Math.min(percent, 100) + '%';
+            // تغيير اللون حسب النسبة
+            if (percent >= 100) {
+                fill.style.background = '#4caf50';
+            } else if (percent >= 50) {
+                fill.style.background = 'linear-gradient(90deg, #2e7d32, #ffd700)';
+            } else {
+                fill.style.background = 'linear-gradient(90deg, #2e7d32, #4caf50)';
+            }
+        }
+        if (percentSpan) percentSpan.innerText = Math.floor(percent) + '%';
+        if (statusSpan) statusSpan.innerText = status || (percent >= 100 ? '✅ مزامن' : '🔄 جاري...');
+        
+        if (percent >= 100) {
+            setTimeout(() => {
+                if (fill) fill.style.width = '0%';
+                if (percentSpan) percentSpan.innerText = '0%';
+                if (statusSpan) statusSpan.innerText = '✅ متصل';
+            }, 2000);
+        }
+    };
+}
+
+// ============================================
+// ربط أزرار التحديث
+// ============================================
+
+function setupSyncButtons() {
+    // زر التحديث في شريط الزائر
+    const visitorSyncBtn = document.getElementById('visitorForceSyncBtn');
+    if (visitorSyncBtn) {
+        const newBtn = visitorSyncBtn.cloneNode(true);
+        visitorSyncBtn.parentNode.replaceChild(newBtn, visitorSyncBtn);
+        newBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            console.log('🔘 تم الضغط على زر تحديث البيانات (الزائر)');
+            
+            const originalHTML = newBtn.innerHTML;
+            newBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري التحميل...';
+            newBtn.disabled = true;
+            
+            // جلب جميع البيانات من Firebase
+            await window.forceSyncData(true);
+            
+            newBtn.innerHTML = originalHTML;
+            newBtn.disabled = false;
+        });
+        console.log('✅ زر التحديث (الزائر) جاهز');
+    }
+    
+    // زر التحديث في شريط المسؤول (refreshDataBtn)
+    const refreshBtn = document.getElementById('refreshDataBtn');
+    if (refreshBtn) {
+        const newRefreshBtn = refreshBtn.cloneNode(true);
+        refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
+        newRefreshBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            console.log('🔘 تم الضغط على زر التحديث (المسؤول)');
+            
+            const originalHTML = newRefreshBtn.innerHTML;
+            newRefreshBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري التحميل...';
+            newRefreshBtn.disabled = true;
+            
+            // جلب جميع البيانات من Firebase
+            await window.forceSyncData(true);
+            
+            newRefreshBtn.innerHTML = originalHTML;
+            newRefreshBtn.disabled = false;
+        });
+        console.log('✅ زر التحديث (المسؤول) جاهز');
     }
 }
 
-// اختبار الاتصال عند تحميل الصفحة
+// ============================================
+// مراقبة حالة الاتصال - مزامنة تلقائية عند عودة الإنترنت
+// ============================================
+
+window.addEventListener('online', async () => {
+    console.log('🟢 تم استعادة الاتصال بالإنترنت');
+    
+    // تحديث شريط التقدم
+    if (typeof updateSyncProgress === 'function') {
+        updateSyncProgress(20, '🔄 مزامنة تلقائية...');
+    }
+    
+    // جلب البيانات من Firebase تلقائياً عند عودة الإنترنت
+    const result = await window.forceSyncData(false);
+    
+    if (result && typeof updateSyncProgress === 'function') {
+        updateSyncProgress(100, '✅ مزامن');
+        setTimeout(() => {
+            if (typeof updateSyncProgress === 'function') {
+                updateSyncProgress(0, '');
+            }
+        }, 2000);
+    }
+});
+
+// ============================================
+// تشغيل المزامنة التلقائية عند تحميل التطبيق
+// ============================================
+
+// تشغيل بعد 2 ثانية من تحميل الصفحة
 setTimeout(() => {
-    testFirebaseConnection();
+    autoSyncOnStart();
 }, 2000);
+
+// تشغيل إعداد الأزرار بعد تحميل الصفحة
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupSyncButtons);
+} else {
+    setupSyncButtons();
+}
+
+console.log('✅ نظام المزامنة جاهز - جميع المستخدمين يتشاركون نفس البيانات من Firebase');
 console.log('✅ تم تحميل التطبيق بنجاح');
