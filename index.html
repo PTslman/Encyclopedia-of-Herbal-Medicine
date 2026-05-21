@@ -202,86 +202,112 @@
 
     <div id="saveProgressBar" class="smart-progress-bar" style="display:none;"><div class="progress-icon"><i class="fas fa-spinner fa-pulse"></i></div><div class="progress-details"><div class="progress-stage">جاري الحفظ</div><div class="progress-status">جارٍ رفع البيانات...</div><div class="progress-bar-track"><div id="saveProgressFill" class="progress-bar-fill"></div></div></div><div class="progress-percent" id="saveProgressPercent">0%</div></div>
 
+    <!-- سكربت Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/Encyclopedia-of-Herbal-Medicine/js/supabase.js"></script>
-<script src="/Encyclopedia-of-Herbal-Medicine/js/local-db.js"></script>
-<script src="/Encyclopedia-of-Herbal-Medicine/js/sync-manager.js"></script>
-<script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
-<script src="/Encyclopedia-of-Herbal-Medicine/js/update-handler.js"></script>
-<script>
-   <script> 
-// تهيئة المصادقة عند تحميل الصفحة
-(async function initAuth() {
-    if (window.checkCurrentSession) {
-        const user = await window.checkCurrentSession();
-        if (user && window.setAdminMode) {
-            window.setAdminMode(true);
-            console.log('✅ Auto-login success:', user.email);
-        }
-    }
-    
-    // إضافة مستمع تغيير المصادقة
-    if (window.onAuthChange) {
-        window.onAuthChange((event, session) => {
-            if (event === 'SIGNED_IN' && session && window.setAdminMode) {
-                window.setAdminMode(true);
-                if (window.loadHerbsFromSupabase) window.loadHerbsFromSupabase();
-            } else if (event === 'SIGNED_OUT' && window.setAdminMode) {
-                window.setAdminMode(false);
-            }
-        });
-    }
-})();
-</script/>
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/local-db.js"></script>
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/sync-manager.js"></script>
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/update-handler.js"></script>
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/app.js"></script>
+
+    <script>
+    // ============================================
     // معالج شاشة البداية
+    // ============================================
     (function smartSplashHandler() {
         const splash = document.getElementById('splashScreen');
         const mainApp = document.getElementById('mainApp');
         const progressBar = document.getElementById('splashProgress');
         if (!splash || !mainApp) return;
         let progress = 0, loadCompleted = false;
-        function updateProgress(percent) { progress = Math.min(percent, 100); if (progressBar) progressBar.style.width = progress + '%'; }
-        function hideSplash() { if (loadCompleted) return; loadCompleted = true; splash.classList.add('hide'); mainApp.style.display = 'block'; }
-        let progressInterval = setInterval(() => { if (progress < 90) updateProgress(progress + 5); }, 100);
-        const checkInterval = setInterval(() => { if ((window.herbs && window.herbs.length > 0) || (window.categories && window.categories.length > 0)) { updateProgress(100); clearInterval(checkInterval); clearInterval(progressInterval); setTimeout(hideSplash, 300); } }, 100);
-        setTimeout(() => { if (!loadCompleted) { updateProgress(100); clearInterval(checkInterval); clearInterval(progressInterval); hideSplash(); } }, 5000);
-        window.addEventListener('load', () => { setTimeout(() => { if (!loadCompleted) { updateProgress(100); hideSplash(); } }, 500); });
+        
+        function updateProgress(percent) { 
+            progress = Math.min(percent, 100); 
+            if (progressBar) progressBar.style.width = progress + '%'; 
+        }
+        
+        function hideSplash() { 
+            if (loadCompleted) return; 
+            loadCompleted = true; 
+            splash.classList.add('hide'); 
+            mainApp.style.display = 'block'; 
+        }
+        
+        let progressInterval = setInterval(() => { 
+            if (progress < 90) updateProgress(progress + 5); 
+        }, 100);
+        
+        const checkInterval = setInterval(() => { 
+            if ((window.herbs && window.herbs.length > 0) || (window.categories && window.categories.length > 0)) { 
+                updateProgress(100); 
+                clearInterval(checkInterval); 
+                clearInterval(progressInterval); 
+                setTimeout(hideSplash, 300); 
+            } 
+        }, 100);
+        
+        setTimeout(() => { 
+            if (!loadCompleted) { 
+                updateProgress(100); 
+                clearInterval(checkInterval); 
+                clearInterval(progressInterval); 
+                hideSplash(); 
+            } 
+        }, 5000);
+        
+        window.addEventListener('load', () => { 
+            setTimeout(() => { 
+                if (!loadCompleted) { 
+                    updateProgress(100); 
+                    hideSplash(); 
+                } 
+            }, 500); 
+        });
     })();
     
-    // توليد الأيقونات
+    // ============================================
+    // توليد الأيقونات تلقائياً
+    // ============================================
     (function generateIconsAutomatically() {
         const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
         let generatedCount = 0;
+        
         for (const size of sizes) {
             const canvas = document.createElement('canvas');
-            canvas.width = size; canvas.height = size;
+            canvas.width = size; 
+            canvas.height = size;
             const ctx = canvas.getContext('2d');
             const grad = ctx.createLinearGradient(0, 0, size, size);
-            grad.addColorStop(0, '#1b5e20'); grad.addColorStop(1, '#2e7d32');
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
-            ctx.strokeStyle = '#ffd700'; ctx.lineWidth = size * 0.04;
-            ctx.beginPath(); ctx.arc(size/2, size/2, size * 0.42, 0, Math.PI * 2); ctx.stroke();
+            grad.addColorStop(0, '#1b5e20'); 
+            grad.addColorStop(1, '#2e7d32');
+            ctx.fillStyle = grad; 
+            ctx.fillRect(0, 0, size, size);
+            ctx.strokeStyle = '#ffd700'; 
+            ctx.lineWidth = size * 0.04;
+            ctx.beginPath(); 
+            ctx.arc(size/2, size/2, size * 0.42, 0, Math.PI * 2); 
+            ctx.stroke();
             ctx.font = `${size * 0.45}px "Segoe UI Emoji"`;
-            ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#ffffff'; 
+            ctx.textAlign = 'center'; 
+            ctx.textBaseline = 'middle';
             ctx.fillText('🌿', size/2, size/2 - size * 0.05);
             ctx.font = `bold ${size * 0.1}px "Cairo"`;
-            ctx.fillStyle = '#ffd700'; ctx.fillText('أعشاب', size/2, size * 0.85);
+            ctx.fillStyle = '#ffd700'; 
+            ctx.fillText('أعشاب', size/2, size * 0.85);
             const dataUrl = canvas.toDataURL('image/png');
             localStorage.setItem(`icon_${size}`, dataUrl);
             generatedCount++;
-            if (generatedCount === sizes.length) { console.log(`✅ تم توليد ${sizes.length} أيقونة`); updateManifestWithIcons(); }
+            if (generatedCount === sizes.length) { 
+                console.log(`✅ تم توليد ${sizes.length} أيقونة`); 
+            }
         }
     })();
     
-    function updateManifestWithIcons() {
-        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
-        const icons = sizes.map(size => ({ src: localStorage.getItem(`icon_${size}`), sizes: `${size}x${size}`, type: "image/png", purpose: size === 192 ? "any maskable" : "any" }));
-        const manifest = { name: "موسوعة الأعشاب الطبية", short_name: "أعشاب طبية", start_url: "/Encyclopedia-of-Herbal-Medicine/", scope: "/Encyclopedia-of-Herbal-Medicine/", display: "standalone", theme_color: "#2e7d32", background_color: "#fef9e6", icons: icons };
-        localStorage.setItem('dynamic_manifest', JSON.stringify(manifest));
-    }
-    </script>
-
-    <script>
+    // ============================================
     // تسجيل Service Worker
+    // ============================================
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
             navigator.serviceWorker.register('/Encyclopedia-of-Herbal-Medicine/sw.js')
@@ -290,25 +316,8 @@
         });
     }
 
-    window.addEventListener('beforeinstallprompt', function(e) {
-        e.preventDefault();
-        const installBtn = document.getElementById('installPwaBtn');
-        if (installBtn) {
-            installBtn.style.display = 'flex';
-            installBtn.onclick = function() { e.prompt(); e.userChoice.then(choice => { if (choice.outcome === 'accepted') console.log('✅ تم التثبيت'); installBtn.style.display = 'none'; }); };
-        }
-    });
-    
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-        document.body.classList.add('pwa-installed');
-        const installBtn = document.getElementById('installPwaBtn');
-        if (installBtn) installBtn.style.display = 'none';
-    }
-    </script>
-
-    <script>
     // ============================================
-    // إصلاح زر المساعدة - يفتح help.html
+    // إصلاح زر المساعدة
     // ============================================
     (function fixHelpButton() {
         function init() {
@@ -321,8 +330,6 @@
                     window.location.href = '/Encyclopedia-of-Herbal-Medicine/help.html';
                 });
                 console.log('✅ زر المساعدة يعمل الآن');
-            } else {
-                console.log('⚠️ زر المساعدة غير موجود');
             }
         }
         if (document.readyState === 'loading') {
@@ -330,6 +337,33 @@
         } else {
             init();
         }
+    })();
+    
+    // ============================================
+    // تهيئة المصادقة - التحقق من الجلسة
+    // ============================================
+    (async function initAuth() {
+        // انتظر قليلاً حتى يتم تحميل supabase.js
+        setTimeout(async () => {
+            if (window.checkCurrentSession) {
+                const user = await window.checkCurrentSession();
+                if (user && window.setAdminMode) {
+                    window.setAdminMode(true);
+                    console.log('✅ Auto-login success:', user.email);
+                }
+            }
+            
+            if (window.onAuthChange) {
+                window.onAuthChange((event, session) => {
+                    if (event === 'SIGNED_IN' && session && window.setAdminMode) {
+                        window.setAdminMode(true);
+                        if (window.loadHerbsFromSupabase) window.loadHerbsFromSupabase();
+                    } else if (event === 'SIGNED_OUT' && window.setAdminMode) {
+                        window.setAdminMode(false);
+                    }
+                });
+            }
+        }, 500);
     })();
     </script>
 </body>
