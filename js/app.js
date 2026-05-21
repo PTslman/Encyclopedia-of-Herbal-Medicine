@@ -19,7 +19,56 @@ let currentImageFile = null;
 let currentImageUrl = null;
 
 const CACHE_KEY = 'herbal_cache_v3';
+// =====================================================
+// إصلاح المصادقة - التحقق من الجلسة عند التحميل
+// =====================================================
 
+// دالة للتحقق من حالة المسؤول عند تحميل الصفحة
+async function checkAdminStatus() {
+    if (window.checkCurrentSession) {
+        const user = await window.checkCurrentSession();
+        if (user) {
+            console.log('✅ Admin logged in:', user.email);
+            isAdmin = true;
+            setAdminMode(true);
+        } else {
+            console.log('👤 Visitor mode');
+            isAdmin = false;
+            setAdminMode(false);
+        }
+    }
+}
+
+// استدعاء الدالة بعد تحميل الصفحة
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkAdminStatus);
+} else {
+    checkAdminStatus();
+}
+
+// تعديل دالة setAdminMode لتحديث الواجهة بشكل صحيح
+const originalSetAdminMode = window.setAdminMode;
+window.setAdminMode = function(val) {
+    isAdmin = val;
+    const adminElements = document.querySelectorAll('.admin-only');
+    adminElements.forEach(el => {
+        if (el.style) el.style.display = val ? 'inline-flex' : 'none';
+    });
+    
+    const lockIcon = document.getElementById('lockIcon');
+    if (lockIcon) {
+        lockIcon.innerHTML = val ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
+    }
+    
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.style.display = val ? 'flex' : 'none';
+    }
+    
+    document.body.classList.toggle('viewer-mode', !val);
+    
+    if (window.renderContent) window.renderContent();
+};
 // =================================================================
 // ========== دوال مساعدة أساسية ==================================
 // =================================================================
