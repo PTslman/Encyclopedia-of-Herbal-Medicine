@@ -3,23 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>موسوعة الأعشاب الطبية</title>
+    <title>مساعدة - موسوعة الأعشاب الطبية</title>
     <meta name="theme-color" content="#2e7d32">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
     <style>
-        /* ========== جميع الأنماط مدمجة هنا ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
             --primary: #2e7d32;
             --primary-light: #60ad5e;
             --primary-dark: #1b5e20;
-            --primary-glow: rgba(46, 125, 50, 0.3);
             --danger: #c62828;
             --light-bg: #fef9e6;
             --card-bg: rgba(255, 255, 255, 0.95);
@@ -28,8 +23,6 @@
             --text-secondary: #6d4c41;
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
             --radius: 24px;
-            --radius-lg: 32px;
-            --transition: all 0.2s ease;
             --glass-bg: rgba(255, 255, 255, 0.7);
         }
         
@@ -43,339 +36,490 @@
             --glass-bg: rgba(30, 30, 46, 0.7);
         }
         
-        body { font-family: 'Cairo', sans-serif; background: var(--light-bg); color: var(--text); transition: 0.2s; }
-        
-        /* شاشة البداية */
-        .splash-screen {
-            position: fixed; inset: 0; background: linear-gradient(135deg, #1b5e20, #2e7d32);
-            z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column;
-            transition: opacity 0.4s;
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--light-bg);
+            color: var(--text);
+            transition: 0.2s;
         }
-        .splash-screen.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-        .splash-logo { width: 120px; height: 120px; background: #fff9e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; animation: float 2s infinite; }
-        .splash-logo i { font-size: 55px; color: #2e7d32; }
-        .splash-title { font-size: 2em; font-weight: 800; color: #fff9e0; }
-        .splash-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,210,0.3); border-top-color: #ffecb3; border-radius: 50%; animation: spin 1s linear infinite; margin-top: 30px; }
-        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* الحاوية */
-        .app-container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
         
         /* الهيدر */
         .header {
-            background: var(--glass-bg); backdrop-filter: blur(20px); border-radius: var(--radius-lg);
-            padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; box-shadow: var(--shadow);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255,255,255,0.2);
         }
-        .logo-area { display: flex; align-items: center; gap: 1rem; }
-        .logo-icon { width: 56px; height: 56px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: 20px; display: flex; align-items: center; justify-content: center; }
-        .logo-icon i { font-size: 1.8rem; color: #faf3e0; }
-        .logo-text h1 { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
-        .logo-text p { font-size: 0.7rem; color: var(--text-secondary); }
-        .header-buttons { display: flex; gap: 0.8rem; align-items: center; }
         
-        /* الأزرار */
-        .icon-btn, .tool-btn, .visitor-btn {
-            background: var(--light-bg); border: 1px solid var(--separator); padding: 0.6rem 1.2rem;
-            border-radius: 50px; cursor: pointer; font-weight: 700; color: var(--primary);
-            transition: var(--transition); display: inline-flex; align-items: center; gap: 0.5rem;
-            font-family: 'Cairo', sans-serif;
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-        .icon-btn { width: 44px; height: 44px; padding: 0; justify-content: center; }
-        .icon-btn:hover, .tool-btn:hover, .visitor-btn:hover { background: var(--primary); color: white; transform: translateY(-2px); }
-        .danger-btn { background: var(--danger); color: white; border: none; }
         
-        /* مفتاح الوضع الليلي */
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-icon i {
+            font-size: 1.8rem;
+            color: #faf3e0;
+        }
+        
+        .logo-text h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .logo-text p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+        
         .mode-switch {
-            position: relative; width: 80px; height: 40px; background: linear-gradient(145deg, #cfc6a8, #b8ae8e);
-            border-radius: 60px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 12px; border: none;
+            position: relative;
+            width: 80px;
+            height: 40px;
+            background: linear-gradient(145deg, #cfc6a8, #b8ae8e);
+            border-radius: 60px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border: none;
         }
-        .mode-switch i { font-size: 1rem; z-index: 2; }
+        
+        .mode-switch i {
+            font-size: 1rem;
+            z-index: 2;
+        }
+        
         .mode-switch i.fa-sun { color: #ffb300; }
         .mode-switch i.fa-moon { color: #c0d0ff; }
+        
         .mode-switch .slider-track {
-            position: absolute; width: 34px; height: 34px; background: radial-gradient(circle, #ffefb0, #ffb845);
-            border-radius: 50%; top: 3px; left: 4px; transition: transform 0.3s; z-index: 1;
-        }
-        body.dark-mode .mode-switch .slider-track { transform: translateX(36px); }
-        
-        .admin-only { display: none; }
-        body.viewer-mode .admin-only { display: none !important; }
-        .visitor-only { display: flex; }
-        body:not(.viewer-mode) .visitor-toolbar { display: none; }
-        
-        .admin-toolbar, .visitor-toolbar {
-            display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;
-            padding: 0.8rem; background: var(--glass-bg); backdrop-filter: blur(20px); border-radius: var(--radius-lg);
+            position: absolute;
+            width: 34px;
+            height: 34px;
+            background: radial-gradient(circle, #ffefb0, #ffb845);
+            border-radius: 50%;
+            top: 3px;
+            left: 4px;
+            transition: transform 0.3s;
+            z-index: 1;
         }
         
-        .main-search-btn {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border: none;
-            border-radius: 60px; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: center;
-            gap: 0.8rem; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: 700; color: white;
+        body.dark-mode .mode-switch .slider-track {
+            transform: translateX(36px);
         }
         
-        .view-toggle-large { display: flex; gap: 0.8rem; background: var(--card-bg); border-radius: 60px; padding: 0.4rem; }
-        .view-btn-large { flex: 1; background: var(--light-bg); border: none; padding: 0.7rem 1rem; border-radius: 50px; font-weight: 700; cursor: pointer; }
-        .view-btn-large.active { background: var(--primary); color: white; }
-        
-        .herbs-grid, .categories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 90px; }
-        .herb-card, .category-card { background: var(--card-bg); border-radius: var(--radius-lg); padding: 1.2rem; border: 1px solid var(--separator); cursor: pointer; transition: 0.15s; }
-        .herb-card:hover { transform: translateY(-3px); }
-        .herb-name, .category-name { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
-        .info-block { background: var(--light-bg); border-radius: 16px; padding: 0.7rem 1rem; margin: 0.6rem 0; border-right: 4px solid var(--primary); }
-        .info-label { font-size: 0.7rem; font-weight: 800; color: var(--primary-dark); }
-        .info-text { font-size: 0.9rem; }
-        .card-actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 12px; }
-        
-        /* المودالات */
-        .modal-glass {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px);
-            z-index: 20000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s;
+        .icon-btn {
+            background: var(--light-bg);
+            width: 44px;
+            height: 44px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid var(--separator);
+            transition: 0.2s;
+            color: var(--primary);
         }
-        .modal-glass.active { visibility: visible; opacity: 1; }
-        .modal-glass-content { background: var(--card-bg); border-radius: var(--radius-lg); width: 90%; max-width: 650px; max-height: 85vh; overflow-y: auto; padding: 1.8rem; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 2px solid var(--primary); }
-        .close-modal-btn { background: var(--light-bg); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .form-group { margin-bottom: 1.2rem; }
-        .form-group label { font-weight: 700; display: block; margin-bottom: 0.4rem; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.8rem 1.2rem; border-radius: 50px; background: var(--light-bg); border: 1.5px solid var(--separator); font-family: inherit; }
-        .modal-actions { display: flex; gap: 1rem; margin-top: 1.8rem; }
-        .modal-actions button { flex: 1; padding: 0.8rem; border-radius: 50px; font-weight: 700; border: none; cursor: pointer; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-secondary { background: var(--light-bg); }
         
-        .bottom-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; margin: 1rem 0; padding: 0.5rem 0; border-top: 1px solid var(--separator); }
-        .stats-badge { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 0.4rem 1.2rem; border-radius: 50px; color: white; font-weight: 700; }
-        .footer { text-align: center; margin-top: 2rem; padding: 1rem; font-size: 0.8rem; }
-        .empty-state { text-align: center; padding: 3rem; background: var(--card-bg); border-radius: var(--radius-lg); }
+        .icon-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* محتوى المساعدة */
+        .help-section {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--separator);
+            box-shadow: var(--shadow);
+        }
+        
+        .help-section h2 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .help-card {
+            background: var(--light-bg);
+            border-radius: 16px;
+            padding: 1rem;
+            border-right: 3px solid var(--primary);
+        }
+        
+        .help-card h3 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .help-card p {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+        
+        .faq-item {
+            background: var(--light-bg);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .faq-item:hover {
+            transform: translateX(-3px);
+            background: var(--card-bg);
+        }
+        
+        .faq-question {
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .faq-item.open .faq-answer {
+            max-height: 200px;
+            margin-top: 10px;
+        }
+        
+        .btn-back {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 1rem;
+            transition: 0.2s;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46,125,50,0.3);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--separator);
+        }
         
         @media (max-width: 768px) {
-            .herbs-grid, .categories-grid { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+            .help-grid { grid-template-columns: 1fr; }
             .header { flex-direction: column; text-align: center; }
-            .modal-glass-content { width: 95%; padding: 1rem; }
+        }
+        
+        .version {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--text-secondary);
         }
     </style>
 </head>
 <body>
 
-<!-- شاشة البداية -->
-<div id="splashScreen" class="splash-screen">
-    <div class="splash-logo"><i class="fas fa-leaf"></i></div>
-    <div class="splash-title">موسوعة الأعشاب الطبية</div>
-    <div class="splash-spinner"></div>
-</div>
-
-<!-- التطبيق الرئيسي -->
-<div id="mainApp" style="display: none;">
-    <div class="app-container">
-        <div class="header">
-            <div class="logo-area">
-                <div class="logo-icon"><i class="fas fa-leaf"></i></div>
-                <div class="logo-text"><h1>موسوعة الأعشاب الطبية</h1><p>نظام متكامل</p></div>
+<div class="container">
+    <!-- الهيدر -->
+    <div class="header">
+        <div class="logo-area">
+            <div class="logo-icon"><i class="fas fa-leaf"></i></div>
+            <div class="logo-text">
+                <h1>موسوعة الأعشاب الطبية</h1>
+                <p>دليل المساعدة</p>
             </div>
-            <div class="header-buttons">
-                <button class="icon-btn admin-only" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
-                <button class="icon-btn" id="lockIcon"><i class="fas fa-lock"></i></button>
-                <div class="mode-switch" id="themeToggle">
-                    <div class="slider-track"></div>
-                    <i class="fas fa-sun"></i><i class="fas fa-moon"></i>
+        </div>
+        <div class="header-buttons">
+            <div class="mode-switch" id="themeToggle">
+                <div class="slider-track"></div>
+                <i class="fas fa-sun"></i>
+                <i class="fas fa-moon"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="help-section">
+        <h2><i class="fas fa-info-circle"></i> مرحباً بك في موسوعة الأعشاب الطبية</h2>
+        <p>هذا الدليل يساعدك في استخدام جميع ميزات التطبيق. موسوعة الأعشاب الطبية توفر لك قاعدة بيانات شاملة للأعشاب الطبية مع فوائدها وتحذيراتها وطرق استخدامها.</p>
+    </div>
+
+    <div class="help-section">
+        <h2><i class="fas fa-compass"></i> دليل الاستخدام السريع</h2>
+        <div class="help-grid">
+            <div class="help-card">
+                <h3><i class="fas fa-search"></i> البحث عن عشبة</h3>
+                <p>اضغط على زر "بحث" الموجود في شريط الأدوات، ثم اكتب اسم العشبة التي تبحث عنها. يمكنك البحث بالاسم العربي أو العلمي.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-folder-tree"></i> التصنيفات</h3>
+                <p>اضغط على "التصنيفات" لعرض الأعشاب مصنفة حسب الفوائد والاستخدامات. اختر التصنيف المناسب لعرض الأعشاب المرتبطة به.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-bookmark"></i> الإشارات المرجعية</h3>
+                <p>يمكنك إضافة الأعشاب المفضلة لديك إلى الإشارات المرجعية للوصول إليها بسرعة لاحقاً. اضغط على زر الإشارة في صفحة تفاصيل العشبة.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-balance-scale"></i> مقارنة الأعشاب</h3>
+                <p>قارن بين عشبتين أو أكثر من حيث الفوائد والتحذيرات والأضرار لاختيار الأنسب لك.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-print"></i> طباعة المعلومات</h3>
+                <p>يمكنك طباعة معلومات أي عشبة أو تصديرها كملف PDF للاحتفاظ بها أو مشاركتها مع الآخرين.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-chart-line"></i> الإحصائيات</h3>
+                <p>تابع إحصائيات استخدامك للتطبيق مثل عدد المشاهدات والأعشاب المفضلة وأكثر الأعشاب مشاهدة.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="help-section">
+        <h2><i class="fas fa-question-circle"></i> الأسئلة الشائعة</h2>
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span><i class="fas fa-database"></i> كيف يتم تحديث بيانات الأعشاب؟</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    يتم تحديث البيانات تلقائياً عند وجود اتصال بالإنترنت. يمكنك أيضاً الضغط على زر "تحديث" في شريط الأدوات للحصول على أحدث البيانات من السحابة.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span><i class="fas fa-cloud-download-alt"></i> هل يمكن استخدام التطبيق بدون إنترنت؟</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    نعم! بمجرد تحميل البيانات لأول مرة، يمكنك استخدام التطبيق في وضع عدم الاتصال. سيتم عرض البيانات المخزنة محلياً على جهازك.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span><i class="fas fa-user-shield"></i> كيف يمكنني تسجيل الدخول كمسؤول؟</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    اضغط على زر القفل 🔒 في أعلى الشاشة، ثم أدخل بيانات المسؤول (البريد الإلكتروني وكلمة المرور) للوصول إلى لوحة التحكم وإدارة الأعشاب والتصنيفات.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span><i class="fas fa-moon"></i> كيف يمكن تغيير مظهر التطبيق؟</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    اضغط على زر الوضع الليلي 🌙/☀️ في أعلى الشاشة للتبديل بين المظهر النهاري والليلي. يمكنك أيضاً تفعيل الوضع التلقائي من الإعدادات المتقدمة.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span><i class="fas fa-text-height"></i> كيف يمكن تغيير حجم الخط؟</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    اضغط على زر "Aa" في شريط الأدوات لتغيير حجم الخط بين (عادي، كبير، أكبر) حسب راحتك في القراءة.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span><i class="fas fa-whatsapp"></i> كيف يمكن التواصل مع المطور؟</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    يمكنك التواصل مع المطور عبر واتساب على الرقم <strong>0932934273</strong> لأي استفسار أو اقتراح. اضغط على زر واتساب في شريط الأدوات للتواصل المباشر.
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="main-buttons-bar">
-            <button id="mainSearchBtn" class="main-search-btn"><i class="fas fa-search"></i> بحث في الموسوعة</button>
-            <div class="view-toggle-large" id="viewToggle">
-                <button data-view="all" class="view-btn-large active"><i class="fas fa-leaf"></i> جميع الأعشاب</button>
-                <button data-view="categories" class="view-btn-large"><i class="fas fa-folder-tree"></i> التصنيفات</button>
+    <div class="help-section">
+        <h2><i class="fas fa-crown"></i> ميزات المسؤول</h2>
+        <div class="help-grid">
+            <div class="help-card">
+                <h3><i class="fas fa-plus-circle"></i> إضافة عشبة</h3>
+                <p>إضافة عشبة جديدة مع جميع تفاصيلها (الفوائد، التحذيرات، الأضرار، طريقة الاستخدام).</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-edit"></i> تعديل عشبة</h3>
+                <p>تعديل معلومات أي عشبة موجودة في الموسوعة.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-trash-alt"></i> حذف عشبة</h3>
+                <p>حذف أي عشبة غير مرغوب فيها من الموسوعة.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-folder-plus"></i> إدارة التصنيفات</h3>
+                <p>إضافة، تعديل، أو حذف التصنيفات وتنظيم الأعشاب ضمنها.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-database"></i> نسخ احتياطي</h3>
+                <p>إنشاء نسخة احتياطية من جميع البيانات لاستعادتها لاحقاً.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-file-csv"></i> تصدير CSV</h3>
+                <p>تصدير جميع الأعشاب إلى ملف CSV للاستخدام في برامج جداول البيانات.</p>
             </div>
         </div>
+    </div>
 
-        <div class="admin-toolbar admin-only" id="adminToolbar">
-            <button id="addHerbBtn" class="tool-btn"><i class="fas fa-plus-circle"></i> إضافة عشبة</button>
-            <button id="manageCategoriesBtn" class="tool-btn"><i class="fas fa-folder-tree"></i> التصنيفات</button>
-            <button id="refreshDataBtn" class="tool-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
+    <div class="help-section">
+        <h2><i class="fas fa-gem"></i> نصائح وإرشادات</h2>
+        <div class="help-grid">
+            <div class="help-card">
+                <h3><i class="fas fa-sync-alt"></i> التحديث التلقائي</h3>
+                <p>التطبيق يتزامن تلقائياً مع قاعدة البيانات السحابية عند توفر الإنترنت.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-search-plus"></i> البحث المتقدم</h3>
+                <p>استخدم البحث المتقدم للبحث ضمن جميع الحقول (الاسم، الفوائد، التحذيرات).</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-tags"></i> الكلمات المفتاحية</h3>
+                <p>تصفح الأعشاب من خلال سحابة الكلمات المفتاحية للوصول السريع.</p>
+            </div>
+            <div class="help-card">
+                <h3><i class="fas fa-bell"></i> الإشعارات</h3>
+                <p>فعّل الإشعارات لتصلك تحديثات وتذكيرات حول الأعشاب الجديدة.</p>
+            </div>
         </div>
+    </div>
 
-        <div class="visitor-toolbar visitor-only" id="visitorToolbar">
-            <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة</button>
-            <button id="visitorHelpBtn" class="visitor-btn"><i class="fas fa-question-circle"></i> مساعدة</button>
-        </div>
-        
-        <div id="contentArea"></div>
+    <button class="btn-back" onclick="window.location.href='./'">
+        <i class="fas fa-home"></i> العودة إلى الموسوعة
+    </button>
 
-        <div class="bottom-bar">
-            <div class="stats-badge" id="herbCount">0 عشبة</div>
-            <div class="contact-phone-btn" id="whatsappBtn"><i class="fab fa-whatsapp"></i> 0932934273</div>
-            <div class="font-size-btn" id="fontSizeToggleBtn"><i class="fas fa-text-height"></i> <span>عادي</span></div>
-        </div>
-
-        <div class="footer">جميع الحقوق محفوظة © 2026 - موسوعة الأعشاب الطبية</div>
+    <div class="version">
+        <i class="fas fa-leaf"></i> موسوعة الأعشاب الطبية - الإصدار 5.0 | تطوير: المعالج الفيزيائي سلمان
+    </div>
+    
+    <div class="footer">
+        <p>جميع الحقوق محفوظة © 2026</p>
     </div>
 </div>
 
-<!-- المودالات -->
-<div id="categoryModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>إدارة التصنيفات</h3><button class="close-modal-btn" id="closeCategoryModalBtn"><i class="fas fa-times"></i></button></div><div id="categoriesList"></div><div class="form-group"><label>اسم تصنيف جديد</label><input type="text" id="newCategoryName" placeholder="مثال: أعشاب هضمية"></div><div class="modal-actions"><button id="addCategoryBtn" class="btn-primary">إضافة تصنيف</button></div></div></div>
-
-<div id="herbModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3 id="herbModalTitle">إضافة عشبة</h3><button class="close-modal-btn" id="closeHerbModalBtn"><i class="fas fa-times"></i></button></div><div class="form-group"><label>الاسم *</label><input type="text" id="modalHerbName" placeholder="مثال: النعناع"></div><div class="form-group"><label>التصنيف</label><select id="modalHerbCategory"></select></div><div class="form-group"><label>الفوائد الصحية</label><textarea id="modalHerbBenefits" rows="3"></textarea></div><div class="form-group"><label>التحذيرات</label><textarea id="modalHerbWarnings" rows="2"></textarea></div><div class="form-group"><label>الأضرار</label><textarea id="modalHerbHarms" rows="2"></textarea></div><div class="form-group"><label>طريقة الاستخدام</label><textarea id="modalHerbUsage" rows="2"></textarea></div><div class="form-group"><label>ملاحظات</label><textarea id="modalHerbNotes" rows="2"></textarea></div><div class="modal-actions"><button id="cancelHerbModalBtn" class="btn-secondary">إلغاء</button><button id="saveHerbModalBtn" class="btn-primary">حفظ</button></div></div></div>
-
-<div id="detailModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>تفاصيل العشبة</h3><button class="close-modal-btn" id="closeDetailModalBtn"><i class="fas fa-times"></i></button></div><div id="detailContent"></div></div></div>
-
-<div id="searchModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>بحث سريع</h3><button class="close-modal-btn" id="closeSearchModalBtn"><i class="fas fa-times"></i></button></div><input type="text" id="searchInput" class="search-input" placeholder="🌿 اكتب اسم العشبة..." style="width:100%;padding:10px;border-radius:50px;margin-bottom:15px;"><div id="searchResults"></div></div></div>
-
-<div id="loginModal" class="modal-glass"><div class="modal-glass-content" style="max-width:400px;text-align:center;"><div style="font-size:50px;margin-bottom:15px;">🔐</div><h3>بوابة المسؤول</h3><div class="form-group"><input type="email" id="adminEmail" placeholder="البريد الإلكتروني" style="text-align:center;"></div><div class="form-group"><input type="password" id="adminPassword" placeholder="كلمة المرور" style="text-align:center;"></div><div class="modal-actions"><button id="cancelLoginBtn" class="btn-secondary">إلغاء</button><button id="confirmLoginBtn" class="btn-primary">دخول</button></div></div></div>
-
-<div id="deleteModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>تأكيد الحذف</h3><button class="close-modal-btn" id="cancelDeleteBtn"><i class="fas fa-times"></i></button></div><p id="deleteMessage"></p><div class="modal-actions"><button id="confirmDeleteBtn" class="danger-btn">حذف</button></div></div></div>
-
-<div id="deleteAllConfirmModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3>تحذير</h3><button class="close-modal-btn" id="closeDeleteAllModalBtn"><i class="fas fa-times"></i></button></div><p>⚠️ حذف جميع الأعشاب والتصنيفات نهائياً؟</p><div class="modal-actions"><button id="cancelDeleteAllBtn" class="btn-secondary">إلغاء</button><button id="confirmDeleteAllBtn" class="danger-btn">حذف الكل</button></div></div></div>
-
 <script>
-// ========== جميع دوال JavaScript مدمجة هنا ==========
-let isAdmin = false;
-let categories = [
-    { id: "cat1", name: "أعشاب هضمية" },
-    { id: "cat2", name: "أعشاب مهدئة" },
-    { id: "cat3", name: "أعشاب مناعية" }
-];
-let herbs = [
-    { id: "h1", name: "النعناع", categoryId: "cat1", benefits: "يساعد على الهضم وعلاج الغثيان", warnings: "قد يسبب حرقة المعدة", harms: "آمن بالكميات المعتدلة", usage: "يُنقع ملعقة في كوب ماء مغلي", notes: "" },
-    { id: "h2", name: "البابونج", categoryId: "cat2", benefits: "مهدئ للأعصاب ويساعد على النوم", warnings: "قد يسبب حساسية", harms: "آمن", usage: "يُشرب كوب قبل النوم", notes: "" },
-    { id: "h3", name: "الزنجبيل", categoryId: "cat1", benefits: "مضاد للالتهابات والميكروبات", warnings: "قد يرفع ضغط الدم", harms: "لا يُستخدم بكثرة", usage: "يُبشر مع العسل", notes: "" }
-];
-let currentView = "all";
-let currentEditHerbId = null;
-let pendingDeleteId = null;
-let pendingDeleteType = null;
-
-function escapeHtml(s) { return s ? String(s).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;') : '—'; }
-function showToast(msg, type = 'info') { let t = document.createElement('div'); t.textContent = msg; t.style.cssText = `position:fixed;bottom:80px;left:20px;right:20px;background:${type === 'success' ? '#4caf50' : '#2e7d32'};color:white;padding:12px;border-radius:50px;z-index:10001;text-align:center;`; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
-function updateHerbCount() { let s = document.getElementById('herbCount'); if(s) s.innerText = herbs.length + ' عشبة'; }
-
-function setAdminMode(val) {
-    isAdmin = val;
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = val ? 'inline-flex' : 'none');
-    let lock = document.getElementById('lockIcon');
-    if(lock) lock.innerHTML = val ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
-    document.body.classList.toggle('viewer-mode', !val);
-    renderContent();
-}
-
-function renderContent() { currentView === "all" ? renderAllHerbs() : renderCategories(); }
-
-function renderAllHerbs() {
-    let c = document.getElementById('contentArea'); if(!c) return;
-    if(!herbs.length) { c.innerHTML = '<div class="empty-state"><i class="fas fa-leaf"></i><p>لا توجد أعشاب</p></div>'; return; }
-    let html = '<div class="herbs-grid">';
-    herbs.forEach(h => {
-        let catN = categories.find(c => c.id === h.categoryId)?.name || "بدون تصنيف";
-        html += `<div class="herb-card" data-id="${h.id}"><div class="card-header"><span class="herb-name">🌿 ${escapeHtml(h.name)}</span><span>${escapeHtml(catN)}</span></div><div class="info-block"><div class="info-label">💚 الفوائد</div><div class="info-text">${escapeHtml(h.benefits || '—')}</div></div><div class="info-block"><div class="info-label">⚠️ التحذيرات</div><div class="info-text">${escapeHtml(h.warnings || '—')}</div></div><div class="info-block"><div class="info-label">🍵 الاستخدام</div><div class="info-text">${escapeHtml(h.usage || '—')}</div></div>`;
-        if(isAdmin) html += `<div class="card-actions"><i class="fas fa-edit edit-herb" data-id="${h.id}" style="cursor:pointer;"></i><i class="fas fa-trash-alt del-herb" data-id="${h.id}" data-name="${escapeHtml(h.name)}" style="cursor:pointer;"></i></div>`;
-        html += `</div>`;
-    });
-    html += '</div>'; c.innerHTML = html;
-    document.querySelectorAll('.edit-herb').forEach(b => b.onclick = (e) => { e.stopPropagation(); editHerb(b.dataset.id); });
-    document.querySelectorAll('.del-herb').forEach(b => b.onclick = (e) => { e.stopPropagation(); pendingDeleteId = b.dataset.id; pendingDeleteType = 'herb'; document.getElementById('deleteMessage').innerHTML = `حذف "${b.dataset.name}"؟`; document.getElementById('deleteModal').classList.add('active'); });
-    document.querySelectorAll('.herb-card').forEach(card => card.onclick = () => showHerbDetail(card.dataset.id));
-}
-
-function renderCategories() {
-    let c = document.getElementById('contentArea'); if(!c) return;
-    if(!categories.length) { c.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><p>لا توجد تصنيفات</p></div>'; return; }
-    let html = '<div class="categories-grid">';
-    categories.forEach(cat => {
-        let cnt = herbs.filter(h => h.categoryId === cat.id).length;
-        html += `<div class="category-card" data-cat-id="${cat.id}"><div class="card-header"><span class="category-name">📁 ${escapeHtml(cat.name)}</span><span>${cnt} عشبة</span></div><div>اضغط لعرض الأعشاب</div>`;
-        if(isAdmin) html += `<div class="card-actions"><i class="fas fa-edit edit-cat" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}"></i><i class="fas fa-trash-alt del-cat" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}"></i></div>`;
-        html += `</div>`;
-    });
-    html += '</div>'; c.innerHTML = html;
-    document.querySelectorAll('.category-card').forEach(card => card.onclick = (e) => { if(!e.target.closest('.card-actions')) showCategoryHerbs(card.dataset.catId); });
-    document.querySelectorAll('.edit-cat').forEach(b => b.onclick = (e) => { e.stopPropagation(); let n = prompt("اسم جديد", b.dataset.name); if(n) { let cat = categories.find(c => c.id === b.dataset.id); if(cat) cat.name = n; renderContent(); showToast('تم التعديل', 'success'); } });
-    document.querySelectorAll('.del-cat').forEach(b => b.onclick = (e) => { e.stopPropagation(); pendingDeleteId = b.dataset.id; pendingDeleteType = 'category'; document.getElementById('deleteMessage').innerHTML = `حذف "${b.dataset.name}" وجميع أعشابه؟`; document.getElementById('deleteModal').classList.add('active'); });
-}
-
-function showCategoryHerbs(catId) {
-    let cat = categories.find(c => c.id === catId); if(!cat) return;
-    let catHerbs = herbs.filter(h => h.categoryId === catId);
-    let c = document.getElementById('contentArea');
-    if(!catHerbs.length) { c.innerHTML = `<div class="empty-state"><p>لا توجد أعشاب في "${cat.name}"</p><button id="backBtn" class="tool-btn">العودة</button></div>`; document.getElementById('backBtn')?.addEventListener('click', () => { currentView = 'categories'; renderContent(); }); return; }
-    let html = `<div style="margin-bottom:1rem;"><button id="backBtn" class="tool-btn"><i class="fas fa-arrow-right"></i> العودة</button> <h3 style="display:inline-block;margin-right:1rem;">📂 ${cat.name}</h3></div><div class="herbs-grid">`;
-    catHerbs.forEach(h => { html += `<div class="herb-card" data-id="${h.id}"><div class="herb-name">🌿 ${escapeHtml(h.name)}</div><div class="info-block"><div class="info-label">💚 الفوائد</div><div class="info-text">${escapeHtml(h.benefits || '—')}</div></div><div class="info-block"><div class="info-label">⚠️ التحذيرات</div><div class="info-text">${escapeHtml(h.warnings || '—')}</div></div><div class="info-block"><div class="info-label">🍵 الاستخدام</div><div class="info-text">${escapeHtml(h.usage || '—')}</div></div></div>`; });
-    html += '</div>'; c.innerHTML = html;
-    document.getElementById('backBtn')?.addEventListener('click', () => { currentView = 'categories'; renderContent(); });
-    document.querySelectorAll('.herb-card').forEach(card => card.onclick = () => showHerbDetail(card.dataset.id));
-}
-
-function showHerbDetail(id) {
-    let h = herbs.find(x => x.id === id); if(!h) return;
-    let catN = categories.find(c => c.id === h.categoryId)?.name || "بدون تصنيف";
-    document.getElementById('detailContent').innerHTML = `<div class="info-block"><div class="info-label">التصنيف</div><div class="info-text">${escapeHtml(catN)}</div></div><div class="info-block"><div class="info-label">الاسم</div><div class="info-text">${escapeHtml(h.name)}</div></div><div class="info-block"><div class="info-label">الفوائد</div><div class="info-text">${escapeHtml(h.benefits || '—')}</div></div><div class="info-block"><div class="info-label">التحذيرات</div><div class="info-text">${escapeHtml(h.warnings || '—')}</div></div><div class="info-block"><div class="info-label">الأضرار</div><div class="info-text">${escapeHtml(h.harms || '—')}</div></div><div class="info-block"><div class="info-label">الاستخدام</div><div class="info-text">${escapeHtml(h.usage || '—')}</div></div><div class="info-block"><div class="info-label">ملاحظات</div><div class="info-text">${escapeHtml(h.notes || '—')}</div></div>`;
-    document.getElementById('detailModal').classList.add('active');
-}
-
-function showAddHerb() { if(!isAdmin) return; currentEditHerbId = null; document.getElementById('modalHerbName').value = ''; document.getElementById('modalHerbBenefits').value = ''; document.getElementById('modalHerbWarnings').value = ''; document.getElementById('modalHerbHarms').value = ''; document.getElementById('modalHerbUsage').value = ''; document.getElementById('modalHerbNotes').value = ''; populateCategorySelect(); document.getElementById('herbModalTitle').innerHTML = 'إضافة عشبة جديدة'; document.getElementById('herbModal').classList.add('active'); }
-function editHerb(id) { let h = herbs.find(x => x.id === id); if(!h) return; currentEditHerbId = id; document.getElementById('modalHerbName').value = h.name; document.getElementById('modalHerbBenefits').value = h.benefits || ''; document.getElementById('modalHerbWarnings').value = h.warnings || ''; document.getElementById('modalHerbHarms').value = h.harms || ''; document.getElementById('modalHerbUsage').value = h.usage || ''; document.getElementById('modalHerbNotes').value = h.notes || ''; populateCategorySelect(h.categoryId); document.getElementById('herbModalTitle').innerHTML = 'تعديل العشبة'; document.getElementById('herbModal').classList.add('active'); }
-function populateCategorySelect(selected = '') { let s = document.getElementById('modalHerbCategory'); if(!s) return; let o = '<option value="">-- بدون تصنيف --</option>'; categories.forEach(c => { o += `<option value="${c.id}" ${c.id === selected ? 'selected' : ''}>${escapeHtml(c.name)}</option>`; }); s.innerHTML = o; }
-function saveHerb() { let name = document.getElementById('modalHerbName')?.value.trim(); if(!name) { alert('الاسم مطلوب'); return; } let data = { name, categoryId: document.getElementById('modalHerbCategory')?.value || null, benefits: document.getElementById('modalHerbBenefits')?.value || '—', warnings: document.getElementById('modalHerbWarnings')?.value || '—', harms: document.getElementById('modalHerbHarms')?.value || '—', usage: document.getElementById('modalHerbUsage')?.value || '—', notes: document.getElementById('modalHerbNotes')?.value || '—' }; if(currentEditHerbId) { let i = herbs.findIndex(x => x.id === currentEditHerbId); if(i !== -1) herbs[i] = { ...herbs[i], ...data }; showToast('تم التعديل', 'success'); } else { data.id = 'h' + Date.now(); herbs.push(data); showToast('تمت الإضافة', 'success'); } document.getElementById('herbModal').classList.remove('active'); renderContent(); updateHerbCount(); }
-
-function showCategoryManager() { let html = ''; categories.forEach(c => { html += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid var(--separator);"><span>📁 ${escapeHtml(c.name)}</span><div><i class="fas fa-edit edit-cat-manager" data-id="${c.id}" data-name="${escapeHtml(c.name)}" style="cursor:pointer;margin:0 5px;"></i><i class="fas fa-trash-alt del-cat-manager" data-id="${c.id}" data-name="${escapeHtml(c.name)}" style="cursor:pointer;margin:0 5px;"></i></div></div>`; }); document.getElementById('categoriesList').innerHTML = html || '<div class="empty-state">لا توجد تصنيفات</div>'; document.querySelectorAll('.edit-cat-manager').forEach(b => b.onclick = () => { let n = prompt("اسم جديد", b.dataset.name); if(n) { let cat = categories.find(c => c.id === b.dataset.id); if(cat) cat.name = n; showCategoryManager(); renderContent(); } }); document.querySelectorAll('.del-cat-manager').forEach(b => b.onclick = () => { pendingDeleteId = b.dataset.id; pendingDeleteType = 'category'; document.getElementById('deleteMessage').innerHTML = `حذف "${b.dataset.name}" وجميع أعشابه؟`; document.getElementById('deleteModal').classList.add('active'); document.getElementById('categoryModal').classList.remove('active'); }); document.getElementById('categoryModal').classList.add('active'); }
-function addNewCategory() { let name = document.getElementById('newCategoryName')?.value.trim(); if(name) { categories.push({ id: 'cat' + Date.now(), name }); document.getElementById('newCategoryName').value = ''; showCategoryManager(); renderContent(); showToast('تم الإضافة', 'success'); } else alert('أدخل اسم التصنيف'); }
-function confirmDelete() { if(pendingDeleteType === 'category') { categories = categories.filter(c => c.id !== pendingDeleteId); herbs = herbs.filter(h => h.categoryId !== pendingDeleteId); showToast('تم حذف التصنيف', 'success'); } else if(pendingDeleteType === 'herb') { herbs = herbs.filter(h => h.id !== pendingDeleteId); showToast('تم حذف العشبة', 'success'); } document.getElementById('deleteModal').classList.remove('active'); pendingDeleteId = null; pendingDeleteType = null; renderContent(); updateHerbCount(); }
-function deleteAllData() { if(confirm('⚠️ هل أنت متأكد من حذف جميع الأعشاب والتصنيفات؟')) { herbs = []; categories = []; renderContent(); updateHerbCount(); showToast('تم حذف جميع البيانات', 'success'); document.getElementById('deleteAllConfirmModal').classList.remove('active'); } }
-function showSearch() { document.getElementById('searchModal').classList.add('active'); document.getElementById('searchInput').value = ''; document.getElementById('searchResults').innerHTML = ''; setTimeout(() => document.getElementById('searchInput')?.focus(), 100); }
-function performSearch() { let q = document.getElementById('searchInput')?.value.trim().toLowerCase(); let r = document.getElementById('searchResults'); if(!q) { r.innerHTML = '<div class="empty-state">اكتب اسم العشبة للبحث</div>'; return; } let res = herbs.filter(h => h.name.toLowerCase().includes(q)); if(res.length) { let html = ''; res.forEach(h => { html += `<div style="padding:10px;cursor:pointer;border-bottom:1px solid var(--separator);" onclick="showHerbDetail('${h.id}'); document.getElementById('searchModal').classList.remove('active');"><b>🌿 ${escapeHtml(h.name)}</b><br><small>${escapeHtml((h.benefits || '').substring(0, 70))}</small></div>`; }); r.innerHTML = html; } else r.innerHTML = '<div class="empty-state">لا توجد نتائج</div>'; }
-
-let fontSizeLevel = 'normal';
-function cycleFontSize() { let l = ['normal','large','xlarge']; let i = l.indexOf(fontSizeLevel); fontSizeLevel = l[(i+1)%3]; document.body.classList.remove('font-large','font-xlarge'); if(fontSizeLevel === 'large') document.body.classList.add('font-large'); if(fontSizeLevel === 'xlarge') document.body.classList.add('font-xlarge'); localStorage.setItem('fontSize', fontSizeLevel); let btn = document.getElementById('fontSizeToggleBtn'); if(btn) btn.innerHTML = `<i class="fas fa-text-height"></i> <span>${fontSizeLevel === 'normal' ? 'عادي' : fontSizeLevel === 'large' ? 'كبير' : 'أكبر'}</span>`; }
-function initFontSize() { let s = localStorage.getItem('fontSize'); if(s && s !== 'normal') { fontSizeLevel = s; document.body.classList.add(s === 'large' ? 'font-large' : 'font-xlarge'); let btn = document.getElementById('fontSizeToggleBtn'); if(btn) btn.innerHTML = `<i class="fas fa-text-height"></i> <span>${s === 'large' ? 'كبير' : 'أكبر'}</span>`; } }
-
-function toggleTheme() { document.body.classList.toggle('dark-mode'); localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); }
-function initTheme() { if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode'); }
-function shareApp() { if(navigator.share) navigator.share({ title: 'موسوعة الأعشاب', url: location.href }); else { navigator.clipboard.writeText(location.href); alert('تم نسخ الرابط'); } }
-function openWhatsApp() { window.open('https://wa.me/9630932934273', '_blank'); }
-function showQuickHelp() { alert('📖 دليل سريع:\n🔍 بحث\n📂 التصنيفات\n🌿 الأعشاب\n🌙/☀️ المظهر\n🔊 حجم الخط'); }
-function showLogin() { document.getElementById('loginModal').classList.add('active'); }
-function attemptLogin() { let e = document.getElementById('adminEmail')?.value, p = document.getElementById('adminPassword')?.value; if(e === 'admin@herbal.com' && p === 'admin123') { setAdminMode(true); document.getElementById('loginModal').classList.remove('active'); document.getElementById('adminPassword').value = ''; showToast('مرحباً أيها المسؤول', 'success'); } else alert('بيانات غير صحيحة\nadmin@herbal.com / admin123'); }
-function logout() { setAdminMode(false); showToast('تم تسجيل الخروج', 'info'); }
-function updateViewButtons(view) { document.querySelectorAll('.view-btn-large').forEach(b => b.classList.toggle('active', b.dataset.view === view)); }
-
-// بدء التطبيق
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('mainSearchBtn')?.addEventListener('click', showSearch);
-    document.getElementById('closeSearchModalBtn')?.addEventListener('click', () => document.getElementById('searchModal').classList.remove('active'));
-    document.getElementById('searchInput')?.addEventListener('input', performSearch);
-    document.getElementById('lockIcon')?.addEventListener('click', showLogin);
-    document.getElementById('logoutBtn')?.addEventListener('click', logout);
+    // دوال المساعدة
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+    
+    function initTheme() {
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    }
+    
+    // تفعيل الأسئلة الشائعة
+    function initFAQ() {
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                item.classList.toggle('open');
+                const icon = question.querySelector('.fa-chevron-down');
+                if (icon) {
+                    icon.style.transform = item.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0)';
+                }
+            });
+        });
+    }
+    
+    // دعم PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('./sw.js').then(function(registration) {
+                console.log('ServiceWorker registered successfully: ', registration.scope);
+            }).catch(function(error) {
+                console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+    }
+    
+    // ربط الأحداث
     document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
-    document.getElementById('cancelLoginBtn')?.addEventListener('click', () => document.getElementById('loginModal').classList.remove('active'));
-    document.getElementById('confirmLoginBtn')?.addEventListener('click', attemptLogin);
-    document.getElementById('whatsappBtn')?.addEventListener('click', openWhatsApp);
-    document.getElementById('fontSizeToggleBtn')?.addEventListener('click', cycleFontSize);
-    document.getElementById('shareAppBtn')?.addEventListener('click', shareApp);
-    document.getElementById('visitorHelpBtn')?.addEventListener('click', showQuickHelp);
-    document.getElementById('viewToggle')?.addEventListener('click', (e) => { let b = e.target.closest('.view-btn-large'); if(b?.dataset.view) { currentView = b.dataset.view; updateViewButtons(currentView); renderContent(); } });
-    document.getElementById('addHerbBtn')?.addEventListener('click', showAddHerb);
-    document.getElementById('manageCategoriesBtn')?.addEventListener('click', showCategoryManager);
-    document.getElementById('closeCategoryModalBtn')?.addEventListener('click', () => document.getElementById('categoryModal').classList.remove('active'));
-    document.getElementById('addCategoryBtn')?.addEventListener('click', addNewCategory);
-    document.getElementById('closeHerbModalBtn')?.addEventListener('click', () => document.getElementById('herbModal').classList.remove('active'));
-    document.getElementById('cancelHerbModalBtn')?.addEventListener('click', () => document.getElementById('herbModal').classList.remove('active'));
-    document.getElementById('saveHerbModalBtn')?.addEventListener('click', saveHerb);
-    document.getElementById('closeDetailModalBtn')?.addEventListener('click', () => document.getElementById('detailModal').classList.remove('active'));
-    document.getElementById('cancelDeleteBtn')?.addEventListener('click', () => document.getElementById('deleteModal').classList.remove('active'));
-    document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
-    document.getElementById('refreshDataBtn')?.addEventListener('click', () => { renderContent(); showToast('تم تحديث البيانات', 'success'); });
-    document.getElementById('deleteAllBtn')?.addEventListener('click', () => document.getElementById('deleteAllConfirmModal').classList.add('active'));
-    document.getElementById('closeDeleteAllModalBtn')?.addEventListener('click', () => document.getElementById('deleteAllConfirmModal').classList.remove('active'));
-    document.getElementById('cancelDeleteAllBtn')?.addEventListener('click', () => document.getElementById('deleteAllConfirmModal').classList.remove('active'));
-    document.getElementById('confirmDeleteAllBtn')?.addEventListener('click', deleteAllData);
-    document.querySelectorAll('.modal-glass').forEach(m => m.addEventListener('click', (e) => { if(e.target === m) m.classList.remove('active'); }));
-    initTheme(); initFontSize(); setAdminMode(false); renderContent(); updateHerbCount();
-    setTimeout(() => { let s = document.getElementById('splashScreen'), m = document.getElementById('mainApp'); if(s && m) { s.classList.add('hide'); m.style.display = 'block'; } }, 1500);
-});
+    
+    // تهيئة الصفحة
+    initTheme();
+    initFAQ();
+    
+    console.log('📱 صفحة help.html تم تحميلها بنجاح');
 </script>
 </body>
 </html>
