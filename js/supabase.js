@@ -1,7 +1,6 @@
 // js/supabase.js
 const SUPABASE_URL = 'https://jedazmlbcnuwmtozldes.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_aDhcoHUjny6A8OPzmNgXgA_V6ItA5D8';
-
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZGF6bWxiY251d210b3psZGVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTQyNjcsImV4cCI6MjA5NDkzMDI2N30.8391ZND2V9_N3RzkFYiDNnej1o_eUQoQ1174nwxpMwI';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ========== جلب البيانات ==========
