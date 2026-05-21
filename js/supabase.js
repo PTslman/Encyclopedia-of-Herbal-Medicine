@@ -1,201 +1,94 @@
-// ============================================
-// Supabase Client - موسوعة الأعشاب الطبية
-// ============================================
-
+// js/supabase.js
 const SUPABASE_URL = 'https://jedazmlbcnuwmtozldes.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_aDhcoHUjny6A8OPzmNgXgA_V6ItA5D8';
 
-// تهيئة عميل Supabase
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ============================================
-// دوال جلب البيانات
-// ============================================
-
-// جلب جميع التصنيفات
+// ========== جلب البيانات ==========
 async function getAllCategories() {
-    const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-    
-    if (error) {
-        console.error('❌ فشل جلب التصنيفات:', error);
-        return [];
-    }
+    const { data, error } = await supabase.from('categories').select('*').order('name');
+    if (error) return [];
     return data;
 }
 
-// جلب جميع الأعشاب مع أسماء التصنيفات
 async function getAllHerbs() {
     const { data, error } = await supabase
         .from('herbs')
-        .select(`*, categories (name)`)
+        .select(`*, categories(name)`)
         .order('name');
-    
-    if (error) {
-        console.error('❌ فشل جلب الأعشاب:', error);
-        return [];
-    }
-    
-    return data.map(herb => ({
-        id: herb.id,
-        name: herb.name,
-        categoryId: herb.category_id,
-        categoryName: herb.categories?.name || 'بدون تصنيف',
-        benefits: herb.benefits || '—',
-        warnings: herb.warnings || '—',
-        harms: herb.harms || '—',
-        usage: herb.usage || '—',
-        notes: herb.notes || '—',
-        imageUrl: herb.image_url,
-        updatedAt: herb.updated_at
+    if (error) return [];
+    return data.map(h => ({
+        id: h.id,
+        name: h.name,
+        categoryId: h.category_id,
+        categoryName: h.categories?.name || 'بدون تصنيف',
+        benefits: h.benefits || '—',
+        warnings: h.warnings || '—',
+        harms: h.harms || '—',
+        usage: h.usage || '—',
+        notes: h.notes || '—',
+        imageUrl: h.image_url
     }));
 }
 
-// ============================================
-// دوال إدارة الأعشاب
-// ============================================
-
-// إضافة عشبة جديدة
+// ========== إدارة الأعشاب ==========
 async function addHerb(herbData) {
-    const { data, error } = await supabase
-        .from('herbs')
-        .insert([{
-            name: herbData.name,
-            category_id: herbData.categoryId || null,
-            benefits: herbData.benefits || '—',
-            warnings: herbData.warnings || '—',
-            harms: herbData.harms || '—',
-            usage: herbData.usage || '—',
-            notes: herbData.notes || '—',
-            image_url: herbData.imageUrl || null,
-            updated_at: new Date().toISOString()
-        }])
-        .select();
-    
-    return { data, error };
+    return await supabase.from('herbs').insert([{
+        name: herbData.name,
+        category_id: herbData.categoryId,
+        benefits: herbData.benefits,
+        warnings: herbData.warnings,
+        harms: herbData.harms,
+        usage: herbData.usage,
+        notes: herbData.notes,
+        image_url: herbData.imageUrl
+    }]);
 }
 
-// تحديث عشبة
 async function updateHerb(id, herbData) {
-    const { data, error } = await supabase
+    return await supabase
         .from('herbs')
         .update({
             name: herbData.name,
-            category_id: herbData.categoryId || null,
-            benefits: herbData.benefits || '—',
-            warnings: herbData.warnings || '—',
-            harms: herbData.harms || '—',
-            usage: herbData.usage || '—',
-            notes: herbData.notes || '—',
-            image_url: herbData.imageUrl || null,
-            updated_at: new Date().toISOString()
+            category_id: herbData.categoryId,
+            benefits: herbData.benefits,
+            warnings: herbData.warnings,
+            harms: herbData.harms,
+            usage: herbData.usage,
+            notes: herbData.notes,
+            image_url: herbData.imageUrl
         })
-        .eq('id', id)
-        .select();
-    
-    return { data, error };
+        .eq('id', id);
 }
 
-// حذف عشبة
 async function deleteHerb(id) {
-    const { error } = await supabase
-        .from('herbs')
-        .delete()
-        .eq('id', id);
-    
-    return { error };
+    return await supabase.from('herbs').delete().eq('id', id);
 }
 
-// ============================================
-// دوال إدارة التصنيفات
-// ============================================
-
-// إضافة تصنيف
+// ========== إدارة التصنيفات ==========
 async function addCategory(name) {
-    const { data, error } = await supabase
-        .from('categories')
-        .insert([{ name: name }])
-        .select();
-    
-    return { data, error };
+    return await supabase.from('categories').insert([{ name }]);
 }
 
-// تحديث تصنيف
 async function updateCategory(id, name) {
-    const { error } = await supabase
-        .from('categories')
-        .update({ name: name })
-        .eq('id', id);
-    
-    return { error };
+    return await supabase.from('categories').update({ name }).eq('id', id);
 }
 
-// حذف تصنيف
 async function deleteCategory(id) {
-    const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', id);
-    
-    return { error };
+    return await supabase.from('categories').delete().eq('id', id);
 }
 
-// ============================================
-// دوال المصادقة (الأهم - هذه كانت مفقودة!)
-// ============================================
-
-// تسجيل الدخول كمسؤول
+// ========== المصادقة ==========
 async function loginAdmin(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-    });
-    
-    if (error) {
-        console.error('❌ فشل تسجيل الدخول:', error.message);
-        return { data: null, error };
-    }
-    
-    console.log('✅ تم تسجيل الدخول بنجاح:', data.user.email);
-    return { data, error: null };
+    return await supabase.auth.signInWithPassword({ email, password });
 }
 
-// تسجيل الخروج
 async function logoutAdmin() {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-        console.error('❌ فشل تسجيل الخروج:', error.message);
-    } else {
-        console.log('✅ تم تسجيل الخروج');
-    }
-    return { error };
+    return await supabase.auth.signOut();
 }
 
-// مراقبة حالة المصادقة
-function onAuthChange(callback) {
-    supabase.auth.onAuthStateChange((event, session) => {
-        console.log('🔐 Auth event:', event);
-        if (callback) callback(event, session);
-    });
-}
-
-// الحصول على المستخدم الحالي
-async function getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) {
-        console.error('❌ فشل جلب المستخدم:', error.message);
-        return null;
-    }
-    return user;
-}
-
-// ============================================
-// تصدير الدوال للنطاق العام
-// ============================================
-
-window.supabaseClient = supabase;
+// ========== تصدير ==========
+window.supabase = supabase;
 window.getAllCategories = getAllCategories;
 window.getAllHerbs = getAllHerbs;
 window.addHerb = addHerb;
@@ -204,10 +97,8 @@ window.deleteHerb = deleteHerb;
 window.addCategory = addCategory;
 window.updateCategory = updateCategory;
 window.deleteCategory = deleteCategory;
-window.loginAdmin = loginAdmin;      // ← هذه كانت مفقودة!
+window.loginAdmin = loginAdmin;
 window.logoutAdmin = logoutAdmin;
-window.onAuthChange = onAuthChange;
-window.getCurrentUser = getCurrentUser;
 
-console.log('✅ Supabase client ready');
-console.log('🔐 loginAdmin function available:', typeof loginAdmin);
+console.log('✅ Supabase ready');
+console.log('🔐 URL:', SUPABASE_URL);
