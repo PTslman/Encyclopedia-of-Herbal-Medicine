@@ -1,6 +1,6 @@
 /* ========================================
    موسوعة الأعشاب الطبية - الأنماط الرئيسية
-   الإصدار الكامل غير المختصر
+   الإصدار الكامل غير المختصر (نسخة مصححة)
    ======================================== */
 
 /* ========== المتغيرات والأساسيات ========== */
@@ -52,6 +52,7 @@ body.dark-mode {
     padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+    /* تم إزالة user-select: none لتحسين تجربة المستخدم */
 }
 
 body {
@@ -270,9 +271,11 @@ body.font-xlarge .visitor-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    will-change: transform;
     transform: translateZ(0);
     font-family: 'Cairo', sans-serif;
+    /* منع تحديد النص من الأزرار فقط */
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .icon-btn {
@@ -311,6 +314,14 @@ body.font-xlarge .visitor-btn {
 .warning-btn:hover {
     background: var(--warning-dark);
     transform: translateY(-2px);
+}
+
+/* تأثير الضغط على الأزرار - نسخة محسنة */
+button:active,
+.tool-btn:active,
+.icon-btn:active {
+    opacity: 0.9;
+    transition: opacity 0.05s;
 }
 
 /* ========== مفتاح الوضع الليلي ========== */
@@ -547,7 +558,7 @@ body:not(.viewer-mode) .visitor-toolbar {
     color: var(--primary-dark);
     transition: var(--transition);
     font-size: 0.85rem;
-    will-change: transform;
+    transform: translateZ(0);
 }
 
 .visitor-btn:hover {
@@ -563,6 +574,12 @@ body:not(.viewer-mode) .visitor-toolbar {
 
 .visitor-btn.clear-btn:hover {
     background: #b71c1c;
+}
+
+.visitor-btn.resync-btn {
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+    color: white;
+    border: none;
 }
 
 /* ========== شريط الأدوات القديم (احتياطي) ========== */
@@ -693,7 +710,6 @@ body:not(.viewer-mode) .visitor-toolbar {
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     cursor: pointer;
     backdrop-filter: blur(10px);
-    will-change: transform;
     transform: translateZ(0);
     contain: layout style paint;
     content-visibility: auto;
@@ -715,7 +731,6 @@ body:not(.viewer-mode) .visitor-toolbar {
     margin-bottom: 12px;
     background: var(--light-bg);
     transition: transform 0.2s ease;
-    will-change: transform;
     transform: translateZ(0);
 }
 
@@ -787,7 +802,7 @@ body:not(.viewer-mode) .visitor-toolbar {
     font-size: 1.2rem;
     cursor: pointer;
     transition: transform 0.15s ease;
-    will-change: transform;
+    transform: translateZ(0);
 }
 
 .card-actions i:hover {
@@ -827,7 +842,7 @@ body:not(.viewer-mode) .visitor-toolbar {
     border: 1px solid var(--separator);
     transition: transform 0.2s;
     transform: scale(0.97);
-    will-change: transform;
+    transform: translateZ(0);
 }
 
 .modal-glass.active .modal-glass-content {
@@ -895,6 +910,8 @@ body:not(.viewer-mode) .visitor-toolbar {
     font-family: inherit;
     color: var(--text);
     transition: var(--transition);
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 .form-group textarea {
@@ -1030,6 +1047,8 @@ body:not(.viewer-mode) .visitor-toolbar {
     margin-bottom: 1.2rem;
     font-size: 1rem;
     transition: var(--transition);
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 .search-input:focus {
@@ -1046,7 +1065,7 @@ body:not(.viewer-mode) .visitor-toolbar {
     cursor: pointer;
     border: 1px solid transparent;
     transition: transform 0.15s ease, border-color 0.15s ease;
-    will-change: transform;
+    transform: translateZ(0);
 }
 
 .search-item:hover {
@@ -1238,10 +1257,28 @@ body:not(.viewer-mode) .visitor-toolbar {
     color: var(--text-secondary);
 }
 
-/* ========== إخفاء العناصر غير المرغوب فيها ========== */
-#installPwaBtn,
-.inline-progress-indicator {
-    display: none !important;
+/* ========== زر التثبيت ========== */
+#installPwaBtn {
+    display: none;
+}
+
+#installPwaBtn.show {
+    display: flex;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 700;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+
+#installPwaBtn.show:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--primary-glow);
 }
 
 /* ========== وضع PWA ========== */
@@ -1253,12 +1290,19 @@ body:not(.viewer-mode) .visitor-toolbar {
     .app-container {
         padding-top: env(safe-area-inset-top);
         padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
     }
     
     .tool-btn,
     .icon-btn {
         transition: all 0.12s ease;
         touch-action: manipulation;
+    }
+
+    /* إخفاء أي عناصر خاصة بالمتصفح */
+    .browser-only {
+        display: none !important;
     }
 }
 
@@ -1277,6 +1321,12 @@ body:not(.viewer-mode) .visitor-toolbar {
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+@keyframes bounce {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -1345,11 +1395,65 @@ body.save-data-mode .info-block:hover {
     transform: none !important;
 }
 
+/* ========== وضع توفير الطاقة ========== */
+body.power-saving .herb-card {
+    box-shadow: none !important;
+    border: 1px solid var(--separator);
+}
+
+body.power-saving .herb-card-image {
+    filter: grayscale(0.3);
+}
+
+/* ========== كشف ضعف الأداء ========== */
+body.fps-low .herb-card {
+    transition: none !important;
+}
+
+body.fps-low .tool-btn,
+body.fps-low .icon-btn {
+    transition: none !important;
+}
+
+/* ========== وضع عدم الاتصال ========== */
+body.offline-mode {
+    opacity: 0.95;
+}
+
+body.offline-mode::after {
+    content: "⚠️ وضع غير متصل";
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    background: #ff9800;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    border-radius: 50px;
+    font-size: 12px;
+    z-index: 9999;
+    font-family: 'Cairo', sans-serif;
+}
+
 /* ========== استجابة للشاشات المتوسطة ========== */
 @media (min-width: 769px) and (max-width: 1024px) {
     .herbs-grid,
     .categories-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ========== استجابة للشاشات الكبيرة جداً ========== */
+@media (min-width: 1400px) {
+    .herbs-grid,
+    .categories-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .app-container {
+        max-width: 1600px;
+        padding: 1.5rem;
     }
 }
 
@@ -1436,18 +1540,28 @@ body.save-data-mode .info-block:hover {
     
     /* شريط الزوار - تمرير أفقي */
     .visitor-toolbar {
-        padding: 0.6rem;
-        gap: 0.5rem;
+        padding: 0.5rem;
+        gap: 0.4rem;
         overflow-x: auto;
         flex-wrap: nowrap;
-        -webkit-overflow-scrolling: touch;
+        justify-content: flex-start;
+        border-radius: 30px;
+        scrollbar-width: thin;
+    }
+    
+    .visitor-toolbar::-webkit-scrollbar {
+        height: 2px;
     }
     
     .visitor-btn {
         padding: 0.4rem 0.7rem;
         font-size: 0.7rem;
-        white-space: nowrap;
         flex-shrink: 0;
+        white-space: nowrap;
+    }
+    
+    .visitor-btn i {
+        font-size: 0.8rem;
     }
     
     /* الشبكات */
@@ -1710,6 +1824,18 @@ body.save-data-mode .info-block:hover {
         padding: 0.5rem;
         font-size: 0.8rem;
     }
+    
+    .visitor-btn span {
+        display: none;
+    }
+    
+    .visitor-btn {
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .visitor-btn i {
+        margin: 0;
+    }
 }
 
 /* ========== تحسين اللمس للأجهزة المحمولة ========== */
@@ -1759,321 +1885,16 @@ body.save-data-mode .info-block:hover {
 .view-btn.active {
     background: var(--primary);
     color: white;
-   }
-/* تحسينات خاصة بـ Android PWA */
-@media (display-mode: standalone) {
-    body {
-        background: var(--light-bg);
-    }
-    
-    .splash-screen {
-        background: linear-gradient(135deg, #0f3b12, #1b5e20);
-    }
-    
-    /* إخفاء شريط التنقل في المتصفح */
-    .app-container {
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
-    }
 }
 
-/* زر التثبيت */
-#installPwaBtn {
-    display: none;
-}
-
-#installPwaBtn.show {
-    display: flex;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-/* تحسينات PWA - جعله كتطبيق حقيقي */
-
-/* إخفاء شريط التمرير عند عدم الحاجة */
-::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-}
-
-/* تحسين اللمس للأزرار */
-button, .tool-btn, .icon-btn, .herb-card, .category-card {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* تأثير الضغط على العناصر */
-button:active, .tool-btn:active, .icon-btn:active {
-    transform: scale(0.97);
-    transition: transform 0.05s;
-}
-
-/* تحسين الشفافية في وضع PWA */
-@media (display-mode: standalone) {
-    body {
-        background: var(--light-bg);
-    }
-    
-    /* إخفاء أي عناصر خاصة بالمتصفح */
-    .browser-only {
-        display: none !important;
-    }
-    
-    /* تحسين المسافات للأجهزة ذات الشاشات الطويلة */
-    .app-container {
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
-        padding-left: env(safe-area-inset-left);
-        padding-right: env(safe-area-inset-right);
-    }
-}
-
-/* منع التحديد العشوائي */
-* {
+/* منع التحديد العشوائي للأزرار فقط */
+.tool-btn, .icon-btn, .visitor-btn, .view-btn, .view-btn-large {
     user-select: none;
     -webkit-user-select: none;
 }
 
-/* السماح بتحديد النص في حقول الإدخال فقط */
-input, textarea {
+/* السماح بتحديد النص في حقول الإدخال والمحتوى القابل للقراءة */
+input, textarea, .info-text, .herb-name, .category-name {
     user-select: text;
     -webkit-user-select: text;
-}
-
-/* تحسين سرعة ظهور التطبيق */
-.splash-screen {
-    transition: opacity 0.3s ease;
-}
-
-/* تأثيرات حركية سلسة */
-.herb-card, .category-card, .tool-btn, .icon-btn {
-    transition: all 0.12s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    will-change: transform;
-}
-
-/* وضع عدم الاتصال */
-body.offline-mode {
-    opacity: 0.95;
-}
-
-body.offline-mode::after {
-    content: "⚠️ وضع غير متصل";
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
-    background: #ff9800;
-    color: white;
-    text-align: center;
-    padding: 8px;
-    border-radius: 50px;
-    font-size: 12px;
-    z-index: 9999;
-}
-/* شاشة بداية احترافية */
-.splash-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #43a047 100%);
-    z-index: 10000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.splash-screen .splash-logo {
-    width: 120px;
-    height: 120px;
-    animation: bounce 0.8s ease-out;
-}
-
-@keyframes bounce {
-    0% { transform: scale(0.5); opacity: 0; }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-.splash-screen .splash-title {
-    animation: fadeInUp 0.6s ease-out 0.2s both;
-}
-
-.splash-screen .splash-spinner {
-    animation: fadeInUp 0.6s ease-out 0.4s both;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-/* ============================================
-   تحسين الأداء للأجهزة الضعيفة
-   ============================================ */
-
-/* تحسين الأداء العام */
-* {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}
-
-/* تحسين أداء البطاقات */
-.herb-card, .category-card {
-    will-change: transform;
-    transform: translateZ(0);
-    contain: layout style paint;
-    content-visibility: auto;
-    contain-intrinsic-size: 0 300px;
-}
-
-/* للأجهزة الضعيفة */
-@media (max-width: 768px) {
-    .herb-card, .category-card {
-        transition: transform 0.1s ease, box-shadow 0.1s ease;
-    }
-    .herb-card:hover, .category-card:hover {
-        transform: translateY(-2px);
-    }
-    .header, .toolbar, .visitor-toolbar {
-        backdrop-filter: blur(10px);
-    }
-    .splash-logo {
-        animation: none;
-    }
-}
-
-/* وضع توفير الطاقة */
-body.power-saving .herb-card {
-    box-shadow: none !important;
-    border: 1px solid var(--separator);
-}
-body.power-saving .herb-card-image {
-    filter: grayscale(0.3);
-}
-
-/* كشف FPS */
-body.fps-low .herb-card {
-    transition: none !important;
-}
-body.fps-low .tool-btn, body.fps-low .icon-btn {
-    transition: none !important;
-}
-/* ============================================
-   تنسيق شريط الزائر - محسن ومتجاوب
-   ============================================ */
-
-.visitor-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border-radius: 60px;
-    padding: 0.6rem 1rem;
-    margin-bottom: 1.2rem;
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow);
-}
-
-.visitor-btn {
-    background: var(--light-bg);
-    border: 1px solid var(--separator);
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--primary-dark);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    white-space: nowrap;
-}
-
-.visitor-btn i {
-    font-size: 0.9rem;
-}
-
-.visitor-btn:hover {
-    background: var(--primary);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--primary-glow);
-}
-
-.visitor-btn.clear-btn {
-    background: linear-gradient(135deg, #c62828, #8e0000);
-    color: white;
-    border: none;
-}
-
-.visitor-btn.clear-btn:hover {
-    background: #b71c1c;
-}
-
-.visitor-btn.resync-btn {
-    background: linear-gradient(135deg, #2e7d32, #1b5e20);
-    color: white;
-    border: none;
-}
-
-.visitor-only {
-    display: flex;
-}
-
-body:not(.viewer-mode) .visitor-toolbar {
-    display: none;
-}
-
-/* للجوال */
-@media (max-width: 768px) {
-    .visitor-toolbar {
-        padding: 0.5rem;
-        gap: 0.4rem;
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-        border-radius: 30px;
-        scrollbar-width: thin;
-    }
-    
-    .visitor-toolbar::-webkit-scrollbar {
-        height: 2px;
-    }
-    
-    .visitor-btn {
-        padding: 0.4rem 0.7rem;
-        font-size: 0.7rem;
-        flex-shrink: 0;
-        white-space: nowrap;
-    }
-    
-    .visitor-btn i {
-        font-size: 0.8rem;
-    }
-}
-
-/* للأجهزة الصغيرة جداً */
-@media (max-width: 480px) {
-    .visitor-btn span {
-        display: none;
-    }
-    
-    .visitor-btn {
-        padding: 0.4rem 0.6rem;
-    }
-    
-    .visitor-btn i {
-        margin: 0;
-    }
-}
+       }
