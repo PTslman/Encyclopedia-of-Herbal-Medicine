@@ -141,8 +141,6 @@
                 <button id="backupBtn" class="tool-btn"><i class="fas fa-database"></i> نسخ</button>
                 <button id="restoreBtn" class="tool-btn"><i class="fas fa-upload"></i> استعادة</button>
                 <button id="deleteAllBtn" class="tool-btn danger-btn"><i class="fas fa-trash-alt"></i> حذف الكل</button>
-                <button id="stopSyncBtn" class="tool-btn"><i class="fas fa-pause"></i> إيقاف</button>
-                <button id="startSyncBtn" class="tool-btn"><i class="fas fa-play"></i> تشغيل</button>
                 <div id="adminClock" class="admin-clock"><i class="far fa-clock"></i> <span>--:--:--</span></div>
             </div>
 
@@ -152,8 +150,8 @@
             <div class="visitor-toolbar visitor-only">
                 <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة</button>
                 <button id="visitorHelpBtn" class="visitor-btn"><i class="fas fa-question-circle"></i> مساعدة</button>
-                <button id="visitorForceSyncBtn" class="visitor-btn"><i class="fas fa-download"></i> تحديث البيانات</button>
-                <button id="visitorClearTempBtn" class="visitor-btn clear-btn"><i class="fas fa-database"></i> حذف المؤقتة</button>
+                <button id="visitorForceSyncBtn" class="visitor-btn"><i class="fas fa-sync-alt"></i> تحديث البيانات</button>
+                <button id="visitorResyncBtn" class="visitor-btn resync-btn"><i class="fas fa-arrow-rotate-right"></i> إعادة المزامنة</button>
                 <a href="/Encyclopedia-of-Herbal-Medicine/privacy.html" class="visitor-btn" style="text-decoration:none;">
                     <i class="fas fa-shield-alt"></i> سياسة الخصوصية
                 </a>
@@ -204,21 +202,14 @@
 
     <div id="saveProgressBar" class="smart-progress-bar" style="display:none;"><div class="progress-icon"><i class="fas fa-spinner fa-pulse"></i></div><div class="progress-details"><div class="progress-stage">جاري الحفظ</div><div class="progress-status">جارٍ رفع البيانات...</div><div class="progress-bar-track"><div id="saveProgressFill" class="progress-bar-fill"></div></div></div><div class="progress-percent" id="saveProgressPercent">0%</div></div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/supabase.js"></script>
 
-<!-- إعدادات Firebase -->
-<script src="/Encyclopedia-of-Herbal-Medicine/js/firebase-config.js"></script>
-
-<!-- مدير المزامنة -->
-<script src="/Encyclopedia-of-Herbal-Medicine/js/sync-manager.js"></script>
-
-<!-- باقي السكربتات -->
-<script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
-<script src="/Encyclopedia-of-Herbal-Medicine/js/app.js"></script>
+    <!-- باقي السكربتات -->
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/app.js"></script>
+    
     <script>
     // معالج شاشة البداية
     (function smartSplashHandler() {
@@ -321,4 +312,4 @@
     })();
     </script>
 </body>
-    </html>
+</html>
