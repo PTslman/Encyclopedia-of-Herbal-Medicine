@@ -1,14 +1,36 @@
 {
-  "version": "4.0.1",
+  "version": "5.0.0",
   "lastUpdate": "2026-01-21T12:00:00Z",
   "hash": "a7f8e9d1c2b3a4f5e6d7c8b9a0f1e2d3",
+  "changelog": [
+    "✨ تحسين أداء المزامنة مع Firebase",
+    "🐛 إصلاح مشكلة عرض الصور في وضع عدم الاتصال",
+    "⚡ تحسين سرعة تحميل التطبيق",
+    "🔧 إضافة دعم كامل لـ PWA",
+    "🌙 تحسين الوضع الليلي",
+    "📱 تحسين التوافق مع الأجهزة المحمولة"
+  ],
   "files": [
     "index.html",
     "css/style.css",
     "js/app.js",
     "js/firebase-config.js",
     "js/pwa.js",
-    "js/update-handler.js",
-    "manifest.json"
-  ]
+    "manifest.json",
+    "sw.js"
+  ],
+  "minAppVersion": "4.0.0",
+  "features": {
+    "offlineSupport": true,
+    "pushNotifications": true,
+    "backgroundSync": true,
+    "imageCaching": true
+  },
+  "firebaseConfig": {
+    "apiKey": "AIzaSyB634alkmrWFHIZrAo90oi9nTpMjwR3gXU",
+    "authDomain": "harb-f6240.firebaseapp.com",
+    "projectId": "harb-f6240",
+    "storageBucket": "harb-f6240.firebasestorage.app"
+  },
+  "adminUID": "VwPJ3q2ElUbPmrZR1XyHv1wiI8p2"
 }
