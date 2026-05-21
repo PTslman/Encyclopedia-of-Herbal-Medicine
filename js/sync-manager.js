@@ -1,72 +1,24 @@
-// ============================================================
-// Sync Manager - موسوعة الأعشاب الطبية
-// نظام مزامنة متطور مع واجهة مستخدم احترافية
-// ============================================================
+// ============================================
+// مدير المزامنة - موسوعة الأعشاب الطبية
+// ============================================
 
-class SyncManager {
-    constructor() {
-        this.isSyncing = false;
-        this.lastSync = null;
-        this.syncQueue = [];
-        this.listeners = [];
-        this.init();
-    }
+const SyncManager = (function() {
+    'use strict';
     
-    init() {
-        console.log("🔄 SyncManager initialized");
-        this.setupEventListeners();
-        this.setupButtons();
-        this.autoSync();
-    }
+    // ========== المتغيرات الخاصة ==========
+    let isSyncing = false;
+    let lastSyncTime = null;
+    let syncListeners = [];
     
-    // إضافة مستمع
-    addListener(callback) {
-        this.listeners.push(callback);
-    }
+    // ========== دوال مساعدة خاصة ==========
     
-    // إشعار المستمعين
-    notify(status, data) {
-        this.listeners.forEach(cb => cb(status, data));
-    }
-    
-    // إعداد مستمعي الأحداث
-    setupEventListeners() {
-        // عند عودة الاتصال
-        window.addEventListener('online', () => {
-            console.log("🌐 Online - auto syncing");
-            this.sync(false);
-        });
-        
-        // عند فقدان الاتصال
-        window.addEventListener('offline', () => {
-            console.log("📡 Offline - sync paused");
-            this.notify('offline', null);
-        });
-    }
-    
-    // إعداد الأزرار
-    setupButtons() {
-        // زر الزائر
-        const visitorBtn = document.getElementById('visitorForceSyncBtn');
-        if (visitorBtn) {
-            visitorBtn.addEventListener('click', () => this.sync(true));
-        }
-        
-        // زر المسؤول
-        const adminBtn = document.getElementById('refreshDataBtn');
-        if (adminBtn) {
-            adminBtn.addEventListener('click', () => this.sync(true));
-        }
-    }
-    
-    // عرض إشعار
-    showToast(message, type = 'info') {
+    function showMessage(message, type = 'info') {
         const colors = {
             success: '#4caf50',
             error: '#f44336',
             warning: '#ff9800',
-            info: '#2196f3',
-            sync: '#2e7d32'
+            info: '#2e7d32',
+            sync: '#2196f3'
         };
         
         const toast = document.createElement('div');
@@ -81,84 +33,91 @@ class SyncManager {
             right: 20px;
             background: ${colors[type] || colors.info};
             color: white;
-            padding: 14px 20px;
-            border-radius: 60px;
+            padding: 12px 20px;
+            border-radius: 50px;
             z-index: 10001;
             font-family: 'Cairo', sans-serif;
             font-size: 0.85rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            animation: slideUp 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.3s ease;
             direction: rtl;
         `;
         document.body.appendChild(toast);
-        
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateY(50px)';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
     
-    // تحديث حالة الزر
-    updateButtonState(btn, isLoading) {
-        if (!btn) return;
-        if (isLoading) {
-            btn.disabled = true;
-            btn.style.opacity = '0.7';
-            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري...';
-        } else {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.innerHTML = '<i class="fas fa-download"></i> تحديث البيانات';
-        }
+    function updateSyncButton(loading) {
+        const syncBtn = document.getElementById('visitorForceSyncBtn');
+        const refreshBtn = document.getElementById('refreshDataBtn');
+        
+        [syncBtn, refreshBtn].forEach(btn => {
+            if (btn) {
+                if (loading) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.6';
+                    btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري...';
+                } else {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.innerHTML = btn.id === 'visitorForceSyncBtn' ? 
+                        '<i class="fas fa-download"></i> تحديث البيانات' : 
+                        '<i class="fas fa-sync-alt"></i> تحديث';
+                }
+            }
+        });
     }
     
-    // المزامنة الرئيسية
-    async sync(showToast = true) {
-        if (this.isSyncing) {
-            if (showToast) this.showToast('⚠️ المزامنة قيد التقدم', 'warning');
+    function notifyListeners(status, data) {
+        syncListeners.forEach(cb => cb(status, data));
+    }
+    
+    // ========== الدوال العامة ==========
+    
+    // جلب البيانات من Firebase
+    async function fetchData(showMessageToast = true) {
+        if (isSyncing) {
+            if (showMessageToast) showMessage('⚠️ جاري التحميل حالياً', 'warning');
             return false;
         }
         
         if (!navigator.onLine) {
-            if (showToast) this.showToast('📡 لا يوجد اتصال بالإنترنت', 'warning');
+            if (showMessageToast) showMessage('📡 لا يوجد اتصال بالإنترنت', 'warning');
             return false;
         }
         
-        this.isSyncing = true;
-        this.notify('syncing', null);
+        isSyncing = true;
+        updateSyncButton(true);
+        notifyListeners('start', null);
         
-        // تحديث الأزرار
-        const visitorBtn = document.getElementById('visitorForceSyncBtn');
-        const adminBtn = document.getElementById('refreshDataBtn');
-        this.updateButtonState(visitorBtn, true);
-        this.updateButtonState(adminBtn, true);
-        
-        if (showToast) this.showToast('🔄 جاري تحميل البيانات...', 'sync');
-        
-        const startTime = performance.now();
+        if (showMessageToast) showMessage('🔄 جاري تحميل البيانات...', 'sync');
         
         try {
-            // جلب البيانات
             const [categoriesSnap, herbsSnap] = await Promise.all([
                 categoriesCol.get(),
                 herbsCol.get()
             ]);
             
             const categories = [];
-            categoriesSnap.forEach(doc => categories.push({ id: doc.id, ...doc.data() }));
+            categoriesSnap.forEach(doc => {
+                categories.push({ id: doc.id, ...doc.data() });
+            });
             
             const herbs = [];
-            herbsSnap.forEach(doc => herbs.push({ id: doc.id, ...doc.data() }));
+            herbsSnap.forEach(doc => {
+                herbs.push({ id: doc.id, ...doc.data() });
+            });
             
             // حفظ في localStorage
-            const cache = {
+            const cacheData = {
                 categories: categories,
                 herbs: herbs,
                 timestamp: Date.now(),
-                version: '2.0'
+                version: '3.0'
             };
-            localStorage.setItem('herbal_cache_v3', JSON.stringify(cache));
+            localStorage.setItem('herbal_cache_v3', JSON.stringify(cacheData));
             
             // تحديث المتغيرات العامة
             if (typeof window.categories !== 'undefined') window.categories = categories;
@@ -168,88 +127,139 @@ class SyncManager {
             if (typeof renderContent === 'function') renderContent();
             if (typeof updateHerbCount === 'function') updateHerbCount();
             
-            this.lastSync = Date.now();
-            const duration = Math.round(performance.now() - startTime);
+            lastSyncTime = Date.now();
             
-            console.log(`✅ Sync completed: ${herbs.length} herbs, ${categories.length} categories (${duration}ms)`);
+            console.log(`✅ Sync complete: ${herbs.length} herbs, ${categories.length} categories`);
+            if (showMessageToast) showMessage(`✅ تم التحميل (${herbs.length} عشبة)`, 'success');
             
-            if (showToast) {
-                this.showToast(`✅ تم التحميل (${herbs.length} عشبة)`, 'success');
-            }
-            
-            this.notify('success', { herbs: herbs.length, categories: categories.length, duration });
+            notifyListeners('success', { herbs: herbs.length, categories: categories.length });
             return true;
             
         } catch (error) {
-            console.error("❌ Sync failed:", error);
+            console.error('❌ Sync failed:', error);
             
             let errorMsg = error.message;
             if (error.code === 'permission-denied') {
                 errorMsg = 'ليس لديك صلاحية الوصول';
             } else if (error.code === 'unavailable') {
-                errorMsg = 'الخدمة غير متاحة حالياً';
+                errorMsg = 'خدمة Firebase غير متاحة';
             }
             
-            if (showToast) {
-                this.showToast(`❌ فشل التحميل: ${errorMsg}`, 'error');
-            }
-            
-            this.notify('error', { message: errorMsg });
+            if (showMessageToast) showMessage(`❌ فشل التحميل: ${errorMsg}`, 'error');
+            notifyListeners('error', { message: errorMsg });
             return false;
             
         } finally {
-            this.isSyncing = false;
-            this.updateButtonState(visitorBtn, false);
-            this.updateButtonState(adminBtn, false);
+            isSyncing = false;
+            updateSyncButton(false);
         }
     }
     
+    // تحميل البيانات من الكاش المحلي فقط
+    function loadFromCache() {
+        try {
+            const cached = localStorage.getItem('herbal_cache_v3');
+            if (cached) {
+                const data = JSON.parse(cached);
+                if (data.categories && data.herbs) {
+                    if (typeof window.categories !== 'undefined') window.categories = data.categories;
+                    if (typeof window.herbs !== 'undefined') window.herbs = data.herbs;
+                    if (typeof renderContent === 'function') renderContent();
+                    if (typeof updateHerbCount === 'function') updateHerbCount();
+                    console.log(`📦 Loaded from cache: ${data.herbs.length} herbs`);
+                    return true;
+                }
+            }
+        } catch (e) {}
+        return false;
+    }
+    
+    // إضافة مستمع
+    function addListener(callback) {
+        syncListeners.push(callback);
+    }
+    
+    // الحصول على الحالة
+    function getStatus() {
+        return {
+            isSyncing: isSyncing,
+            lastSync: lastSyncTime,
+            lastSyncFormatted: lastSyncTime ? new Date(lastSyncTime).toLocaleString() : null,
+            isOnline: navigator.onLine
+        };
+    }
+    
     // المزامنة التلقائية
-    async autoSync() {
-        // فحص أول مرة بعد 2 ثانية
+    function initAutoSync() {
+        // عند تحميل الصفحة
         setTimeout(async () => {
             if (navigator.onLine) {
-                // التحقق من وجود بيانات قديمة
-                const lastCache = localStorage.getItem('herbal_cache_v3');
-                if (!lastCache) {
-                    console.log("🔄 First time - syncing...");
-                    await this.sync(false);
-                } else {
-                    try {
-                        const cache = JSON.parse(lastCache);
-                        const age = Date.now() - cache.timestamp;
-                        if (age > 24 * 60 * 60 * 1000) { // أقدم من يوم
-                            console.log("🔄 Cache expired - auto syncing...");
-                            await this.sync(false);
-                        }
-                    } catch(e) {}
+                const cached = localStorage.getItem('herbal_cache_v3');
+                if (!cached) {
+                    await fetchData(false);
                 }
             }
         }, 2000);
         
+        // عند عودة الاتصال
+        window.addEventListener('online', () => {
+            console.log('🌐 Online - auto syncing');
+            fetchData(false);
+        });
+        
         // فحص دوري كل ساعة
         setInterval(() => {
-            if (navigator.onLine && !this.isSyncing) {
-                console.log("🔄 Periodic sync check...");
-                this.sync(false);
+            if (navigator.onLine && !isSyncing) {
+                fetchData(false);
             }
         }, 60 * 60 * 1000);
     }
     
-    // الحصول على الحالة
-    getStatus() {
-        return {
-            isSyncing: this.isSyncing,
-            lastSync: this.lastSync,
-            lastSyncFormatted: this.lastSync ? new Date(this.lastSync).toLocaleString() : null,
-            isOnline: navigator.onLine
-        };
+    // تهيئة الأزرار
+    function initButtons() {
+        const visitorBtn = document.getElementById('visitorForceSyncBtn');
+        if (visitorBtn) {
+            visitorBtn.addEventListener('click', () => fetchData(true));
+        }
+        
+        const refreshBtn = document.getElementById('refreshDataBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => fetchData(true));
+        }
     }
+    
+    // التهيئة الرئيسية
+    function init() {
+        console.log('🔄 SyncManager initializing...');
+        initButtons();
+        initAutoSync();
+        
+        // محاولة تحميل من الكاش أولاً
+        loadFromCache();
+        
+        console.log('✅ SyncManager ready');
+    }
+    
+    // ========== واجهة العامة ==========
+    return {
+        init: init,
+        fetchData: fetchData,
+        loadFromCache: loadFromCache,
+        addListener: addListener,
+        getStatus: getStatus,
+        sync: fetchData
+    };
+})();
+
+// ========== التشغيل ==========
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => SyncManager.init());
+} else {
+    SyncManager.init();
 }
 
-// ========== تشغيل مدير المزامنة ==========
-const syncManager = new SyncManager();
-window.syncManager = syncManager;
-window.syncData = () => syncManager.sync(true);
+// تصدير للنطاق العام
+window.SyncManager = SyncManager;
+window.forceSyncData = () => SyncManager.fetchData(true);
 
-console.log("✅ SyncManager ready");
+console.log('✅ SyncManager loaded');
