@@ -1080,23 +1080,48 @@ function showLogin() {
     if (loginModal) loginModal.classList.add('active');
 }
 
+// ============================================
+// إصلاح خطأ ADMIN_UID - الإصدار النهائي
+// ============================================
 async function attemptLogin() {
+    // التأكد من وجود ADMIN_UID من عدة مصادر
+    let validAdminUID = null;
+    
+    if (typeof ADMIN_UID !== 'undefined') {
+        validAdminUID = ADMIN_UID;
+    } else if (window.ADMIN_UID) {
+        validAdminUID = window.ADMIN_UID;
+    } else {
+        // الـ UID الافتراضي للمشروع الجديد
+        validAdminUID = "OWssFNrZDaZfeSlrLF8ReS8O6LM2";
+        console.warn("⚠️ ADMIN_UID not found, using default");
+    }
+    
+    console.log("🔐 Admin UID being used:", validAdminUID);
+    
     const email = document.getElementById('adminEmail')?.value.trim();
     const password = document.getElementById('adminPassword')?.value;
+    
     if (!email || !password) {
         alert('الرجاء إدخال البريد الإلكتروني وكلمة المرور');
         return;
     }
+    
     const loginBtn = document.getElementById('confirmLoginBtn');
     const originalText = loginBtn ? loginBtn.innerHTML : '';
     if (loginBtn) {
         loginBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري...';
         loginBtn.disabled = true;
     }
+    
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const user = userCredential.user;
-        if (user.uid === ADMIN_UID) {
+        
+        console.log("Logged in user UID:", user.uid);
+        console.log("Expected admin UID:", validAdminUID);
+        
+        if (user.uid === validAdminUID) {
             setAdminMode(true);
             const loginModal = document.getElementById('loginModal');
             if (loginModal) loginModal.classList.remove('active');
@@ -1120,6 +1145,7 @@ async function attemptLogin() {
                 msg = error.message;
         }
         alert('❌ فشل تسجيل الدخول: ' + msg);
+        console.error("Login error:", error);
     } finally {
         if (loginBtn) {
             loginBtn.innerHTML = originalText;
@@ -1138,7 +1164,7 @@ function logout() {
 
 function initAuthListener() {
     auth.onAuthStateChanged(user => {
-        if (user && user.uid === ADMIN_UID) {
+        if (user && user.uid === (window.ADMIN_UID || "OWssFNrZDaZfeSlrLF8ReS8O6LM2")) {
             setAdminMode(true);
         } else {
             setAdminMode(false);
