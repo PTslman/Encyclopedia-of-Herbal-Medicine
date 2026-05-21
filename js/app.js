@@ -1,6 +1,6 @@
 // ============================================
 // موسوعة الأعشاب الطبية - التطبيق الرئيسي
-// نسخة مستقرة لا تعلق على أي جهاز
+// نسخة مستقرة مع إصلاح تنسيق شريط الزائر
 // ============================================
 
 // =================================================================
@@ -19,9 +19,6 @@ let currentImageFile = null;
 let currentImageUrl = null;
 let unsubscribeCategories = null;
 let unsubscribeHerbs = null;
-let reconnectAttempts = 0;
-let isSyncActive = true;
-let isRefreshing = false;
 
 const CACHE_KEY = 'herbal_cache_v3';
 
@@ -82,95 +79,13 @@ function loadFromLocalCache() {
 }
 
 // =================================================================
-// ========== جلب البيانات من Firebase (نسخة مستقرة) ===============
-// =================================================================
-
-window.forceSyncData = async function(showToast = true) {
-    console.log('🔄 بدء جلب البيانات من Firebase...');
-    
-    // التحقق من وجود Firebase
-    if (typeof herbsCol === 'undefined' || typeof categoriesCol === 'undefined') {
-        console.error('❌ Firebase غير جاهز بعد');
-        if (showToast) alert('⚠️ Firebase قيد التحميل، حاول مرة أخرى خلال ثوانٍ');
-        return false;
-    }
-    
-    if (!navigator.onLine) {
-        if (showToast) alert('⚠️ لا يوجد اتصال بالإنترنت');
-        return false;
-    }
-    
-    if (showToast) {
-        const toast = document.createElement('div');
-        toast.textContent = '🔄 جاري تحميل البيانات...';
-        toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#2e7d32;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10001;';
-        document.body.appendChild(toast);
-    }
-    
-    try {
-        // مهلة 10 ثوانٍ
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('انتهت المهلة')), 10000)
-        );
-        
-        const fetchPromise = Promise.all([
-            categoriesCol.get(),
-            herbsCol.get()
-        ]);
-        
-        const [categoriesSnap, herbsSnap] = await Promise.race([fetchPromise, timeoutPromise]);
-        
-        const fbCategories = [];
-        categoriesSnap.forEach(doc => {
-            fbCategories.push({ id: doc.id, ...doc.data() });
-        });
-        
-        const fbHerbs = [];
-        herbsSnap.forEach(doc => {
-            fbHerbs.push({ id: doc.id, ...doc.data() });
-        });
-        
-        console.log(`✅ تم جلب ${fbHerbs.length} عشبة و ${fbCategories.length} تصنيف`);
-        
-        // تحديث البيانات
-        categories = fbCategories;
-        herbs = fbHerbs;
-        saveToLocalCache();
-        renderContent();
-        updateHerbCount();
-        
-        // إزالة مؤشر التحميل
-        document.querySelectorAll('div[style*="bottom:80px"]').forEach(el => el.remove());
-        
-        if (showToast) {
-            const toast = document.createElement('div');
-            toast.innerHTML = `✅ تم التحميل<br>📚 ${fbHerbs.length} عشبة`;
-            toast.style.cssText = 'position:fixed;bottom:80px;left:20px;right:20px;background:#4caf50;color:white;padding:12px;border-radius:50px;text-align:center;z-index:10001;';
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
-        }
-        
-        return true;
-        
-    } catch (error) {
-        console.error('❌ فشل التحميل:', error);
-        document.querySelectorAll('div[style*="bottom:80px"]').forEach(el => el.remove());
-        
-        if (showToast) {
-            alert('❌ فشل تحميل البيانات. تأكد من اتصالك بالإنترنت.');
-        }
-        return false;
-    }
-};
-
-// =================================================================
-// ========== التحميل الأولي السريع (لا يعلق) ======================
+// ========== التحميل الأولي السريع ================================
 // =================================================================
 
 async function initialLoad() {
     console.log('🚀 بدء التحميل الأولي...');
     
-    // 1. عرض البيانات من الكاش فوراً
+    // عرض البيانات من الكاش فوراً
     const hasCache = loadFromLocalCache();
     
     if (!hasCache) {
@@ -181,24 +96,26 @@ async function initialLoad() {
                     <i class="fas fa-spinner fa-pulse"></i>
                     <p>جاري تحميل الموسوعة...</p>
                     <button id="retryLoadBtn" class="tool-btn" style="margin-top:15px;background:var(--primary);color:white;">
-                        <i class="fas fa-sync-alt"></i> تحميل
+                        <i class="fas fa-sync-alt"></i> تحميل البيانات
                     </button>
                 </div>
             `;
             document.getElementById('retryLoadBtn')?.addEventListener('click', () => {
-                window.forceSyncData(true);
+                if (typeof SyncManager !== 'undefined') {
+                    SyncManager.fetchData(true);
+                }
             });
         }
     }
     
-    // 2. محاولة جلب بيانات جديدة في الخلفية
-    if (navigator.onLine) {
+    // محاولة جلب بيانات جديدة في الخلفية
+    if (navigator.onLine && typeof SyncManager !== 'undefined') {
         setTimeout(() => {
-            window.forceSyncData(false);
+            SyncManager.fetchData(false);
         }, 500);
     }
     
-    // 3. إخفاء شاشة البداية بعد 1.5 ثانية (مهلة قصوى)
+    // إخفاء شاشة البداية بعد 1.5 ثانية
     setTimeout(() => {
         const splash = document.getElementById('splashScreen');
         const mainApp = document.getElementById('mainApp');
@@ -231,7 +148,7 @@ function renderAllHerbs() {
             <div class="empty-state">
                 <i class="fas fa-leaf"></i>
                 <p>لا توجد أعشاب في الموسوعة</p>
-                ${isAdmin ? '<button id="addFirstHerbBtn" class="tool-btn" style="margin-top:15px;background:var(--primary);color:white;"><i class="fas fa-plus-circle"></i> أضف أول عشبة</button>' : ''}
+                ${isAdmin ? '<button id="addFirstHerbBtn" class="tool-btn" style="margin-top:15px;background:var(--primary);color:white;"><i class="fas fa-plus-circle"></i> أضف أول عشبة</button>' : '<p class="hint">سيتم إضافة الأعشاب قريباً</p>'}
             </div>
         `;
         document.getElementById('addFirstHerbBtn')?.addEventListener('click', () => showAddHerb());
@@ -627,7 +544,9 @@ async function saveHerb() {
     const docRef = currentEditHerbId ? herbsCol.doc(currentEditHerbId) : herbsCol.doc();
     await docRef.set(herbData, { merge: true });
     
-    await window.forceSyncData(false);
+    if (typeof SyncManager !== 'undefined') {
+        await SyncManager.fetchData(false);
+    }
     
     document.getElementById('herbModal').classList.remove('active');
     resetHerbForm();
@@ -645,7 +564,9 @@ async function confirmDelete() {
         await herbsCol.doc(pendingDeleteId).delete();
     }
     
-    await window.forceSyncData(false);
+    if (typeof SyncManager !== 'undefined') {
+        await SyncManager.fetchData(false);
+    }
     
     document.getElementById('deleteModal').classList.remove('active');
     pendingDeleteId = null;
@@ -761,21 +682,43 @@ window.showDetailFromSearch = function(id) {
 };
 
 // =================================================================
-// ========== الثيم ================================================
+// ========== الثيم وحجم الخط ======================================
 // =================================================================
 
 function toggleTheme() {
     document.body.classList.toggle('dark-mode');
     localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    document.getElementById('modeText').innerText = document.body.classList.contains('dark-mode') ? 'ليلي' : 'نهاري';
+    const modeText = document.getElementById('modeText');
+    if (modeText) modeText.innerText = document.body.classList.contains('dark-mode') ? 'ليلي' : 'نهاري';
 }
 
 function initTheme() {
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
     }
-    document.getElementById('modeText').innerText = document.body.classList.contains('dark-mode') ? 'ليلي' : 'نهاري';
+    const modeText = document.getElementById('modeText');
+    if (modeText) modeText.innerText = document.body.classList.contains('dark-mode') ? 'ليلي' : 'نهاري';
 }
+
+let currentFontLevel = localStorage.getItem('fontLevel') || 'normal';
+
+function setFontSize(level) {
+    document.body.classList.remove('font-large', 'font-xlarge');
+    if (level === 'large') document.body.classList.add('font-large');
+    if (level === 'xlarge') document.body.classList.add('font-xlarge');
+    localStorage.setItem('fontLevel', level);
+    const fontSizeLabel = document.getElementById('fontSizeLabel');
+    if (fontSizeLabel) fontSizeLabel.innerText = { normal: 'عادي', large: 'كبير', xlarge: 'أكبر' }[level];
+    currentFontLevel = level;
+}
+
+function cycleFontSize() {
+    const levels = ['normal', 'large', 'xlarge'];
+    let idx = levels.indexOf(currentFontLevel);
+    setFontSize(levels[(idx + 1) % levels.length]);
+}
+
+setFontSize(currentFontLevel);
 
 // =================================================================
 // ========== دوال الزوار ==========================================
@@ -810,34 +753,13 @@ function updateViewButtons(view) {
     });
 }
 
-// =================================================================
-// ========== الإعدادات النهائية ==================================
-// =================================================================
-
-let fontsLoaded = false;
-function setFontSize(level) {
-    document.body.classList.remove('font-large', 'font-xlarge');
-    if (level === 'large') document.body.classList.add('font-large');
-    if (level === 'xlarge') document.body.classList.add('font-xlarge');
-    localStorage.setItem('fontLevel', level);
-    document.getElementById('fontSizeLabel').innerText = { normal: 'عادي', large: 'كبير', xlarge: 'أكبر' }[level];
-}
-
-function cycleFontSize() {
-    const levels = ['normal', 'large', 'xlarge'];
-    let idx = levels.indexOf(localStorage.getItem('fontLevel') || 'normal');
-    setFontSize(levels[(idx + 1) % levels.length]);
-}
-
-setFontSize(localStorage.getItem('fontLevel') || 'normal');
-
-// =================================================================
-// ========== تشغيل التطبيق ========================================
-// =================================================================
-
 function openWhatsApp() {
     window.open('https://wa.me/9630932934273?text=مرحباً أريد الاستفسار عن الأعشاب', '_blank');
 }
+
+// =================================================================
+// ========== إضافة مستمعي الأحداث =================================
+// =================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     // أزرار رئيسية
@@ -853,7 +775,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('fontSizeToggleBtn')?.addEventListener('click', cycleFontSize);
     document.getElementById('shareAppBtn')?.addEventListener('click', shareApp);
     document.getElementById('quickHelpBtn')?.addEventListener('click', showQuickHelp);
-    document.getElementById('visitorForceSyncBtn')?.addEventListener('click', () => window.forceSyncData(true));
     
     // أزرار العرض
     document.getElementById('viewToggle')?.addEventListener('click', (e) => {
@@ -866,7 +787,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // أزرار المسؤول
-    document.getElementById('refreshDataBtn')?.addEventListener('click', () => window.forceSyncData(true));
     document.getElementById('addHerbBtn')?.addEventListener('click', showAddHerb);
     document.getElementById('manageCategoriesBtn')?.addEventListener('click', showCategoryManager);
     document.getElementById('closeCategoryModalBtn')?.addEventListener('click', () => document.getElementById('categoryModal').classList.remove('active'));
@@ -877,6 +797,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('closeDetailModalBtn')?.addEventListener('click', () => document.getElementById('detailModal').classList.remove('active'));
     document.getElementById('cancelDeleteBtn')?.addEventListener('click', () => document.getElementById('deleteModal').classList.remove('active'));
     document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
+    document.getElementById('deleteAllBtn')?.addEventListener('click', () => document.getElementById('deleteAllConfirmModal').classList.add('active'));
+    document.getElementById('closeDeleteAllModalBtn')?.addEventListener('click', () => document.getElementById('deleteAllConfirmModal').classList.remove('active'));
+    document.getElementById('cancelDeleteAllBtn')?.addEventListener('click', () => document.getElementById('deleteAllConfirmModal').classList.remove('active'));
+    document.getElementById('confirmDeleteAllBtn')?.addEventListener('click', async () => {
+        document.getElementById('deleteAllConfirmModal').classList.remove('active');
+        await deleteAllData();
+    });
     
     // رفع الصورة
     document.getElementById('uploadImageBtn')?.addEventListener('click', () => document.getElementById('herbImageInput').click());
@@ -911,11 +838,81 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // زائر
+    // إغلاق بزر ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-glass.active').forEach(modal => modal.classList.remove('active'));
+        }
+    });
+    
+    // تهيئة التطبيق
     VisitorCounter.init();
     initTheme();
     initAuthListener();
     initialLoad();
 });
+
+// دوال إضافية للحذف والنسخ الاحتياطي
+async function deleteAllData() {
+    if (confirm("⚠️ هل أنت متأكد من حذف جميع الأعشاب والتصنيفات؟")) {
+        const allCats = await categoriesCol.get();
+        const allHerbs = await herbsCol.get();
+        const batch = db.batch();
+        allCats.docs.forEach(doc => batch.delete(doc.ref));
+        allHerbs.docs.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+        alert("تم حذف جميع البيانات");
+        if (typeof SyncManager !== 'undefined') await SyncManager.fetchData(true);
+    }
+}
+
+async function backupJSON() {
+    const data = { categories, herbs, backupDate: new Date().toISOString() };
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
+    a.download = `herbs_backup_${Date.now()}.json`;
+    a.click();
+    alert("تم إنشاء ملف النسخ الاحتياطي");
+}
+
+function restoreJSON() {
+    document.getElementById('restoreFile').click();
+}
+
+async function handleRestore(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (data.categories && data.herbs) {
+        if (confirm("سيتم استبدال جميع البيانات الحالية. هل أنت متأكد؟")) {
+            await deleteAllData();
+            for (const cat of data.categories) {
+                await categoriesCol.add({ name: cat.name, createdAt: new Date() });
+            }
+            for (const herb of data.herbs) {
+                await herbsCol.add({
+                    name: herb.name,
+                    categoryId: herb.categoryId,
+                    benefits: herb.benefits || '—',
+                    warnings: herb.warnings || '—',
+                    harms: herb.harms || '—',
+                    usage: herb.usage || '—',
+                    notes: herb.notes || '—',
+                    imageUrl: herb.imageUrl || null
+                });
+            }
+            alert("تمت الاستعادة بنجاح");
+            if (typeof SyncManager !== 'undefined') await SyncManager.fetchData(true);
+        }
+    } else {
+        alert("ملف غير صالح");
+    }
+    document.getElementById('restoreFile').value = '';
+}
+
+document.getElementById('backupBtn')?.addEventListener('click', backupJSON);
+document.getElementById('restoreBtn')?.addEventListener('click', restoreJSON);
+document.getElementById('restoreFile')?.addEventListener('change', handleRestore);
 
 console.log('✅ التطبيق جاهز');
