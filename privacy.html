@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سياسة الخصوصية - موسوعة الأعشاب الطبية</title>
     <meta name="theme-color" content="#2e7d32">
+    <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -28,6 +30,17 @@
             border-bottom: 3px solid #2e7d32; 
             padding-bottom: 10px;
             font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2 {
+            color: #1b5e20;
+            font-size: 1.2rem;
+            margin: 20px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         p { 
             line-height: 1.7; 
@@ -57,7 +70,7 @@
             border-top: 1px solid #ddd;
             color: #666;
         }
-        button {
+        .btn-back {
             background: #2e7d32;
             color: white;
             border: none;
@@ -68,59 +81,186 @@
             width: 100%;
             margin-top: 20px;
             font-family: 'Cairo', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46,125,50,0.3);
         }
         .signature {
             font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
             margin-top: 10px;
+            color: #2e7d32;
+        }
+        .info-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-card {
+            flex: 1;
+            min-width: 120px;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .info-card i {
+            font-size: 32px;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        .info-card h3 {
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .info-card p {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2e7d32;
+            margin: 5px 0 0;
+        }
+        .version {
+            font-size: 0.7rem;
+            text-align: center;
+            color: #999;
+            margin-top: 15px;
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            .info-card {
+                min-width: 100px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌿 كلمة مطور التطبيق</h1>
+        <h1>
+            <i class="fas fa-leaf"></i>
+            سياسة الخصوصية
+        </h1>
         
         <div class="highlight">
-            <p><strong>السلام عليكم،</strong></p>
-            <p><strong>أنا سلمان</strong>، مطور موسوعة الأعشاب الطبية والمعالج الفيزيائي.</p>
-            <p>🔒 <strong>أنا لا أسحب أي بيانات شخصية من أي مستخدم.</strong></p>
-            <p>📚 <strong>أنا أنشأت هذه الموسوعة للاستفادة والتعليم فقط.</strong></p>
-            <p>🛡️ <strong>أنا أؤكد لكم أن جميع البيانات آمنة جداً ومحمية.</strong></p>
+            <p><strong>السلام عليكم ورحمة الله وبركاتة،</strong></p>
+            <p>أنا <strong>سلمان</strong>، مطور موسوعة الأعشاب الطبية والمعالج الفيزيائي.</p>
+            <p><i class="fas fa-shield-alt"></i> <strong>أنا لا أسحب أي بيانات شخصية من أي مستخدم.</strong></p>
+            <p><i class="fas fa-graduation-cap"></i> <strong>أنا أنشأت هذه الموسوعة للاستفادة والتعليم فقط.</strong></p>
+            <p><i class="fas fa-lock"></i> <strong>أنا أؤكد لكم أن جميع البيانات آمنة جداً ومحمية.</strong></p>
         </div>
-        
-        <p><strong>✅ ماذا أجمع؟</strong><br>
-        <strong>أنا لا أجمع أي معلومات شخصية عنك.</strong> التطبيق لا يطلب منك أي بيانات خاصة (لا اسم، لا رقم هاتف، لا بريد إلكتروني).</p>
-        
-        <p><strong>🔐 كيف أحمي بياناتكم؟</strong><br>
-        <strong>أنا أستخدم</strong> أحدث تقنيات الحماية والتشفير. جميع بيانات الأعشاب محفوظة في قاعدة بيانات آمنة. <strong>أنا وحدي من يمكنه</strong> تعديل المحتوى.</p>
-        
-        <p><strong>🌐 التخزين المحلي</strong><br>
-        <strong>أنا أحفظ</strong> بعض البيانات على جهازك لتسريع التحميل وتحسين الأداء، وهذه البيانات <strong>لا تخرج من هاتفك أبداً</strong>.</p>
-        
-        <p><strong>📞 تواصل معي</strong><br>
-        إذا كان لديك أي استفسار، <strong>يمكنك مراسلتي</strong> عبر واتساب: <strong>0932934273</strong></p>
-        
+
+        <h2><i class="fas fa-database"></i> ماذا أجمع؟</h2>
+        <p><strong>أنا لا أجمع أي معلومات شخصية عنك.</strong> التطبيق لا يطلب منك أي بيانات خاصة (لا اسم، لا رقم هاتف، لا بريد إلكتروني، لا موقع جغرافي).</p>
+        <p>المعلومات الوحيدة التي يتم تخزينها هي:</p>
+        <ul style="margin-right: 30px; margin-bottom: 15px;">
+            <li>📚 بيانات الأعشاب والتصنيفات (عرض فقط)</li>
+            <li>⭐ إشاراتك المرجعية (تخزن محلياً على جهازك)</li>
+            <li>📝 ملاحظاتك الشخصية (تخزن محلياً على جهازك)</li>
+            <li>👁️ إحصائيات المشاهدة (تخزن محلياً على جهازك)</li>
+        </ul>
+
+        <h2><i class="fas fa-firebase"></i> قاعدة البيانات السحابية</h2>
+        <p><strong>أنا أستخدم Firebase</strong> من Google لتخزين بيانات الأعشاب والتصنيفات.</p>
+        <p>هذه البيانات <strong>عامة ومشفرة</strong>، ولا تحتوي على أي معلومات شخصية للمستخدمين. <strong>أنا وحدي من يمكنه</strong> تعديل المحتوى عبر حساب المسؤول.</p>
+
+        <h2><i class="fas fa-mobile-alt"></i> التخزين المحلي</h2>
+        <p><strong>أنا أحفظ</strong> بعض البيانات على جهازك (Local Storage + Cache) لتسريع التحميل وتحسين الأداء، وهذه البيانات <strong>لا تخرج من هاتفك أبداً</strong>.</p>
+        <p>يمكنك مسح هذه البيانات في أي وقت من خلال إعدادات المتصفح أو زر "تنظيف الكاش" داخل التطبيق.</p>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <i class="fas fa-check-circle"></i>
+                <h3>لا جمع بيانات</h3>
+                <p>0%</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-shield-virus"></i>
+                <h3>محمية بالكامل</h3>
+                <p>100%</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-user-secret"></i>
+                <h3>خصوصية تامة</h3>
+                <p>✓</p>
+            </div>
+        </div>
+
+        <h2><i class="fas fa-whatsapp"></i> التواصل</h2>
+        <p>إذا كان لديك أي استفسار أو اقتراح، <strong>يمكنك مراسلتي</strong> عبر واتساب:</p>
+        <div style="background: #25D366; color: white; padding: 10px; border-radius: 50px; text-align: center; margin: 10px 0; display: inline-block; width: 100%;">
+            <i class="fab fa-whatsapp"></i> <strong style="font-size: 1.2rem;">0932934273</strong>
+        </div>
+
+        <h2><i class="fas fa-cloud-upload-alt"></i> المزامنة السحابية</h2>
+        <p>التطبيق يستخدم <strong>المزامنة الفورية</strong> مع قاعدة البيانات السحابية. هذا يعني:</p>
+        <ul style="margin-right: 30px; margin-bottom: 15px;">
+            <li>🔄 أي تحديث من قبل المسؤول يظهر فوراً لجميع المستخدمين</li>
+            <li>📶 البيانات تتزامن تلقائياً عند توفر الإنترنت</li>
+            <li>📱 يمكنك استخدام التطبيق بدون إنترنت وعند عودة الاتصال تتم المزامنة تلقائياً</li>
+        </ul>
+
         <div class="thankyou">
-            🌟 <strong>أنا أتقدم بالشكر الجزيل لمطوري DeepSeek</strong> 🌟<br>
+            <i class="fas fa-star"></i>
+            <strong>أنا أتقدم بالشكر الجزيل لمطوري DeepSeek</strong>
+            <i class="fas fa-star"></i><br>
             على دعمهم وتقنياتهم المتطورة التي ساعدتني في تطوير هذا التطبيق
         </div>
-        
-        <p style="font-size: 0.9rem; text-align: center; margin: 10px 0;">
-            <strong>مع تحياتي،</strong><br>
-            <span class="signature">سلمان</span><br>
-            المعالج الفيزيائي
-        </p>
-        
-        <p style="font-size: 0.7rem; text-align: center;">آخر تحديث: 20 يناير 2026</p>
-        
-        <button onclick="window.location.href='/Encyclopedia-of-Herbal-Medicine/'">
-            🏠 العودة إلى الموسوعة
+
+        <div style="text-align: center; margin: 20px 0;">
+            <p style="font-size: 1rem;"><strong>مع تحياتي،</strong></p>
+            <div class="signature">
+                <i class="fas fa-signature"></i> سلمان
+            </div>
+            <p><i class="fas fa-stethoscope"></i> المعالج الفيزيائي</p>
+        </div>
+
+        <button class="btn-back" onclick="window.location.href='./'">
+            <i class="fas fa-home"></i> العودة إلى الموسوعة
         </button>
         
         <div class="developer">
-            <p>بتطوير: <strong>المعالج الفيزيائي سلمان</strong></p>
-            <p>جميع الحقوق محفوظة © 2026</p>
+            <p><i class="fas fa-code"></i> بتطوير: <strong>المعالج الفيزيائي سلمان</strong></p>
+            <p><i class="far fa-copyright"></i> جميع الحقوق محفوظة © 2026</p>
+        </div>
+        
+        <div class="version">
+            <i class="fas fa-sync-alt"></i> آخر تحديث: 21 يناير 2026 | الإصدار 5.0
         </div>
     </div>
+
+    <script>
+        // دعم PWA وتثبيت التطبيق
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./sw.js').then(function(registration) {
+                    console.log('ServiceWorker registered successfully: ', registration.scope);
+                }).catch(function(error) {
+                    console.log('ServiceWorker registration failed: ', error);
+                });
+            });
+        }
+        
+        // التحقق من الوضع الليلي
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.style.background = '#1a1a2e';
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.background = 'rgba(30, 30, 46, 0.95)';
+                container.style.color = '#f5f0e0';
+            }
+        }
+    </script>
 </body>
 </html>
