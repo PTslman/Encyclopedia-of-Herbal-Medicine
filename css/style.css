@@ -1965,3 +1965,115 @@ body.fps-low .herb-card {
 body.fps-low .tool-btn, body.fps-low .icon-btn {
     transition: none !important;
 }
+/* ============================================
+   تنسيق شريط الزائر - محسن ومتجاوب
+   ============================================ */
+
+.visitor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: 60px;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow);
+}
+
+.visitor-btn {
+    background: var(--light-bg);
+    border: 1px solid var(--separator);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.visitor-btn i {
+    font-size: 0.9rem;
+}
+
+.visitor-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.visitor-btn.clear-btn {
+    background: linear-gradient(135deg, #c62828, #8e0000);
+    color: white;
+    border: none;
+}
+
+.visitor-btn.clear-btn:hover {
+    background: #b71c1c;
+}
+
+.visitor-btn.resync-btn {
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+    color: white;
+    border: none;
+}
+
+.visitor-only {
+    display: flex;
+}
+
+body:not(.viewer-mode) .visitor-toolbar {
+    display: none;
+}
+
+/* للجوال */
+@media (max-width: 768px) {
+    .visitor-toolbar {
+        padding: 0.5rem;
+        gap: 0.4rem;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        border-radius: 30px;
+        scrollbar-width: thin;
+    }
+    
+    .visitor-toolbar::-webkit-scrollbar {
+        height: 2px;
+    }
+    
+    .visitor-btn {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.7rem;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+    
+    .visitor-btn i {
+        font-size: 0.8rem;
+    }
+}
+
+/* للأجهزة الصغيرة جداً */
+@media (max-width: 480px) {
+    .visitor-btn span {
+        display: none;
+    }
+    
+    .visitor-btn {
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .visitor-btn i {
+        margin: 0;
+    }
+}
