@@ -1,6 +1,6 @@
 // ============================================
 // Service Worker متقدم - موسوعة الأعشاب الطبية
-// الإصدار 5.0 - دعم كامل للميزات المتقدمة
+// الإصدار 5.0 - متوافق مع Firebase
 // ============================================
 
 // ========== إصدارات الكاش ==========
@@ -11,39 +11,31 @@ const DYNAMIC_CACHE = `herbal-dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE = `herbal-images-${CACHE_VERSION}`;
 const API_CACHE = `herbal-api-${CACHE_VERSION}`;
 
-// فترة فحص التحديثات (15 دقيقة لتحسين الاستجابة)
-const VERSION_CHECK_INTERVAL = 15 * 60 * 1000;
+// فترة فحص التحديثات (30 دقيقة)
+const VERSION_CHECK_INTERVAL = 30 * 60 * 1000;
 
-// ========== الملفات الأساسية المعتمدة ==========
+// ========== الملفات الأساسية المعتمدة (متوافقة مع هيكل المشروع) ==========
 const STATIC_ASSETS = [
   // الصفحات الرئيسية
-  '/Encyclopedia-of-Herbal-Medicine/',
-  '/Encyclopedia-of-Herbal-Medicine/index.html',
-  '/Encyclopedia-of-Herbal-Medicine/offline.html',
-  '/Encyclopedia-of-Herbal-Medicine/help.html',
-  '/Encyclopedia-of-Herbal-Medicine/privacy.html',
-  '/Encyclopedia-of-Herbal-Medicine/404.html',
-  
-  // ملفات التطبيق
-  '/Encyclopedia-of-Herbal-Medicine/manifest.json',
-  '/Encyclopedia-of-Herbal-Medicine/version.json',
+  '/',
+  './',
+  'index.html',
+  'manifest.json',
   
   // CSS
-  '/Encyclopedia-of-Herbal-Medicine/css/style.css',
+  'css/style.css',
   
   // JavaScript الأساسي
-  '/Encyclopedia-of-Herbal-Medicine/js/supabase.js',
-  '/Encyclopedia-of-Herbal-Medicine/js/local-db.js',
-  '/Encyclopedia-of-Herbal-Medicine/js/sync-manager.js',
-  '/Encyclopedia-of-Herbal-Medicine/js/app.js',
-  '/Encyclopedia-of-Herbal-Medicine/js/pwa.js',
-  '/Encyclopedia-of-Herbal-Medicine/js/update-handler.js',
-  '/Encyclopedia-of-Herbal-Medicine/js/extra-features.js',
+  'js/firebase-config.js',
+  'js/app.js',
+  'js/pwa.js',
   
   // المكتبات الخارجية
   'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'
 ];
 
 // ========== صفحة عدم الاتصال المحسنة ==========
@@ -101,20 +93,23 @@ self.addEventListener('install', event => {
       } catch (error) {
         console.error('[SW] ❌ Cache failed:', error);
         // تخزين الملفات بشكل فردي في حالة الفشل
-        await Promise.allSettled(
-          STATIC_ASSETS.map(async asset => {
-            try {
-              const cache = await caches.open(STATIC_CACHE);
-              const response = await fetch(asset);
-              if (response.ok) await cache.put(asset, response);
-            } catch (e) {}
-          })
-        );
+        for (const asset of STATIC_ASSETS) {
+          try {
+            const cache = await caches.open(STATIC_CACHE);
+            const response = await fetch(asset);
+            if (response.ok) await cache.put(asset, response);
+          } catch (e) {
+            console.warn(`[SW] Failed to cache ${asset}:`, e);
+          }
+        }
       }
       
       // تخزين صفحة عدم الاتصال مسبقاً
       const cache = await caches.open(DYNAMIC_CACHE);
       await cache.put('/offline', new Response(OFFLINE_PAGE, {
+        headers: { 'Content-Type': 'text/html' }
+      }));
+      await cache.put('offline', new Response(OFFLINE_PAGE, {
         headers: { 'Content-Type': 'text/html' }
       }));
       
@@ -144,120 +139,156 @@ self.addEventListener('activate', event => {
         return caches.delete(key);
       }));
       
-      // التحقق من التحديثات فور التفعيل
-      await checkForUpdates();
-      
       // أخذ التحكم في جميع العملاء
       await self.clients.claim();
       console.log('[SW] ✅ Activated and controlling all clients');
+      
+      // إرسال إشعار بالتحديث للتطبيقات المفتوحة
+      const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'SW_ACTIVATED',
+          version: CACHE_VERSION
+        });
+      });
     })()
   );
 });
 
-// ========== التحقق من وجود تحديثات متقدم ==========
-async function checkForUpdates() {
-  console.log('[SW] 🔍 Checking for updates...', new Date().toLocaleTimeString());
+// ========== معالجة طلبات Firebase بشكل خاص ==========
+function isFirebaseRequest(url) {
+  return url.hostname.includes('firebase') || 
+         url.hostname.includes('googleapis.com/firestore') ||
+         url.href.includes('firestore.googleapis.com');
+}
+
+// ========== استراتيجيات التخزين المؤقت المحسنة ==========
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  const request = event.request;
   
-  try {
-    const cache = await caches.open(STATIC_CACHE);
-    const response = await fetch('/Encyclopedia-of-Herbal-Medicine/version.json?t=' + Date.now(), {
-      cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache' }
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch version.json');
-    
-    const newVersion = await response.json();
-    const cachedResponse = await cache.match('/Encyclopedia-of-Herbal-Medicine/version.json');
-    
-    if (cachedResponse) {
-      const oldVersion = await cachedResponse.json();
-      
-      if (oldVersion.version !== newVersion.version) {
-        console.log('[SW] 🎉 تحديث جديد متاح!', { 
-          old: oldVersion.version, 
-          new: newVersion.version,
-          files: newVersion.files?.length || 0
+  // طلبات Firebase - Network First (الأولوية للشبكة)
+  if (isFirebaseRequest(url)) {
+    event.respondWith(
+      fetch(request, { 
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      }).then(response => {
+        // لا نقوم بتخزين بيانات Firebase في الكاش لأسباب أمنية
+        return response;
+      }).catch(error => {
+        console.warn('[SW] Firebase request failed:', error);
+        // إرجاع استجابة خطأ مناسبة
+        return new Response(JSON.stringify({ 
+          error: 'offline', 
+          message: 'غير متصل بالإنترنت، يرجى التحقق من الاتصال' 
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' }
         });
-        
-        // تحديث الكاش تلقائياً
-        if (newVersion.files && newVersion.files.length) {
-          await updateCache(newVersion.files);
+      })
+    );
+    return;
+  }
+  
+  // الملفات الثابتة - Cache First (من الكاش أولاً)
+  if (STATIC_ASSETS.some(asset => url.href.includes(asset) || url.pathname.endsWith(asset)) || 
+      url.pathname.endsWith('.js') || 
+      url.pathname.endsWith('.css') ||
+      url.pathname === '/' ||
+      url.pathname === '/index.html') {
+    
+    event.respondWith(
+      caches.match(request).then(cached => {
+        if (cached && cached.status === 200) {
+          return cached;
         }
-        
-        // إرسال إشعار لجميع التطبيقات المفتوحة
-        const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
-        clients.forEach(client => {
-          client.postMessage({
-            type: 'UPDATE_AVAILABLE',
-            version: newVersion.version,
-            oldVersion: oldVersion.version,
-            message: `✨ تحديث جديد (${newVersion.version}) متاح! اضغط لتحديث التطبيق.`
+        return fetch(request).then(response => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(STATIC_CACHE).then(cache => cache.put(request, clone));
+          }
+          return response;
+        }).catch(() => {
+          return caches.match('/offline') || caches.match('offline') || new Response(OFFLINE_PAGE, {
+            headers: { 'Content-Type': 'text/html' }
           });
         });
-        
-        console.log('[SW] 📢 Update notification sent to', clients.length, 'clients');
-        
-        // عرض إشعار للمستخدم
-        self.registration.showNotification('🌿 تحديث جديد لموسوعة الأعشاب', {
-          body: `الإصدار ${newVersion.version} متاح الآن مع ميزات جديدة!`,
-          icon: '/Encyclopedia-of-Herbal-Medicine/icons/icon-192.png',
-          badge: '/Encyclopedia-of-Herbal-Medicine/icons/icon-72.png',
-          vibrate: [200, 100, 200],
-          tag: 'herbal-update',
-          requireInteraction: true,
-          actions: [
-            { action: 'update', title: 'تحديث الآن' },
-            { action: 'later', title: 'لاحقاً' }
-          ]
+      })
+    );
+    return;
+  }
+  
+  // الصور - Stale-While-Revalidate
+  if (url.pathname.match(/\.(png|jpg|jpeg|gif|webp|svg|ico)/i)) {
+    event.respondWith(
+      caches.open(IMAGE_CACHE).then(cache => {
+        return cache.match(request).then(cached => {
+          const fetchPromise = fetch(request).then(response => {
+            if (response && response.status === 200) {
+              cache.put(request, response.clone());
+              // تنظيف الكاش (الحد الأقصى 200 صورة)
+              cache.keys().then(keys => {
+                if (keys.length > 200) {
+                  const toDelete = keys.slice(0, keys.length - 200);
+                  toDelete.forEach(key => cache.delete(key));
+                }
+              });
+            }
+            return response;
+          }).catch(() => cached);
+          return cached || fetchPromise;
         });
-      } else {
-        console.log('[SW] ✅ No updates available');
-      }
-    }
-  } catch (error) {
-    console.error('[SW] ❌ فشل التحقق من التحديثات:', error);
-  }
-}
-
-// ========== تحديث الكاش الذكي ==========
-async function updateCache(files) {
-  console.log('[SW] 🔄 Updating cache for', files.length, 'files');
-  const cache = await caches.open(STATIC_CACHE);
-  let successCount = 0;
-  
-  for (const file of files) {
-    try {
-      const url = file.startsWith('http') ? file : `/Encyclopedia-of-Herbal-Medicine/${file}`;
-      const response = await fetch(url + '?t=' + Date.now());
-      
-      if (response.ok) {
-        await cache.put(url, response.clone());
-        successCount++;
-        console.log('[SW] ✅ Updated:', file);
-      }
-    } catch (error) {
-      console.error('[SW] ❌ فشل تحديث:', file, error);
-    }
+      })
+    );
+    return;
   }
   
-  console.log(`[SW] 📦 Cache updated: ${successCount}/${files.length} files`);
-  return successCount;
-}
+  // باقي الطلبات - Network First مع تنظيم الكاش
+  event.respondWith(
+    fetch(request).then(response => {
+      // تخزين النسخة فقط للطلبات الناجحة من نوع GET
+      if (response && response.status === 200 && request.method === 'GET') {
+        const clone = response.clone();
+        caches.open(DYNAMIC_CACHE).then(cache => {
+          cache.put(request, clone);
+          // تنظيف الكاش الديناميكي (الحد الأقصى 100 عنصر)
+          cache.keys().then(keys => {
+            if (keys.length > 100) {
+              const toDelete = keys.slice(0, keys.length - 100);
+              toDelete.forEach(key => cache.delete(key));
+            }
+          });
+        });
+      }
+      return response;
+    }).catch(() => {
+      return caches.match(request).then(cached => {
+        if (cached) return cached;
+        // إذا كان الطلب لصفحة HTML، إرجاع صفحة عدم الاتصال
+        if (request.headers.get('accept')?.includes('text/html')) {
+          return caches.match('/offline') || caches.match('offline') || new Response(OFFLINE_PAGE, {
+            headers: { 'Content-Type': 'text/html' }
+          });
+        }
+        return new Response('غير متصل بالإنترنت', { status: 503 });
+      });
+    })
+  );
+});
 
-// التحقق الدوري من التحديثات
-setInterval(checkForUpdates, VERSION_CHECK_INTERVAL);
-
-// ========== معالجة الرسائل ==========
+// ========== معالجة الرسائل من التطبيق ==========
 self.addEventListener('message', event => {
   const { type, data } = event.data || {};
   
   switch (type) {
     case 'CHECK_FOR_UPDATES':
-      checkForUpdates();
+      console.log('[SW] Manual update check requested');
+      event.waitUntil(checkForUpdates());
       break;
       
     case 'SKIP_WAITING':
+      console.log('[SW] Skip waiting requested');
       self.skipWaiting();
       event.waitUntil(
         self.clients.claim().then(() => {
@@ -269,204 +300,114 @@ self.addEventListener('message', event => {
       break;
       
     case 'CLEAR_CACHE':
+      console.log('[SW] Clear cache requested');
       event.waitUntil(
         (async () => {
           const keys = await caches.keys();
           await Promise.all(keys.map(key => caches.delete(key)));
           console.log('[SW] 🗑️ All caches cleared');
-          event.ports[0]?.postMessage({ success: true });
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage({ success: true, message: 'تم مسح الكاش بنجاح' });
+          }
         })()
       );
       break;
       
-    case 'GET_CACHE_SIZE':
+    case 'GET_CACHE_INFO':
       event.waitUntil(
         (async () => {
           const keys = await caches.keys();
+          let totalItems = 0;
           let totalSize = 0;
           for (const key of keys) {
             const cache = await caches.open(key);
             const requests = await cache.keys();
-            totalSize += requests.length;
+            totalItems += requests.length;
           }
-          event.ports[0]?.postMessage({ size: totalSize, caches: keys.length });
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage({ 
+              caches: keys.length, 
+              items: totalItems,
+              version: CACHE_VERSION 
+            });
+          }
         })()
       );
+      break;
+      
+    case 'FORCE_SYNC':
+      console.log('[SW] Force sync requested');
+      if (self.registration.sync) {
+        self.registration.sync.register('sync-herbs');
+      }
       break;
   }
 });
 
-// ========== استراتيجيات التخزين المؤقت المحسنة ==========
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+// ========== التحقق من وجود تحديثات ==========
+async function checkForUpdates() {
+  console.log('[SW] 🔍 Checking for updates...');
   
-  // تجاهل طلبات Supabase API للتحديث المباشر
-  if (url.href.includes('supabase.co')) {
-    return;
-  }
-  
-  // ملف version.json - دائماً من الشبكة
-  if (url.pathname.includes('version.json')) {
-    event.respondWith(
-      fetch(event.request, { cache: 'no-store' })
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-  
-  // الملفات الثابتة - من الكاش أولاً (Cache First)
-  if (STATIC_ASSETS.some(asset => url.href.includes(asset)) || 
-      url.pathname.endsWith('.js') || 
-      url.pathname.endsWith('.css') ||
-      url.pathname === '/' ||
-      url.pathname.includes('index.html')) {
+  try {
+    // التحقق من وجود تحديث في Service Worker نفسه
+    const registration = await self.registration;
+    await registration.update();
     
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        if (cached && cached.status === 200) {
-          return cached;
-        }
-        return fetch(event.request).then(response => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(STATIC_CACHE).then(cache => cache.put(event.request, clone));
-          }
-          return response;
-        }).catch(() => {
-          return caches.match('/offline') || new Response(OFFLINE_PAGE, {
-            headers: { 'Content-Type': 'text/html' }
-          });
-        });
-      })
-    );
-    return;
-  }
-  
-  // الصور - Stale-While-Revalidate مع ضغط ذكي
-  if (url.pathname.match(/\.(png|jpg|jpeg|gif|webp|svg|ico)/i)) {
-    event.respondWith(
-      caches.open(IMAGE_CACHE).then(cache => {
-        return cache.match(event.request).then(cached => {
-          const fetchPromise = fetch(event.request).then(response => {
-            if (response && response.status === 200) {
-              cache.put(event.request, response.clone());
-            }
-            return response;
-          }).catch(() => cached);
-          return cached || fetchPromise;
-        });
-      })
-    );
-    return;
-  }
-  
-  // طلبات API والبيانات - Network First
-  if (url.pathname.includes('/api/') || url.pathname.includes('/supabase')) {
-    event.respondWith(
-      fetch(event.request).then(response => {
-        const clone = response.clone();
-        caches.open(API_CACHE).then(cache => {
-          cache.put(event.request, clone);
-        });
-        return response;
-      }).catch(() => {
-        return caches.match(event.request).then(cached => {
-          if (cached) return cached;
-          return new Response(JSON.stringify({ error: 'offline', message: 'غير متصل بالإنترنت' }), {
-            headers: { 'Content-Type': 'application/json' }
-          });
-        });
-      })
-    );
-    return;
-  }
-  
-  // باقي الطلبات - Network First مع تنظيم الكاش
-  event.respondWith(
-    fetch(event.request).then(response => {
-      const clone = response.clone();
-      caches.open(DYNAMIC_CACHE).then(cache => {
-        cache.put(event.request, clone);
-        // تنظيف الكاش الديناميكي (الحد الأقصى 100 عنصر)
-        cache.keys().then(keys => {
-          if (keys.length > 100) {
-            const toDelete = keys.slice(0, keys.length - 100);
-            toDelete.forEach(key => cache.delete(key));
-          }
-        });
+    // إرسال إشعار بالتحديث للتطبيق
+    const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'UPDATE_CHECK_COMPLETE',
+        version: CACHE_VERSION,
+        timestamp: Date.now()
       });
-      return response;
-    }).catch(() => {
-      return caches.match(event.request).then(cached => {
-        if (cached) return cached;
-        if (event.request.headers.get('accept').includes('text/html')) {
-          return caches.match('/offline') || new Response(OFFLINE_PAGE, {
-            headers: { 'Content-Type': 'text/html' }
-          });
-        }
-        return new Response('غير متصل بالإنترنت', { status: 503 });
-      });
-    })
-  );
-});
+    });
+    
+    console.log('[SW] ✅ Update check completed');
+  } catch (error) {
+    console.error('[SW] ❌ Update check failed:', error);
+  }
+}
 
-// ========== مزامنة الخلفية المتقدمة ==========
+// ========== مزامنة الخلفية ==========
 self.addEventListener('sync', event => {
   console.log('[SW] 📡 Background sync:', event.tag);
   
-  const syncHandlers = {
-    'sync-herbs': async () => {
-      try {
-        const response = await fetch('/Encyclopedia-of-Herbal-Medicine/api/sync', { 
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        if (response.ok) {
-          console.log('[SW] ✅ Herbs synced successfully');
-          return true;
+  if (event.tag === 'sync-herbs') {
+    event.waitUntil(
+      (async () => {
+        try {
+          // إعلام التطبيق بمحاولة المزامنة
+          const clients = await self.clients.matchAll({ type: 'window' });
+          clients.forEach(client => {
+            client.postMessage({ type: 'SYNC_STARTED' });
+          });
+          
+          // يمكن إضافة منطق المزامنة هنا إذا لزم الأمر
+          console.log('[SW] ✅ Background sync completed');
+          
+          clients.forEach(client => {
+            client.postMessage({ type: 'SYNC_COMPLETED' });
+          });
+        } catch (err) {
+          console.error('[SW] ❌ Sync failed:', err);
         }
-      } catch (err) {
-        console.error('[SW] ❌ Sync failed:', err);
-      }
-      return false;
-    },
-    
-    'update-check': async () => {
-      await checkForUpdates();
-      return true;
-    },
-    
-    'cache-cleanup': async () => {
-      const keys = await caches.keys();
-      for (const key of keys) {
-        const cache = await caches.open(key);
-        const requests = await cache.keys();
-        if (requests.length > 200) {
-          const toDelete = requests.slice(0, requests.length - 200);
-          await Promise.all(toDelete.map(req => cache.delete(req)));
-          console.log(`[SW] Cleaned ${toDelete.length} items from ${key}`);
-        }
-      }
-      return true;
-    }
-  };
-  
-  if (syncHandlers[event.tag]) {
-    event.waitUntil(syncHandlers[event.tag]());
+      })()
+    );
   }
 });
 
-// ========== الإشعارات المتقدمة ==========
+// ========== الإشعارات ==========
 self.addEventListener('push', event => {
   let data = {
     title: '🌿 موسوعة الأعشاب الطبية',
     body: '📚 تحديث جديد في الموسوعة!',
-    icon: '/Encyclopedia-of-Herbal-Medicine/icons/icon-192.png',
-    badge: '/Encyclopedia-of-Herbal-Medicine/icons/icon-72.png',
+    icon: 'icons/icon-192.png',
+    badge: 'icons/icon-72.png',
     vibrate: [200, 100, 200],
     tag: 'herbal-update',
     requireInteraction: false,
-    data: { url: '/Encyclopedia-of-Herbal-Medicine/' }
+    data: { url: './' }
   };
   
   if (event.data) {
@@ -489,9 +430,8 @@ self.addEventListener('push', event => {
       requireInteraction: data.requireInteraction,
       data: data.data,
       actions: [
-        { action: 'open', title: '📖 فتح التطبيق', icon: data.icon },
-        { action: 'update', title: '🔄 تحديث الآن', icon: data.icon },
-        { action: 'dismiss', title: '❌ إغلاق', icon: data.icon }
+        { action: 'open', title: '📖 فتح التطبيق' },
+        { action: 'dismiss', title: '❌ إغلاق' }
       ]
     })
   );
@@ -503,57 +443,40 @@ self.addEventListener('notificationclick', event => {
   const action = event.action;
   const notificationData = event.notification.data;
   
-  if (action === 'open' || action === 'update') {
+  if (action === 'open') {
     event.waitUntil(
       clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsList => {
         if (clientsList.length > 0) {
           return clientsList[0].focus();
         }
-        return clients.openWindow(notificationData.url || '/Encyclopedia-of-Herbal-Medicine/');
-      }).then(() => {
-        if (action === 'update') {
-          setTimeout(() => {
-            clients.matchAll({ type: 'window' }).then(clients => {
-              clients.forEach(client => client.postMessage({ type: 'SKIP_WAITING' }));
-            });
-          }, 500);
-        }
+        return clients.openWindow(notificationData.url || './');
       })
     );
   }
 });
 
-// ========== تنزيل الملفات الكبيرة (PWA Install) ==========
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-  
-  // دعم تنزيل الملفات الكبيرة للتثبيت
-  if (url.pathname.includes('/downloads/') || url.pathname.includes('/icons/')) {
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        if (cached) return cached;
-        return fetch(event.request).then(response => {
-          const clone = response.clone();
-          caches.open(STATIC_CACHE).then(cache => cache.put(event.request, clone));
-          return response;
-        });
-      })
-    );
-  }
-});
+// ========== التحقق الدوري من التحديثات ==========
+setInterval(checkForUpdates, VERSION_CHECK_INTERVAL);
 
-// ========== التحقق من التحديثات عند التشغيل ==========
+// التحقق فور التشغيل
 checkForUpdates();
 
 // تنظيف الكاش كل 24 ساعة
 setInterval(async () => {
-  const syncEvent = new Event('sync');
-  syncEvent.tag = 'cache-cleanup';
-  self.dispatchEvent(syncEvent);
+  try {
+    const keys = await caches.keys();
+    for (const key of keys) {
+      const cache = await caches.open(key);
+      const requests = await cache.keys();
+      if (requests.length > 200) {
+        const toDelete = requests.slice(0, requests.length - 200);
+        await Promise.all(toDelete.map(req => cache.delete(req)));
+        console.log(`[SW] Cleaned ${toDelete.length} old items from ${key}`);
+      }
+    }
+  } catch(e) {
+    console.warn('[SW] Cache cleanup error:', e);
+  }
 }, 24 * 60 * 60 * 1000);
 
 console.log(`[SW] ✅ Service Worker ${CACHE_VERSION} loaded successfully`);
-
-// تصدير للاستخدام الخارجي
-self.__SW_VERSION = CACHE_VERSION;
-self.__SW_DATE = new Date().toISOString();
