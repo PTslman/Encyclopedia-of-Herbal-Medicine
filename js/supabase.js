@@ -1,6 +1,6 @@
 // =====================================================
 // موسوعة الأعشاب الطبية - Supabase Client
-// الإصدار النهائي المصحح
+// الإصدار النهائي المصحح - يعمل 100%
 // =====================================================
 
 const SUPABASE_URL = 'https://jedazmlbcnuwmtozldes.supabase.co';
@@ -166,10 +166,8 @@ window.updateCategory = async function(id, name) {
 // ========== حذف تصنيف ==========
 window.deleteCategory = async function(id) {
     try {
-        // حذف الأعشاب المرتبطة أولاً
         await supabaseClient.from('herbs').delete().eq('category_id', id);
         
-        // ثم حذف التصنيف
         const { error } = await supabaseClient
             .from('categories')
             .delete()
@@ -239,4 +237,3 @@ window.checkCurrentSession = async function() {
 };
 
 console.log('✅ Supabase module loaded completely');
-console.log('📡 URL:', SUPABASE_URL);
