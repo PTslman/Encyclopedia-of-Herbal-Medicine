@@ -1,4 +1,7 @@
-// js/supabase.js
+// ============================================
+// Supabase Client - موسوعة الأعشاب الطبية
+// ============================================
+
 const SUPABASE_URL = 'https://jedazmlbcnuwmtozldes.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_aDhcoHUjny6A8OPzmNgXgA_V6ItA5D8';
 
@@ -8,6 +11,20 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // ============================================
 // دوال جلب البيانات
 // ============================================
+
+// جلب جميع التصنيفات
+async function getAllCategories() {
+    const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+    
+    if (error) {
+        console.error('❌ فشل جلب التصنيفات:', error);
+        return [];
+    }
+    return data;
+}
 
 // جلب جميع الأعشاب مع أسماء التصنيفات
 async function getAllHerbs() {
@@ -36,27 +53,8 @@ async function getAllHerbs() {
     }));
 }
 
-// جلب جميع التصنيفات
-async function getAllCategories() {
-    const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-    
-    if (error) {
-        console.error('❌ فشل جلب التصنيفات:', error);
-        return [];
-    }
-    
-    return data.map(cat => ({
-        id: cat.id,
-        name: cat.name,
-        createdAt: cat.created_at
-    }));
-}
-
 // ============================================
-// دوال إدارة الأعشاب (للمسؤول فقط)
+// دوال إدارة الأعشاب
 // ============================================
 
 // إضافة عشبة جديدة
@@ -111,7 +109,7 @@ async function deleteHerb(id) {
 }
 
 // ============================================
-// دوال إدارة التصنيفات (للمسؤول فقط)
+// دوال إدارة التصنيفات
 // ============================================
 
 // إضافة تصنيف
@@ -145,7 +143,7 @@ async function deleteCategory(id) {
 }
 
 // ============================================
-// المصادقة (تسجيل الدخول)
+// دوال المصادقة (الأهم - هذه كانت مفقودة!)
 // ============================================
 
 // تسجيل الدخول كمسؤول
@@ -155,44 +153,61 @@ async function loginAdmin(email, password) {
         password: password
     });
     
-    return { data, error };
+    if (error) {
+        console.error('❌ فشل تسجيل الدخول:', error.message);
+        return { data: null, error };
+    }
+    
+    console.log('✅ تم تسجيل الدخول بنجاح:', data.user.email);
+    return { data, error: null };
 }
 
 // تسجيل الخروج
 async function logoutAdmin() {
     const { error } = await supabase.auth.signOut();
+    if (error) {
+        console.error('❌ فشل تسجيل الخروج:', error.message);
+    } else {
+        console.log('✅ تم تسجيل الخروج');
+    }
     return { error };
 }
 
-// التحقق من حالة المصادقة
+// مراقبة حالة المصادقة
 function onAuthChange(callback) {
     supabase.auth.onAuthStateChange((event, session) => {
-        callback(event, session);
+        console.log('🔐 Auth event:', event);
+        if (callback) callback(event, session);
     });
 }
 
 // الحصول على المستخدم الحالي
-function getCurrentUser() {
-    return supabase.auth.getUser();
+async function getCurrentUser() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+        console.error('❌ فشل جلب المستخدم:', error.message);
+        return null;
+    }
+    return user;
 }
 
 // ============================================
-// تصدير الدوال
+// تصدير الدوال للنطاق العام
 // ============================================
 
 window.supabaseClient = supabase;
-window.getAllHerbs = getAllHerbs;
 window.getAllCategories = getAllCategories;
+window.getAllHerbs = getAllHerbs;
 window.addHerb = addHerb;
 window.updateHerb = updateHerb;
 window.deleteHerb = deleteHerb;
 window.addCategory = addCategory;
 window.updateCategory = updateCategory;
 window.deleteCategory = deleteCategory;
-window.loginAdmin = loginAdmin;
+window.loginAdmin = loginAdmin;      // ← هذه كانت مفقودة!
 window.logoutAdmin = logoutAdmin;
 window.onAuthChange = onAuthChange;
 window.getCurrentUser = getCurrentUser;
 
-console.log('✅ Supabase client initialized');
-console.log('🔗 URL:', SUPABASE_URL);
+console.log('✅ Supabase client ready');
+console.log('🔐 loginAdmin function available:', typeof loginAdmin);
