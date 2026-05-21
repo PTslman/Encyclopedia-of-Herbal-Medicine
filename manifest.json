@@ -1,17 +1,21 @@
 {
-  "name": "موسوعة الأعشاب الطبية",
+  "name": "موسوعة الأعشاب الطبية - الموسوعة الذكية",
   "short_name": "أعشاب طبية",
-  "description": "موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية",
+  "description": "موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية | أكثر من 50 ميزة متقدمة | تصنيف ذكي | مقارنة أعشاب | إشارات مرجعية",
   "start_url": "/Encyclopedia-of-Herbal-Medicine/",
   "scope": "/Encyclopedia-of-Herbal-Medicine/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
+  "display_override": ["window-controls-overlay", "standalone", "fullscreen"],
   "theme_color": "#2e7d32",
   "background_color": "#fef9e6",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "lang": "ar",
   "dir": "rtl",
-  "categories": ["health", "medical", "education", "lifestyle"],
+  "categories": ["health", "medical", "education", "lifestyle", "reference", "productivity", "books"],
+  "launch_handler": {
+    "client_mode": ["focus-existing", "auto"]
+  },
+  "handle_links": "preferred",
   "icons": [
     {
       "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-72.png",
@@ -64,9 +68,9 @@
   ],
   "shortcuts": [
     {
-      "name": "بحث",
+      "name": "🔍 بحث سريع",
       "short_name": "بحث",
-      "description": "البحث في موسوعة الأعشاب",
+      "description": "البحث في موسوعة الأعشاب الطبية",
       "url": "/Encyclopedia-of-Herbal-Medicine/?search=true",
       "icons": [
         {
@@ -76,9 +80,9 @@
       ]
     },
     {
-      "name": "جميع الأعشاب",
+      "name": "🌿 جميع الأعشاب",
       "short_name": "أعشاب",
-      "description": "عرض جميع الأعشاب المسجلة",
+      "description": "عرض جميع الأعشاب المسجلة في الموسوعة",
       "url": "/Encyclopedia-of-Herbal-Medicine/?all=true",
       "icons": [
         {
@@ -86,24 +90,93 @@
           "sizes": "96x96"
         }
       ]
+    },
+    {
+      "name": "📂 التصنيفات",
+      "short_name": "تصنيفات",
+      "description": "استعراض التصنيفات والأقسام",
+      "url": "/Encyclopedia-of-Herbal-Medicine/?categories=true",
+      "icons": [
+        {
+          "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-144.png",
+          "sizes": "144x144"
+        }
+      ]
+    },
+    {
+      "name": "🔖 الإشارات المرجعية",
+      "short_name": "إشاراتي",
+      "description": "عرض الأعشاب المفضلة لديك",
+      "url": "/Encyclopedia-of-Herbal-Medicine/?bookmarks=true",
+      "icons": [
+        {
+          "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-128.png",
+          "sizes": "128x128"
+        }
+      ]
+    },
+    {
+      "name": "🔄 مقارنة أعشاب",
+      "short_name": "مقارنة",
+      "description": "مقارنة فوائد وأضرار الأعشاب",
+      "url": "/Encyclopedia-of-Herbal-Medicine/?compare=true",
+      "icons": [
+        {
+          "src": "/Encyclopedia-of-Herbal-Medicine/icons/icon-144.png",
+          "sizes": "144x144"
+        }
+      ]
     }
   ],
   "screenshots": [
     {
-      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/desktop.png",
+      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/desktop-1.png",
       "sizes": "1280x720",
       "type": "image/png",
-      "form_factor": "wide"
+      "form_factor": "wide",
+      "label": "شاشة الأعشاب الرئيسية"
     },
     {
-      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/mobile.png",
+      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/desktop-2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "تفاصيل العشبة والفوائد"
+    },
+    {
+      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/mobile-1.png",
       "sizes": "360x640",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "تصفح الأعشاب بسهولة"
+    },
+    {
+      "src": "/Encyclopedia-of-Herbal-Medicine/screenshots/mobile-2.png",
+      "sizes": "360x640",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "بحث متقدم ومقارنة"
     }
   ],
   "prefer_related_applications": false,
   "edge_side_panel": {
     "preferred_width": 400
-  }
+  },
+  "share_target": {
+    "action": "/Encyclopedia-of-Herbal-Medicine/share-target",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "note_taking": {
+    "new_note_url": "/Encyclopedia-of-Herbal-Medicine/new-note"
+  },
+  "related_applications": [],
+  "iarc_rating_id": "",
+  "theme_color_dark": "#1a1a2e",
+  "background_color_dark": "#1a1a2e"
 }
