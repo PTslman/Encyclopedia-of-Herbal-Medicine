@@ -4,6 +4,110 @@
 // ============================================
 
 // =================================================================
+// ========== متغيرات Supabase =====================================
+// =================================================================
+
+const SUPABASE_URL = 'https://jedazmlbcnuwmtozldes.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZGF6bWxiY251d210b3psZGVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTQyNjcsImV4cCI6MjA5NDkzMDI2N30.8391ZND2V9_N3RzkFYiDNnej1o_eUQoQ1174nwxpMwI';
+
+let supabase = null;
+
+// تهيئة Supabase
+function initSupabase() {
+    if (window.supabase && !supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase initialized');
+        return true;
+    }
+    return false;
+}
+
+// =================================================================
+// ========== دوال Supabase الأساسية ===============================
+// =================================================================
+
+// دوال التصنيفات
+async function getAllCategories() {
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('categories').select('*').order('name');
+    if (error) throw error;
+    return data || [];
+}
+
+async function addCategory(name) {
+    if (!supabase) throw new Error('Supabase not initialized');
+    const { data, error } = await supabase.from('categories').insert([{ name }]).select();
+    if (error) throw error;
+    return data?.[0];
+}
+
+async function updateCategory(id, name) {
+    if (!supabase) throw new Error('Supabase not initialized');
+    const { error } = await supabase.from('categories').update({ name }).eq('id', id);
+    return { error };
+}
+
+async function deleteCategory(id) {
+    if (!supabase) throw new Error('Supabase not initialized');
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    return { error };
+}
+
+// دوال الأعشاب
+async function getAllHerbs() {
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('herbs').select('*').order('name');
+    if (error) throw error;
+    return data || [];
+}
+
+async function addHerb(herbData) {
+    if (!supabase) throw new Error('Supabase not initialized');
+    const { data, error } = await supabase.from('herbs').insert([herbData]).select();
+    if (error) throw error;
+    return data?.[0];
+}
+
+async function updateHerb(id, herbData) {
+    if (!supabase) throw new Error('Supabase not initialized');
+    const { error } = await supabase.from('herbs').update(herbData).eq('id', id);
+    return { error };
+}
+
+async function deleteHerb(id) {
+    if (!supabase) throw new Error('Supabase not initialized');
+    const { error } = await supabase.from('herbs').delete().eq('id', id);
+    return { error };
+}
+
+// دوال المصادقة
+async function loginAdmin(email, password) {
+    if (!supabase) throw new Error('Supabase not initialized');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return { data };
+}
+
+async function logoutAdmin() {
+    if (!supabase) throw new Error('Supabase not initialized');
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+}
+
+async function checkCurrentSession() {
+    if (!supabase) return null;
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.user || null;
+}
+
+function onAuthChange(callback) {
+    if (!supabase) return;
+    supabase.auth.onAuthStateChange((event, session) => {
+        callback(event, session);
+    });
+}
+
+// =================================================================
 // ========== المتغيرات العامة ====================================
 // =================================================================
 
@@ -19,56 +123,7 @@ let currentImageFile = null;
 let currentImageUrl = null;
 
 const CACHE_KEY = 'herbal_cache_v3';
-// =====================================================
-// إصلاح المصادقة - التحقق من الجلسة عند التحميل
-// =====================================================
 
-// دالة للتحقق من حالة المسؤول عند تحميل الصفحة
-async function checkAdminStatus() {
-    if (window.checkCurrentSession) {
-        const user = await window.checkCurrentSession();
-        if (user) {
-            console.log('✅ Admin logged in:', user.email);
-            isAdmin = true;
-            setAdminMode(true);
-        } else {
-            console.log('👤 Visitor mode');
-            isAdmin = false;
-            setAdminMode(false);
-        }
-    }
-}
-
-// استدعاء الدالة بعد تحميل الصفحة
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkAdminStatus);
-} else {
-    checkAdminStatus();
-}
-
-// تعديل دالة setAdminMode لتحديث الواجهة بشكل صحيح
-const originalSetAdminMode = window.setAdminMode;
-window.setAdminMode = function(val) {
-    isAdmin = val;
-    const adminElements = document.querySelectorAll('.admin-only');
-    adminElements.forEach(el => {
-        if (el.style) el.style.display = val ? 'inline-flex' : 'none';
-    });
-    
-    const lockIcon = document.getElementById('lockIcon');
-    if (lockIcon) {
-        lockIcon.innerHTML = val ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
-    }
-    
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.style.display = val ? 'flex' : 'none';
-    }
-    
-    document.body.classList.toggle('viewer-mode', !val);
-    
-    if (window.renderContent) window.renderContent();
-};
 // =================================================================
 // ========== دوال مساعدة أساسية ==================================
 // =================================================================
@@ -160,9 +215,9 @@ function loadFromLocalCache() {
 async function loadHerbsFromSupabase() {
     console.log('🔄 جلب البيانات من Supabase...');
     
-    if (typeof getAllCategories === 'undefined' || typeof getAllHerbs === 'undefined') {
-        console.error('❌ Supabase client not ready');
-        showToast('⚠️ النظام قيد التحميل، حاول مرة أخرى', 'warning');
+    if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        showToast('⚠️ النظام غير جاهز، حاول تحديث الصفحة', 'warning');
         return false;
     }
     
@@ -187,11 +242,59 @@ async function loadHerbsFromSupabase() {
 }
 
 // =================================================================
+// ========== دالة setAdminMode ====================================
+// =================================================================
+
+function setAdminMode(val) {
+    isAdmin = val;
+    const adminElements = document.querySelectorAll('.admin-only');
+    adminElements.forEach(el => {
+        if (el.style) el.style.display = val ? 'inline-flex' : 'none';
+    });
+    
+    const lockIcon = document.getElementById('lockIcon');
+    if (lockIcon) {
+        lockIcon.innerHTML = val ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
+    }
+    
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.style.display = val ? 'flex' : 'none';
+    }
+    
+    document.body.classList.toggle('viewer-mode', !val);
+    
+    if (typeof renderContent === 'function') renderContent();
+}
+
+// =================================================================
+// ========== التحقق من حالة المسؤول ===============================
+// =================================================================
+
+async function checkAdminStatus() {
+    if (typeof checkCurrentSession === 'function') {
+        const user = await checkCurrentSession();
+        if (user) {
+            console.log('✅ Admin logged in:', user.email);
+            isAdmin = true;
+            setAdminMode(true);
+        } else {
+            console.log('👤 Visitor mode');
+            isAdmin = false;
+            setAdminMode(false);
+        }
+    }
+}
+
+// =================================================================
 // ========== التحميل الأولي =======================================
 // =================================================================
 
 async function initialLoad() {
     console.log('🚀 بدء التحميل الأولي...');
+    
+    // تهيئة Supabase
+    initSupabase();
     
     // 1. عرض البيانات من الكاش فوراً
     const hasCache = loadFromLocalCache();
@@ -502,8 +605,8 @@ function showCategoryManager() {
 async function addNewCategory() {
     let name = document.getElementById('newCategoryName')?.value.trim();
     if (name) {
-        const result = await window.addCategory(name);
-        if (!result.error) {
+        const result = await addCategory(name);
+        if (result) {
             document.getElementById('newCategoryName').value = '';
             await loadHerbsFromSupabase();
             showToast('✅ تم إضافة التصنيف', 'success');
@@ -543,7 +646,7 @@ function resetHerbForm() {
     document.getElementById('modalHerbName').value = '';
     document.getElementById('modalHerbBenefits').value = '';
     document.getElementById('modalHerbWarnings').value = '';
-    document.getElementById('modalHerbHarams').value = '';
+    document.getElementById('modalHerbHarms').value = '';
     document.getElementById('modalHerbUsage').value = '';
     document.getElementById('modalHerbNotes').value = '';
     document.getElementById('imagePreviewContainer').innerHTML = '';
@@ -568,7 +671,7 @@ function editHerb(id) {
     document.getElementById('modalHerbName').value = herb.name;
     document.getElementById('modalHerbBenefits').value = herb.benefits || '';
     document.getElementById('modalHerbWarnings').value = herb.warnings || '';
-    document.getElementById('modalHerbHarams').value = herb.harms || '';
+    document.getElementById('modalHerbHarms').value = herb.harms || '';
     document.getElementById('modalHerbUsage').value = herb.usage || '';
     document.getElementById('modalHerbNotes').value = herb.notes || '';
     populateCategorySelect(herb.categoryId || '');
@@ -644,7 +747,7 @@ async function saveHerb() {
         categoryId: document.getElementById('modalHerbCategory')?.value || null,
         benefits: document.getElementById('modalHerbBenefits')?.value || '—',
         warnings: document.getElementById('modalHerbWarnings')?.value || '—',
-        harms: document.getElementById('modalHerbHarams')?.value || '—',
+        harms: document.getElementById('modalHerbHarms')?.value || '—',
         usage: document.getElementById('modalHerbUsage')?.value || '—',
         notes: document.getElementById('modalHerbNotes')?.value || '—',
         imageUrl: imageUrl || null
@@ -665,13 +768,12 @@ async function saveHerb() {
             result = await addHerb(herbData);
         }
         
-        if (result.error) {
+        if (result && result.error) {
             throw new Error(result.error.message);
         }
         
         showToast('✅ تم حفظ العشبة بنجاح', 'success');
         
-        // تحديث البيانات
         await loadHerbsFromSupabase();
         
         document.getElementById('herbModal')?.classList.remove('active');
@@ -689,40 +791,46 @@ async function saveHerb() {
 }
 
 async function confirmDelete() {
-    if (pendingDeleteType === 'category') {
-        const result = await deleteCategory(pendingDeleteId);
-        if (result.error) {
-            showToast('❌ فشل حذف التصنيف', 'error');
-            return;
-        }
-    } else if (pendingDeleteType === 'herb') {
-        const result = await deleteHerb(pendingDeleteId);
-        if (result.error) {
-            showToast('❌ فشل حذف العشبة', 'error');
-            return;
-        }
+    if (!pendingDeleteId || !pendingDeleteType) {
+        document.getElementById('deleteModal')?.classList.remove('active');
+        return;
     }
     
-    await loadHerbsFromSupabase();
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const originalText = deleteBtn?.innerHTML;
+    if (deleteBtn) {
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري الحذف...';
+        deleteBtn.disabled = true;
+    }
     
-    document.getElementById('deleteModal').classList.remove('active');
-    pendingDeleteId = null;
-    pendingDeleteType = null;
-    showToast('✅ تم الحذف بنجاح', 'success');
+    try {
+        if (pendingDeleteType === 'category') {
+            await deleteCategory(pendingDeleteId);
+            showToast('✅ تم حذف التصنيف', 'success');
+        } else if (pendingDeleteType === 'herb') {
+            await deleteHerb(pendingDeleteId);
+            showToast('✅ تم حذف العشبة', 'success');
+        }
+        
+        await loadHerbsFromSupabase();
+        
+    } catch (error) {
+        console.error('❌ فشل الحذف:', error);
+        showToast('❌ فشل الحذف: ' + error.message, 'error');
+    } finally {
+        if (deleteBtn) {
+            deleteBtn.innerHTML = originalText;
+            deleteBtn.disabled = false;
+        }
+        document.getElementById('deleteModal')?.classList.remove('active');
+        pendingDeleteId = null;
+        pendingDeleteType = null;
+    }
 }
 
 // =================================================================
 // ========== المصادقة (Supabase) ==================================
 // =================================================================
-
-function setAdminMode(val) {
-    isAdmin = val;
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = val ? 'inline-flex' : 'none');
-    document.getElementById('lockIcon').innerHTML = val ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
-    document.getElementById('logoutBtn').style.display = val ? 'flex' : 'none';
-    document.body.classList.toggle('viewer-mode', !val);
-    renderContent();
-}
 
 function showLogin() {
     document.getElementById('loginModal').classList.add('active');
@@ -889,8 +997,13 @@ function showQuickHelp() {
 }
 
 function updateViewButtons(view) {
-    document.querySelectorAll('.view-btn-large').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.view === view);
+    const buttons = document.querySelectorAll('.view-btn-large');
+    buttons.forEach(btn => {
+        if (btn.dataset.view === view) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
     });
 }
 
@@ -903,19 +1016,40 @@ function openWhatsApp() {
 // =================================================================
 
 async function deleteAllData() {
-    if (confirm("⚠️ هل أنت متأكد من حذف جميع الأعشاب والتصنيفات؟")) {
-        const herbsList = herbs;
-        const categoriesList = categories;
+    if (!confirm("⚠️ هل أنت متأكد من حذف جميع الأعشاب والتصنيفات؟\nهذا الإجراء لا يمكن التراجع عنه!")) {
+        return;
+    }
+    
+    const deleteBtn = document.getElementById('confirmDeleteAllBtn');
+    const originalText = deleteBtn?.innerHTML;
+    if (deleteBtn) {
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري الحذف...';
+        deleteBtn.disabled = true;
+    }
+    
+    try {
+        const herbsToDelete = [...herbs];
+        const categoriesToDelete = [...categories];
         
-        for (const herb of herbsList) {
+        for (const herb of herbsToDelete) {
             await deleteHerb(herb.id);
         }
-        for (const cat of categoriesList) {
+        
+        for (const cat of categoriesToDelete) {
             await deleteCategory(cat.id);
         }
         
         await loadHerbsFromSupabase();
-        showToast('تم حذف جميع البيانات', 'success');
+        showToast('✅ تم حذف جميع البيانات', 'success');
+        
+    } catch (error) {
+        console.error('❌ فشل حذف البيانات:', error);
+        showToast('❌ حدث خطأ أثناء الحذف', 'error');
+    } finally {
+        if (deleteBtn) {
+            deleteBtn.innerHTML = originalText;
+            deleteBtn.disabled = false;
+        }
     }
 }
 
@@ -935,33 +1069,70 @@ function restoreJSON() {
 async function handleRestore(e) {
     const file = e.target.files[0];
     if (!file) return;
-    const text = await file.text();
-    const data = JSON.parse(text);
-    if (data.categories && data.herbs) {
-        if (confirm("سيتم استبدال جميع البيانات الحالية. هل أنت متأكد؟")) {
-            await deleteAllData();
-            for (const cat of data.categories) {
-                await addCategory(cat.name);
-            }
-            for (const herb of data.herbs) {
-                await addHerb({
-                    name: herb.name,
-                    categoryId: herb.categoryId,
-                    benefits: herb.benefits || '—',
-                    warnings: herb.warnings || '—',
-                    harms: herb.harms || '—',
-                    usage: herb.usage || '—',
-                    notes: herb.notes || '—',
-                    imageUrl: herb.imageUrl || null
-                });
-            }
-            await loadHerbsFromSupabase();
-            showToast('تمت الاستعادة بنجاح', 'success');
+    
+    try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        
+        if (!data.categories || !data.herbs) {
+            throw new Error('ملف غير صالح');
         }
-    } else {
-        alert("ملف غير صالح");
+        
+        if (!confirm("سيتم استبدال جميع البيانات الحالية. هل أنت متأكد؟")) {
+            return;
+        }
+        
+        const restoreBtn = document.getElementById('restoreBtn');
+        const originalText = restoreBtn?.innerHTML;
+        if (restoreBtn) {
+            restoreBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري الاستعادة...';
+            restoreBtn.disabled = true;
+        }
+        
+        const herbsToDelete = [...herbs];
+        const categoriesToDelete = [...categories];
+        
+        for (const herb of herbsToDelete) {
+            await deleteHerb(herb.id);
+        }
+        for (const cat of categoriesToDelete) {
+            await deleteCategory(cat.id);
+        }
+        
+        const categoryMap = new Map();
+        for (const cat of data.categories) {
+            const result = await addCategory(cat.name);
+            if (result) categoryMap.set(cat.id, result.id);
+        }
+        
+        for (const herb of data.herbs) {
+            const newCategoryId = categoryMap.get(herb.categoryId) || null;
+            await addHerb({
+                name: herb.name,
+                categoryId: newCategoryId,
+                benefits: herb.benefits || '—',
+                warnings: herb.warnings || '—',
+                harms: herb.harms || '—',
+                usage: herb.usage || '—',
+                notes: herb.notes || '—',
+                imageUrl: herb.imageUrl || null
+            });
+        }
+        
+        await loadHerbsFromSupabase();
+        showToast('✅ تمت الاستعادة بنجاح', 'success');
+        
+    } catch (error) {
+        console.error('❌ فشل الاستعادة:', error);
+        showToast('❌ فشل استعادة البيانات: ' + error.message, 'error');
+    } finally {
+        document.getElementById('restoreFile').value = '';
+        const restoreBtn = document.getElementById('restoreBtn');
+        if (restoreBtn) {
+            restoreBtn.innerHTML = '<i class="fas fa-upload"></i> استعادة';
+            restoreBtn.disabled = false;
+        }
     }
-    document.getElementById('restoreFile').value = '';
 }
 
 // =================================================================
@@ -1043,20 +1214,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('clearImageBtn').style.display = 'none';
     });
     
-    // زر تحديث البيانات (استخدام SyncManager)
+    // زر تحديث البيانات
     document.getElementById('visitorForceSyncBtn')?.addEventListener('click', () => {
-        if (typeof SyncManager !== 'undefined') {
-            SyncManager.fetchData(true);
-        } else {
-            loadHerbsFromSupabase();
-        }
+        loadHerbsFromSupabase();
     });
     document.getElementById('refreshDataBtn')?.addEventListener('click', () => {
-        if (typeof SyncManager !== 'undefined') {
-            SyncManager.fetchData(true);
-        } else {
-            loadHerbsFromSupabase();
-        }
+        loadHerbsFromSupabase();
     });
     
     // إغلاق المودالات بالضغط على الخلفية
@@ -1077,7 +1240,12 @@ document.addEventListener('DOMContentLoaded', function() {
     VisitorCounter.init();
     initTheme();
     initAuthListener();
-    initialLoad();
+    
+    // التحقق من حالة المسؤول والتحميل
+    setTimeout(async () => {
+        await checkAdminStatus();
+        await initialLoad();
+    }, 100);
 });
 
 console.log('✅ التطبيق جاهز مع Supabase');
