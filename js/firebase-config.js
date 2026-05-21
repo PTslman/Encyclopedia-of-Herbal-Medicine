@@ -1,8 +1,7 @@
-// ============================================
-// إعدادات Firebase - موسوعة الأعشاب الطبية (النسخة المطورة)
-// مشروع: semoharbs
-// حساب المسؤول: admin@herbal.com
-// ============================================
+// ============================================================
+// Firebase Configuration - الموسوعة الأعشاب الطبية
+// النسخة المتطورة مع دعم كامل للميزات المتقدمة
+// ============================================================
 
 // ========== إعدادات المشروع ==========
 const firebaseConfig = {
@@ -14,21 +13,37 @@ const firebaseConfig = {
     appId: "1:497780761661:web:95ae225c648814c0ed7654"
 };
 
-// ========== تهيئة Firebase ==========
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-    console.log("✅ Firebase initialized successfully");
-    console.log(`📁 Project: ${firebaseConfig.projectId}`);
-} else {
-    console.log("⚠️ Firebase already initialized");
+// ========== تهيئة Firebase مع إعادة محاولة ==========
+let retryCount = 0;
+const MAX_RETRIES = 3;
+
+function initFirebase() {
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            console.log("✅ Firebase initialized");
+            return true;
+        }
+        return true;
+    } catch (error) {
+        console.error("❌ Firebase init failed:", error);
+        if (retryCount < MAX_RETRIES) {
+            retryCount++;
+            console.log(`🔄 Retry ${retryCount}/${MAX_RETRIES}...`);
+            setTimeout(initFirebase, 1000);
+        }
+        return false;
+    }
 }
 
-// ========== الحصول على مراجع الخدمات ==========
+initFirebase();
+
+// ========== الحصول على الخدمات ==========
 const db = firebase.firestore();
 const auth = firebase.auth();
-const storage = firebase.storage(); // إضافة Storage للصور
+const storage = firebase.storage();
 
-// ========== إعدادات Firestore المحسنة ==========
+// ========== إعدادات Firestore المتقدمة ==========
 db.settings({
     ignoreUndefinedProperties: true,
     merge: true,
@@ -37,187 +52,179 @@ db.settings({
 
 // ========== تفعيل التخزين المحلي مع معالجة الأخطاء ==========
 db.enablePersistence({ synchronizeTabs: true })
-    .then(() => console.log("✅ Offline persistence enabled (unlimited cache)"))
+    .then(() => console.log("✅ Persistence enabled"))
     .catch(err => {
         if (err.code === 'failed-precondition') {
-            console.warn("⚠️ Multiple tabs open, persistence disabled");
-        } else if (err.code === 'unimplemented') {
-            console.warn("⚠️ Browser does not support persistence");
+            console.warn("⚠️ Multiple tabs open - persistence disabled");
         } else {
-            console.error("❌ Persistence error:", err);
+            console.warn("⚠️ Persistence error:", err.message);
         }
     });
 
-// ========== مراجع المجموعات والتخزين ==========
+// ========== مراجع المجموعات ==========
 const categoriesCol = db.collection("categories");
 const herbsCol = db.collection("herbs");
 const storageRef = storage.ref();
 
 // ========== معلومات المسؤول ==========
-// حساب المسؤول: admin@herbal.com
-// كلمة السر: admin1442
 const ADMIN_EMAIL = "admin@herbal.com";
 const ADMIN_PASSWORD = "admin1442";
-let ADMIN_UID = "OWssFNrZDaZfeSlrLF8ReS8O6LM2"; // UID المعروف
+const ADMIN_UID = "OWssFNrZDaZfeSlrLF8ReS8O6LM2";
 
-// ========== دالة جلب UID المسؤول ==========
+// ========== دوال متقدمة ==========
+
+// جلب UID المسؤول تلقائياً
 async function fetchAdminUID() {
     try {
-        // محاولة جلب UID من localStorage أولاً
         const savedUID = localStorage.getItem('admin_uid');
         if (savedUID) {
-            ADMIN_UID = savedUID;
-            console.log("✅ Admin UID loaded from cache:", ADMIN_UID);
-            window.ADMIN_UID = ADMIN_UID;
-            return ADMIN_UID;
+            window.ADMIN_UID = savedUID;
+            return savedUID;
         }
-        
-        // محاولة تسجيل الدخول لجلب UID
-        const userCredential = await auth.signInWithEmailAndPassword(ADMIN_EMAIL, ADMIN_PASSWORD);
-        ADMIN_UID = userCredential.user.uid;
-        localStorage.setItem('admin_uid', ADMIN_UID);
-        console.log("✅ Admin UID fetched and saved:", ADMIN_UID);
-        window.ADMIN_UID = ADMIN_UID;
-        
-        // تسجيل الخروج فوراً
+        const userCred = await auth.signInWithEmailAndPassword(ADMIN_EMAIL, ADMIN_PASSWORD);
+        const uid = userCred.user.uid;
+        localStorage.setItem('admin_uid', uid);
+        window.ADMIN_UID = uid;
         await auth.signOut();
-        console.log("🔓 Signed out after fetching UID");
-        
-        return ADMIN_UID;
+        return uid;
     } catch (error) {
-        console.error("❌ Failed to fetch admin UID:", error);
-        console.log("⚠️ Using default ADMIN_UID");
+        console.warn("Cannot fetch admin UID:", error.message);
         window.ADMIN_UID = ADMIN_UID;
         return ADMIN_UID;
     }
 }
 
-// ========== دوال التحقق ==========
+// التحقق من صلاحيات المسؤول
 function isUserAdmin(user) {
     if (!user) return false;
-    return user.uid === ADMIN_UID || user.email === ADMIN_EMAIL;
+    return user.uid === (window.ADMIN_UID || ADMIN_UID) || user.email === ADMIN_EMAIL;
 }
 
-// ========== دوال اختبار الاتصال ==========
-async function testFirebaseConnection() {
+// اختبار الاتصال
+async function testConnection() {
+    const start = performance.now();
     try {
-        const startTime = performance.now();
         await herbsCol.limit(1).get();
-        const endTime = performance.now();
-        const latency = (endTime - startTime).toFixed(0);
-        console.log(`✅ Firebase connection successful (${latency}ms)`);
-        return true;
+        const latency = Math.round(performance.now() - start);
+        console.log(`✅ Firebase connection: ${latency}ms`);
+        return { success: true, latency };
     } catch (error) {
-        console.error("❌ Firebase connection failed:", error);
-        if (error.code === 'permission-denied') {
-            console.error("   → Check Security Rules in Firebase Console");
-        }
-        return false;
+        console.error("❌ Firebase connection failed:", error.message);
+        return { success: false, error: error.message };
     }
 }
 
-// ========== دوال جلب البيانات ==========
-async function fetchAllDataFromFirebase() {
-    console.log('📡 Fetching data from Firebase...');
+// جلب جميع البيانات
+async function fetchAllData() {
+    console.log("📡 Fetching all data...");
+    const start = performance.now();
     try {
-        const [herbsSnapshot, categoriesSnapshot] = await Promise.all([
-            herbsCol.get(),
-            categoriesCol.get()
+        const [categoriesSnap, herbsSnap] = await Promise.all([
+            categoriesCol.get(),
+            herbsCol.get()
         ]);
         
-        const herbs = [];
-        herbsSnapshot.forEach(doc => {
-            herbs.push({ id: doc.id, ...doc.data() });
-        });
-        
         const categories = [];
-        categoriesSnapshot.forEach(doc => {
-            categories.push({ id: doc.id, ...doc.data() });
-        });
+        categoriesSnap.forEach(doc => categories.push({ id: doc.id, ...doc.data() }));
         
-        console.log(`✅ Fetched ${herbs.length} herbs and ${categories.length} categories`);
-        return { herbs, categories };
+        const herbs = [];
+        herbsSnap.forEach(doc => herbs.push({ id: doc.id, ...doc.data() }));
+        
+        const duration = Math.round(performance.now() - start);
+        console.log(`✅ Fetched ${herbs.length} herbs, ${categories.length} categories (${duration}ms)`);
+        
+        return { categories, herbs, duration };
     } catch (error) {
-        console.error('❌ Failed to fetch data:', error);
+        console.error("❌ Fetch failed:", error);
         throw error;
     }
 }
 
-// ========== دوال رفع الصور إلى Storage ==========
-async function uploadImageToStorage(file, herbId) {
-    if (!file) return null;
+// حفظ البيانات
+async function saveAllData(categories, herbs) {
+    const batch = db.batch();
     
-    try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${herbId}_${Date.now()}.${fileExt}`;
-        const imageRef = storageRef.child(`herb_images/${fileName}`);
-        
-        const uploadTask = await imageRef.put(file);
-        const downloadURL = await uploadTask.ref.getDownloadURL();
-        
-        console.log(`✅ Image uploaded: ${fileName}`);
-        return downloadURL;
-    } catch (error) {
-        console.error("❌ Failed to upload image:", error);
-        return null;
-    }
+    // حذف القديم
+    const oldCategories = await categoriesCol.get();
+    oldCategories.forEach(doc => batch.delete(doc.ref));
+    const oldHerbs = await herbsCol.get();
+    oldHerbs.forEach(doc => batch.delete(doc.ref));
+    
+    // إضافة الجديد
+    categories.forEach(cat => {
+        const ref = categoriesCol.doc();
+        batch.set(ref, { name: cat.name, createdAt: new Date().toISOString() });
+    });
+    
+    herbs.forEach(herb => {
+        const ref = herbsCol.doc();
+        batch.set(ref, {
+            name: herb.name,
+            categoryId: herb.categoryId,
+            benefits: herb.benefits || '—',
+            warnings: herb.warnings || '—',
+            harms: herb.harms || '—',
+            usage: herb.usage || '—',
+            notes: herb.notes || '—',
+            imageUrl: herb.imageUrl || null,
+            updatedAt: new Date().toISOString()
+        });
+    });
+    
+    await batch.commit();
+    console.log(`✅ Saved ${herbs.length} herbs, ${categories.length} categories`);
 }
 
-async function deleteImageFromStorage(imageUrl) {
-    if (!imageUrl) return;
+// رفع صورة
+async function uploadImage(file, path) {
+    const ext = file.name.split('.').pop();
+    const fileName = `${path}_${Date.now()}.${ext}`;
+    const imageRef = storageRef.child(`herb_images/${fileName}`);
+    
+    const uploadTask = await imageRef.put(file);
+    const downloadURL = await uploadTask.ref.getDownloadURL();
+    console.log(`✅ Image uploaded: ${fileName}`);
+    return downloadURL;
+}
+
+// حذف صورة
+async function deleteImage(url) {
+    if (!url) return;
     try {
-        const imageRef = storage.refFromURL(imageUrl);
+        const imageRef = storage.refFromURL(url);
         await imageRef.delete();
-        console.log("✅ Image deleted from Storage");
+        console.log("✅ Image deleted");
     } catch (error) {
-        console.warn("⚠️ Failed to delete image:", error);
+        console.warn("Cannot delete image:", error.message);
     }
 }
 
-// ========== تصدير المتغيرات والدوال ==========
+// ========== تصدير ==========
 window.db = db;
 window.auth = auth;
 window.storage = storage;
-window.storageRef = storageRef;
 window.categoriesCol = categoriesCol;
 window.herbsCol = herbsCol;
 window.ADMIN_UID = ADMIN_UID;
-window.ADMIN_EMAIL = ADMIN_EMAIL;
 window.isUserAdmin = isUserAdmin;
-window.testFirebaseConnection = testFirebaseConnection;
-window.fetchAllDataFromFirebase = fetchAllDataFromFirebase;
-window.uploadImageToStorage = uploadImageToStorage;
-window.deleteImageFromStorage = deleteImageFromStorage;
+window.testConnection = testConnection;
+window.fetchAllData = fetchAllData;
+window.saveAllData = saveAllData;
+window.uploadImage = uploadImage;
+window.deleteImage = deleteImage;
 window.fetchAdminUID = fetchAdminUID;
 
-// ========== تشغيل الجلب التلقائي ==========
-fetchAdminUID();
-
 // ========== مراقبة حالة المصادقة ==========
-auth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged(user => {
     if (user) {
-        console.log(`🔐 User signed in: ${user.email}`);
-        console.log(`🆔 User UID: ${user.uid}`);
-        console.log(`👑 Is admin: ${isUserAdmin(user)}`);
+        console.log(`🔐 Logged in: ${user.email}`);
+        console.log(`👑 Admin: ${isUserAdmin(user)}`);
     } else {
-        console.log("🔓 No user signed in");
+        console.log("🔓 Logged out");
     }
 });
 
-// ========== تسجيل معلومات التهيئة ==========
-console.log("=========================================");
-console.log("🌿 موسوعة الأعشاب الطبية - Firebase Config");
-console.log("=========================================");
-console.log(`📁 Project: ${firebaseConfig.projectId}`);
-console.log(`🗄️ Firestore: ${db ? "✅ Initialized" : "❌ Failed"}`);
-console.log(`📦 Storage: ${storage ? "✅ Initialized" : "❌ Failed"}`);
-console.log(`🔐 Auth: ${auth ? "✅ Initialized" : "❌ Failed"}`);
-console.log(`👤 Admin Email: ${ADMIN_EMAIL}`);
-console.log(`🆔 Admin UID: ${ADMIN_UID}`);
-console.log(`💾 Cache: Unlimited`);
-console.log("=========================================");
+// ========== اختبار الاتصال ==========
+setTimeout(() => testConnection(), 2000);
 
-// اختبار الاتصال بعد 3 ثوانٍ
-setTimeout(() => {
-    testFirebaseConnection();
-}, 3000);
+console.log("✅ Firebase config loaded (advanced mode)");
