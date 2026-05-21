@@ -1,13 +1,14 @@
 {
-  "version": "4.0.0",
-  "lastUpdate": "2026-01-20T10:00:00Z",
+  "version": "4.0.1",
+  "lastUpdate": "2026-01-21T12:00:00Z",
+  "hash": "a7f8e9d1c2b3a4f5e6d7c8b9a0f1e2d3",
   "files": [
     "index.html",
     "css/style.css",
     "js/app.js",
     "js/firebase-config.js",
     "js/pwa.js",
+    "js/update-handler.js",
     "manifest.json"
-  ],
-  "hash": "a7f8e9d1c2b3a4f5e6d7c8b9a0f1e2d3"
+  ]
 }
