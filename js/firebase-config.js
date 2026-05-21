@@ -1,5 +1,5 @@
 // ============================================
-// إعدادات Firebase - موسوعة الأعشاب الطبية
+// إعدادات Firebase - موسوعة الأعشاب الطبية (النسخة المطورة)
 // مشروع: semoharbs
 // حساب المسؤول: admin@herbal.com
 // ============================================
@@ -26,6 +26,7 @@ if (!firebase.apps.length) {
 // ========== الحصول على مراجع الخدمات ==========
 const db = firebase.firestore();
 const auth = firebase.auth();
+const storage = firebase.storage(); // إضافة Storage للصور
 
 // ========== إعدادات Firestore المحسنة ==========
 db.settings({
@@ -34,22 +35,32 @@ db.settings({
     cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
 });
 
-// ========== تفعيل التخزين المحلي ==========
+// ========== تفعيل التخزين المحلي مع معالجة الأخطاء ==========
 db.enablePersistence({ synchronizeTabs: true })
-    .then(() => console.log("✅ Offline persistence enabled"))
-    .catch(err => console.warn("⚠️ Persistence error:", err));
+    .then(() => console.log("✅ Offline persistence enabled (unlimited cache)"))
+    .catch(err => {
+        if (err.code === 'failed-precondition') {
+            console.warn("⚠️ Multiple tabs open, persistence disabled");
+        } else if (err.code === 'unimplemented') {
+            console.warn("⚠️ Browser does not support persistence");
+        } else {
+            console.error("❌ Persistence error:", err);
+        }
+    });
 
-// ========== مراجع المجموعات ==========
+// ========== مراجع المجموعات والتخزين ==========
 const categoriesCol = db.collection("categories");
 const herbsCol = db.collection("herbs");
+const storageRef = storage.ref();
 
 // ========== معلومات المسؤول ==========
 // حساب المسؤول: admin@herbal.com
 // كلمة السر: admin1442
-// سيتم جلب UID تلقائياً بعد تسجيل الدخول الأول
-let ADMIN_UID = null;
+const ADMIN_EMAIL = "admin@herbal.com";
+const ADMIN_PASSWORD = "admin1442";
+let ADMIN_UID = "OWssFNrZDaZfeSlrLF8ReS8O6LM2"; // UID المعروف
 
-// ========== دالة جلب UID المسؤول تلقائياً ==========
+// ========== دالة جلب UID المسؤول ==========
 async function fetchAdminUID() {
     try {
         // محاولة جلب UID من localStorage أولاً
@@ -61,46 +72,51 @@ async function fetchAdminUID() {
             return ADMIN_UID;
         }
         
-        // البحث عن المستخدم بواسطة البريد الإلكتروني
-        const userCredential = await auth.signInWithEmailAndPassword("admin@herbal.com", "admin1442");
+        // محاولة تسجيل الدخول لجلب UID
+        const userCredential = await auth.signInWithEmailAndPassword(ADMIN_EMAIL, ADMIN_PASSWORD);
         ADMIN_UID = userCredential.user.uid;
         localStorage.setItem('admin_uid', ADMIN_UID);
         console.log("✅ Admin UID fetched and saved:", ADMIN_UID);
         window.ADMIN_UID = ADMIN_UID;
         
-        // تسجيل الخروج فوراً (لن يبقى المسؤول مسجل الدخول تلقائياً)
+        // تسجيل الخروج فوراً
         await auth.signOut();
         console.log("🔓 Signed out after fetching UID");
         
         return ADMIN_UID;
     } catch (error) {
         console.error("❌ Failed to fetch admin UID:", error);
-        console.log("⚠️ Please login manually at least once to get the UID");
-        return null;
+        console.log("⚠️ Using default ADMIN_UID");
+        window.ADMIN_UID = ADMIN_UID;
+        return ADMIN_UID;
     }
 }
 
-// ========== دوال مساعدة ==========
+// ========== دوال التحقق ==========
 function isUserAdmin(user) {
-    if (!user || !ADMIN_UID) return false;
-    return user.uid === ADMIN_UID;
+    if (!user) return false;
+    return user.uid === ADMIN_UID || user.email === ADMIN_EMAIL;
 }
 
-// اختبار الاتصال
+// ========== دوال اختبار الاتصال ==========
 async function testFirebaseConnection() {
     try {
         const startTime = performance.now();
         await herbsCol.limit(1).get();
         const endTime = performance.now();
-        console.log(`✅ Firebase connection successful (${endTime - startTime}ms)`);
+        const latency = (endTime - startTime).toFixed(0);
+        console.log(`✅ Firebase connection successful (${latency}ms)`);
         return true;
     } catch (error) {
         console.error("❌ Firebase connection failed:", error);
+        if (error.code === 'permission-denied') {
+            console.error("   → Check Security Rules in Firebase Console");
+        }
         return false;
     }
 }
 
-// جلب جميع البيانات
+// ========== دوال جلب البيانات ==========
 async function fetchAllDataFromFirebase() {
     console.log('📡 Fetching data from Firebase...');
     try {
@@ -127,17 +143,54 @@ async function fetchAllDataFromFirebase() {
     }
 }
 
-// ========== تصدير المتغيرات للنطاق العام ==========
+// ========== دوال رفع الصور إلى Storage ==========
+async function uploadImageToStorage(file, herbId) {
+    if (!file) return null;
+    
+    try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${herbId}_${Date.now()}.${fileExt}`;
+        const imageRef = storageRef.child(`herb_images/${fileName}`);
+        
+        const uploadTask = await imageRef.put(file);
+        const downloadURL = await uploadTask.ref.getDownloadURL();
+        
+        console.log(`✅ Image uploaded: ${fileName}`);
+        return downloadURL;
+    } catch (error) {
+        console.error("❌ Failed to upload image:", error);
+        return null;
+    }
+}
+
+async function deleteImageFromStorage(imageUrl) {
+    if (!imageUrl) return;
+    try {
+        const imageRef = storage.refFromURL(imageUrl);
+        await imageRef.delete();
+        console.log("✅ Image deleted from Storage");
+    } catch (error) {
+        console.warn("⚠️ Failed to delete image:", error);
+    }
+}
+
+// ========== تصدير المتغيرات والدوال ==========
 window.db = db;
 window.auth = auth;
+window.storage = storage;
+window.storageRef = storageRef;
 window.categoriesCol = categoriesCol;
 window.herbsCol = herbsCol;
+window.ADMIN_UID = ADMIN_UID;
+window.ADMIN_EMAIL = ADMIN_EMAIL;
 window.isUserAdmin = isUserAdmin;
 window.testFirebaseConnection = testFirebaseConnection;
 window.fetchAllDataFromFirebase = fetchAllDataFromFirebase;
+window.uploadImageToStorage = uploadImageToStorage;
+window.deleteImageFromStorage = deleteImageFromStorage;
 window.fetchAdminUID = fetchAdminUID;
 
-// محاولة جلب UID تلقائياً
+// ========== تشغيل الجلب التلقائي ==========
 fetchAdminUID();
 
 // ========== مراقبة حالة المصادقة ==========
@@ -145,9 +198,7 @@ auth.onAuthStateChanged((user) => {
     if (user) {
         console.log(`🔐 User signed in: ${user.email}`);
         console.log(`🆔 User UID: ${user.uid}`);
-        if (ADMIN_UID) {
-            console.log(`👑 Is admin: ${user.uid === ADMIN_UID}`);
-        }
+        console.log(`👑 Is admin: ${isUserAdmin(user)}`);
     } else {
         console.log("🔓 No user signed in");
     }
@@ -155,15 +206,18 @@ auth.onAuthStateChanged((user) => {
 
 // ========== تسجيل معلومات التهيئة ==========
 console.log("=========================================");
-console.log("🌿 Firebase Config Loaded");
+console.log("🌿 موسوعة الأعشاب الطبية - Firebase Config");
 console.log("=========================================");
 console.log(`📁 Project: ${firebaseConfig.projectId}`);
-console.log(`👤 Admin Email: admin@herbal.com`);
-console.log(`🔑 Admin Password: admin1442`);
-console.log(`🆔 Admin UID: ${ADMIN_UID || "Not yet fetched - will be fetched on first login"}`);
+console.log(`🗄️ Firestore: ${db ? "✅ Initialized" : "❌ Failed"}`);
+console.log(`📦 Storage: ${storage ? "✅ Initialized" : "❌ Failed"}`);
+console.log(`🔐 Auth: ${auth ? "✅ Initialized" : "❌ Failed"}`);
+console.log(`👤 Admin Email: ${ADMIN_EMAIL}`);
+console.log(`🆔 Admin UID: ${ADMIN_UID}`);
+console.log(`💾 Cache: Unlimited`);
 console.log("=========================================");
 
-// اختبار الاتصال بعد 2 ثانية
+// اختبار الاتصال بعد 3 ثوانٍ
 setTimeout(() => {
     testFirebaseConnection();
-}, 2000);
+}, 3000);
