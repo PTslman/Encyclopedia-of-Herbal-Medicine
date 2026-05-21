@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#2e7d32">
     <meta name="msapplication-navbutton-color" content="#2e7d32">
     <meta name="application-name" content="موسوعة الأعشاب">
-    <meta name="description" content="موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية - تطبيق Android PWA">
+    <meta name="description" content="موسوعة متكاملة للأعشاب الطبية مع مزامنة سحابية فورية - تطبيق Android PWA | أكثر من 50 ميزة متقدمة">
     
     <link rel="manifest" href="/Encyclopedia-of-Herbal-Medicine/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/Encyclopedia-of-Herbal-Medicine/css/style.css">
     <style>
-        /* شاشة البداية */
+        /* شاشة البداية المحسنة */
         .splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #43a047 100%); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s ease; }
         .splash-screen.hide { opacity: 0; visibility: hidden; pointer-events: none; }
         .splash-container { text-align: center; animation: fadeInUp 0.6s ease-out; }
@@ -39,34 +39,31 @@
         @keyframes leafFloat { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
         
         /* شريط تقدم المزامنة */
-        .sync-progress-bar {
-            background: var(--separator);
-            border-radius: 10px;
-            height: 4px;
-            width: 100%;
-            overflow: hidden;
-            margin-top: 5px;
-        }
-        .sync-progress-fill {
-            background: linear-gradient(90deg, var(--primary), #ffd700);
-            width: 0%;
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-        .sync-status-text {
-            font-size: 0.65rem;
-            color: var(--text-secondary);
-            margin-right: 8px;
-        }
-        .offline-badge {
-            background: #ff9800;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.6rem;
-            margin-right: 8px;
-        }
+        .sync-progress-bar { background: var(--separator); border-radius: 10px; height: 4px; width: 100%; overflow: hidden; margin-top: 5px; }
+        .sync-progress-fill { background: linear-gradient(90deg, var(--primary), #ffd700); width: 0%; height: 100%; border-radius: 10px; transition: width 0.3s ease; }
+        .sync-status-text { font-size: 0.65rem; color: var(--text-secondary); margin-right: 8px; }
+        .offline-badge { background: #ff9800; color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.6rem; margin-right: 8px; }
+        
+        /* مودال الميزات الجديدة */
+        .stats-dashboard { direction: rtl; }
+        .stat-item { padding: 8px; margin: 5px 0; background: var(--light-bg); border-radius: 10px; }
+        .compare-table table { width: 100%; border-collapse: collapse; }
+        .compare-table th, .compare-table td { border: 1px solid var(--separator); padding: 8px; text-align: center; }
+        .compare-table th { background: var(--primary); color: white; }
+        .high-contrast { filter: contrast(1.2) brightness(1.05); }
+        .high-contrast .herb-card, .high-contrast .category-card { border: 2px solid black; }
+        
+        /* تحسينات الأداء */
+        .herb-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .extra-buttons { display: flex; gap: 10px; margin-top: 15px; justify-content: center; flex-wrap: wrap; }
+        @media (max-width: 768px) { .extra-buttons .tool-btn { font-size: 0.7rem; padding: 0.3rem 0.6rem; } }
+        
+        /* مؤشر الميزات الجديدة */
+        .feature-badge { position: relative; }
+        .feature-badge::after { content: "✨"; position: absolute; top: -5px; right: -5px; font-size: 10px; }
+        
+        /* شريط التمرير للأزرار الإضافية */
+        .admin-toolbar, .visitor-toolbar { scrollbar-width: thin; overflow-x: auto; }
     </style>
 </head>
 <body>
@@ -91,11 +88,11 @@
                 </svg>
             </div>
             <div class="splash-title">موسوعة الأعشاب الطبية</div>
-            <div class="splash-subtitle">مزامنة سحابية فورية</div>
+            <div class="splash-subtitle">مزامنة سحابية فورية | 50+ ميزة متقدمة</div>
             <div class="splash-spinner"></div>
             <div class="splash-progress"><div class="splash-progress-bar" id="splashProgress"></div></div>
         </div>
-        <div class="splash-version">الإصدار 4.0 | PWA متكامل</div>
+        <div class="splash-version">الإصدار 5.0 | PWA متكامل مع ميزات ذكية</div>
     </div>
 
     <!-- التطبيق الرئيسي -->
@@ -106,10 +103,12 @@
                     <div class="logo-icon"><i class="fas fa-leaf"></i></div>
                     <div class="logo-text">
                         <h1>موسوعة الأعشاب الطبية</h1>
-                        <p>مزامنة سحابية فورية</p>
+                        <p>مزامنة سحابية فورية | 50+ ميزة</p>
                     </div>
                 </div>
                 <div class="header-buttons">
+                    <button class="icon-btn" id="tipsBtn" title="نصائح صحية"><i class="fas fa-lightbulb"></i></button>
+                    <button class="icon-btn" id="infoBtn" title="معلومات التطبيق"><i class="fas fa-info-circle"></i></button>
                     <button class="icon-btn admin-only" id="logoutBtn" title="تسجيل الخروج"><i class="fas fa-sign-out-alt"></i></button>
                     <button class="icon-btn" id="lockIcon" title="تسجيل الدخول كمسؤول"><i class="fas fa-lock"></i></button>
                     <div class="mode-switch" id="themeToggle">
@@ -133,7 +132,7 @@
                 </div>
             </div>
 
-            <!-- شريط المسؤول -->
+            <!-- شريط المسؤول مع الميزات الإضافية -->
             <div class="admin-toolbar admin-only">
                 <button id="refreshDataBtn" class="tool-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
                 <button id="manageCategoriesBtn" class="tool-btn"><i class="fas fa-folder-tree"></i> التصنيفات</button>
@@ -141,17 +140,30 @@
                 <button id="backupBtn" class="tool-btn"><i class="fas fa-database"></i> نسخ</button>
                 <button id="restoreBtn" class="tool-btn"><i class="fas fa-upload"></i> استعادة</button>
                 <button id="deleteAllBtn" class="tool-btn danger-btn"><i class="fas fa-trash-alt"></i> حذف الكل</button>
+                <button id="statsBtn" class="tool-btn feature-badge"><i class="fas fa-chart-line"></i> إحصائيات</button>
+                <button id="autoCategorizeBtn" class="tool-btn feature-badge"><i class="fas fa-robot"></i> تصنيف ذكي</button>
+                <button id="syncDataBtn" class="tool-btn"><i class="fas fa-sync-alt"></i> مزامنة</button>
+                <button id="exportAllBtn" class="tool-btn"><i class="fas fa-file-csv"></i> تصدير CSV</button>
+                <button id="showTagCloudBtn" class="tool-btn feature-badge"><i class="fas fa-tags"></i> كلمات</button>
+                <button id="highContrastBtn" class="tool-btn"><i class="fas fa-adjust"></i> تباين</button>
+                <button id="scheduleThemeBtn" class="tool-btn"><i class="fas fa-clock"></i> تلقائي</button>
                 <div id="adminClock" class="admin-clock"><i class="far fa-clock"></i> <span>--:--:--</span></div>
             </div>
 
             <input type="file" id="restoreFile" accept=".json" style="display:none;">
 
-            <!-- شريط الزائر -->
+            <!-- شريط الزوار مع الميزات الإضافية -->
             <div class="visitor-toolbar visitor-only">
                 <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة</button>
                 <button id="visitorHelpBtn" class="visitor-btn"><i class="fas fa-question-circle"></i> مساعدة</button>
-                <button id="visitorForceSyncBtn" class="visitor-btn"><i class="fas fa-sync-alt"></i> تحديث البيانات</button>
+                <button id="visitorForceSyncBtn" class="visitor-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
                 <button id="visitorResyncBtn" class="visitor-btn resync-btn"><i class="fas fa-arrow-rotate-right"></i> إعادة المزامنة</button>
+                <button id="compareBtn" class="visitor-btn feature-badge"><i class="fas fa-balance-scale"></i> مقارنة</button>
+                <button id="bookmarksBtn" class="visitor-btn feature-badge"><i class="fas fa-bookmark"></i> إشاراتي</button>
+                <button id="advancedSearchBtn" class="visitor-btn feature-badge"><i class="fas fa-search-plus"></i> بحث متقدم</button>
+                <button id="assistantBtn" class="visitor-btn feature-badge"><i class="fas fa-robot"></i> مساعد صحي</button>
+                <button id="statisticsBtn" class="visitor-btn"><i class="fas fa-chart-simple"></i> إحصائياتي</button>
+                <button id="notificationsBtn" class="visitor-btn"><i class="fas fa-bell"></i> إشعارات</button>
                 <a href="/Encyclopedia-of-Herbal-Medicine/privacy.html" class="visitor-btn" style="text-decoration:none;">
                     <i class="fas fa-shield-alt"></i> سياسة الخصوصية
                 </a>
@@ -160,7 +172,7 @@
             <!-- منطقة المحتوى -->
             <div id="contentArea"></div>
 
-            <!-- الشريط السفلي مع شريط تقدم المزامنة -->
+            <!-- الشريط السفلي -->
             <div class="bottom-bar">
                 <div class="stats-badge" id="herbCount">0 عشبة</div>
                 <div class="contact-phone-btn" id="whatsappBtn"><i class="fab fa-whatsapp"></i> 0932934273</div>
@@ -179,14 +191,14 @@
                 </div>
             </div>
 
-            <div class="footer">جميع الحقوق محفوظة © 2026 - تطوير: المعالج الفيزيائي سلمان | Android PWA</div>
+            <div class="footer">جميع الحقوق محفوظة © 2026 - تطوير: المعالج الفيزيائي سلمان | Android PWA | 50+ ميزة ذكية</div>
         </div>
     </div>
 
-    <!-- المودالات -->
+    <!-- المودالات الأساسية -->
     <div id="categoryModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3><i class="fas fa-folder-tree"></i> إدارة التصنيفات</h3><button class="close-modal-btn" id="closeCategoryModalBtn"><i class="fas fa-times"></i></button></div><div id="categoriesList" style="max-height:300px; overflow-y:auto; margin-bottom:1rem;"></div><div class="form-group"><label><i class="fas fa-plus-circle"></i> اسم تصنيف جديد</label><input type="text" id="newCategoryName" placeholder="مثال: أعشاب هضمية"></div><div class="modal-actions"><button id="addCategoryBtn" class="btn-primary">إضافة تصنيف</button></div></div></div>
 
-    <div id="herbModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3 id="herbModalTitle"><i class="fas fa-seedling"></i> إضافة عشبة</h3><button class="close-modal-btn" id="closeHerbModalBtn"><i class="fas fa-times"></i></button></div><div class="form-group"><label><i class="fas fa-leaf"></i> الاسم *</label><input type="text" id="modalHerbName" placeholder="مثال: النعناع"></div><div class="form-group"><label><i class="fas fa-tag"></i> التصنيف</label><select id="modalHerbCategory"></select></div><div class="form-group"><label><i class="fas fa-image"></i> صورة العشبة</label><input type="file" id="herbImageInput" accept="image/jpeg,image/png,image/webp" style="display:none;"><div class="image-actions"><button type="button" id="uploadImageBtn" class="image-btn primary"><i class="fas fa-cloud-upload-alt"></i> رفع صورة</button><button type="button" id="clearImageBtn" class="image-btn danger" style="display:none;"><i class="fas fa-trash-alt"></i> مسح الصورة</button></div><div id="imagePreviewContainer"></div><div id="compressInfo"></div></div><div class="form-group"><label><i class="fas fa-heartbeat"></i> الفوائد الصحية</label><textarea id="modalHerbBenefits" rows="3"></textarea></div><div class="form-group"><label><i class="fas fa-exclamation-triangle"></i> التحذيرات</label><textarea id="modalHerbWarnings" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-skull-crosswalk"></i> الأضرار</label><textarea id="modalHerbHarams" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-mug-hot"></i> طريقة الاستخدام</label><textarea id="modalHerbUsage" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-sticky-note"></i> ملاحظات</label><textarea id="modalHerbNotes" rows="2"></textarea></div><div class="modal-actions"><button id="cancelHerbModalBtn" class="btn-secondary">إلغاء</button><button id="saveHerbModalBtn" class="btn-primary">حفظ</button></div></div></div>
+    <div id="herbModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3 id="herbModalTitle"><i class="fas fa-seedling"></i> إضافة عشبة</h3><button class="close-modal-btn" id="closeHerbModalBtn"><i class="fas fa-times"></i></button></div><div class="form-group"><label><i class="fas fa-leaf"></i> الاسم *</label><input type="text" id="modalHerbName" placeholder="مثال: النعناع"></div><div class="form-group"><label><i class="fas fa-tag"></i> التصنيف</label><select id="modalHerbCategory"></select></div><div class="form-group"><label><i class="fas fa-image"></i> صورة العشبة</label><input type="file" id="herbImageInput" accept="image/jpeg,image/png,image/webp" style="display:none;"><div class="image-actions"><button type="button" id="uploadImageBtn" class="image-btn primary"><i class="fas fa-cloud-upload-alt"></i> رفع صورة</button><button type="button" id="clearImageBtn" class="image-btn danger" style="display:none;"><i class="fas fa-trash-alt"></i> مسح الصورة</button></div><div id="imagePreviewContainer"></div><div id="compressInfo"></div></div><div class="form-group"><label><i class="fas fa-heartbeat"></i> الفوائد الصحية</label><textarea id="modalHerbBenefits" rows="3"></textarea></div><div class="form-group"><label><i class="fas fa-exclamation-triangle"></i> التحذيرات</label><textarea id="modalHerbWarnings" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-skull-crosswalk"></i> الأضرار</label><textarea id="modalHerbHarms" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-mug-hot"></i> طريقة الاستخدام</label><textarea id="modalHerbUsage" rows="2"></textarea></div><div class="form-group"><label><i class="fas fa-sticky-note"></i> ملاحظات</label><textarea id="modalHerbNotes" rows="2"></textarea></div><div class="modal-actions"><button id="cancelHerbModalBtn" class="btn-secondary">إلغاء</button><button id="saveHerbModalBtn" class="btn-primary">حفظ</button></div></div></div>
 
     <div id="detailModal" class="modal-glass"><div class="modal-glass-content"><div class="modal-header"><h3><i class="fas fa-info-circle"></i> تفاصيل العشبة</h3><button class="close-modal-btn" id="closeDetailModalBtn"><i class="fas fa-times"></i></button></div><div id="detailContent"></div></div></div>
 
@@ -202,19 +214,34 @@
 
     <div id="saveProgressBar" class="smart-progress-bar" style="display:none;"><div class="progress-icon"><i class="fas fa-spinner fa-pulse"></i></div><div class="progress-details"><div class="progress-stage">جاري الحفظ</div><div class="progress-status">جارٍ رفع البيانات...</div><div class="progress-bar-track"><div id="saveProgressFill" class="progress-bar-fill"></div></div></div><div class="progress-percent" id="saveProgressPercent">0%</div></div>
 
-    <!-- سكربت Supabase -->
+    <!-- سكربتات التطبيق - الترتيب الصحيح -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- الملف الأساسي للـ Supabase -->
+    <script>
+    // ============================================
+    // تكوين Supabase مباشرة في الصفحة لضمان العمل
+    // ============================================
+    const SUPABASE_URL = 'https://jedazmlbcnuwmtozldes.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZGF6bWxiY251d210b3psZGVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTQyNjcsImV4cCI6MjA5NDkzMDI2N30.8391ZND2V9_N3RzkFYiDNnej1o_eUQoQ1174nwxpMwI';
+    
+    window.SUPABASE_CONFIG = { url: SUPABASE_URL, key: SUPABASE_ANON_KEY };
+    </script>
+    
+    <!-- ملفات التطبيق المتكاملة -->
     <script src="/Encyclopedia-of-Herbal-Medicine/js/supabase.js"></script>
     <script src="/Encyclopedia-of-Herbal-Medicine/js/local-db.js"></script>
     <script src="/Encyclopedia-of-Herbal-Medicine/js/sync-manager.js"></script>
     <script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
     <script src="/Encyclopedia-of-Herbal-Medicine/js/update-handler.js"></script>
     <script src="/Encyclopedia-of-Herbal-Medicine/js/app.js"></script>
+    <script src="/Encyclopedia-of-Herbal-Medicine/js/extra-features.js"></script>
 
     <script>
     // ============================================
-    // معالج شاشة البداية
+    // التهيئة المتكاملة مع جميع الميزات
     // ============================================
+    
     (function smartSplashHandler() {
         const splash = document.getElementById('splashScreen');
         const mainApp = document.getElementById('mainApp');
@@ -267,45 +294,6 @@
     })();
     
     // ============================================
-    // توليد الأيقونات تلقائياً
-    // ============================================
-    (function generateIconsAutomatically() {
-        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
-        let generatedCount = 0;
-        
-        for (const size of sizes) {
-            const canvas = document.createElement('canvas');
-            canvas.width = size; 
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            const grad = ctx.createLinearGradient(0, 0, size, size);
-            grad.addColorStop(0, '#1b5e20'); 
-            grad.addColorStop(1, '#2e7d32');
-            ctx.fillStyle = grad; 
-            ctx.fillRect(0, 0, size, size);
-            ctx.strokeStyle = '#ffd700'; 
-            ctx.lineWidth = size * 0.04;
-            ctx.beginPath(); 
-            ctx.arc(size/2, size/2, size * 0.42, 0, Math.PI * 2); 
-            ctx.stroke();
-            ctx.font = `${size * 0.45}px "Segoe UI Emoji"`;
-            ctx.fillStyle = '#ffffff'; 
-            ctx.textAlign = 'center'; 
-            ctx.textBaseline = 'middle';
-            ctx.fillText('🌿', size/2, size/2 - size * 0.05);
-            ctx.font = `bold ${size * 0.1}px "Cairo"`;
-            ctx.fillStyle = '#ffd700'; 
-            ctx.fillText('أعشاب', size/2, size * 0.85);
-            const dataUrl = canvas.toDataURL('image/png');
-            localStorage.setItem(`icon_${size}`, dataUrl);
-            generatedCount++;
-            if (generatedCount === sizes.length) { 
-                console.log(`✅ تم توليد ${sizes.length} أيقونة`); 
-            }
-        }
-    })();
-    
-    // ============================================
     // تسجيل Service Worker
     // ============================================
     if ('serviceWorker' in navigator) {
@@ -315,7 +303,7 @@
                 .catch(err => console.error('❌ Service Worker failed:', err));
         });
     }
-
+    
     // ============================================
     // إصلاح زر المساعدة
     // ============================================
@@ -327,7 +315,11 @@
                 helpBtn.parentNode.replaceChild(newBtn, helpBtn);
                 newBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    window.location.href = '/Encyclopedia-of-Herbal-Medicine/help.html';
+                    if (window.HealthAssistant && window.HealthAssistant.showAssistant) {
+                        window.HealthAssistant.showAssistant();
+                    } else {
+                        alert("📖 دليل سريع:\n🔍 بحث: اضغط على زر 'بحث'\n📂 التصنيفات: اضغط على أي تصنيف\n🌿 الأعشاب: اضغط على أي عشبة للتفاصيل\n🌙/☀️: تغيير المظهر\n🔊 تغيير حجم الخط من زر 'Aa'");
+                    }
                 });
                 console.log('✅ زر المساعدة يعمل الآن');
             }
@@ -340,11 +332,11 @@
     })();
     
     // ============================================
-    // تهيئة المصادقة - التحقق من الجلسة
+    // تهيئة المصادقة وجميع الأنظمة
     // ============================================
-    (async function initAuth() {
-        // انتظر قليلاً حتى يتم تحميل supabase.js
+    (async function initAuthAndFeatures() {
         setTimeout(async () => {
+            // التحقق من حالة المسؤول
             if (window.checkCurrentSession) {
                 const user = await window.checkCurrentSession();
                 if (user && window.setAdminMode) {
@@ -353,6 +345,7 @@
                 }
             }
             
+            // تهيئة مستمعي المصادقة
             if (window.onAuthChange) {
                 window.onAuthChange((event, session) => {
                     if (event === 'SIGNED_IN' && session && window.setAdminMode) {
@@ -362,6 +355,23 @@
                         window.setAdminMode(false);
                     }
                 });
+            }
+            
+            // تهيئة الميزات الإضافية إذا كانت موجودة
+            if (window.initExtraFeatures) {
+                await window.initExtraFeatures();
+                console.log('✅ تم تهيئة جميع الميزات الإضافية');
+            }
+            
+            // ساعة المسؤول
+            if (document.getElementById('adminClock')) {
+                setInterval(() => {
+                    const clockSpan = document.querySelector('#adminClock span');
+                    if (clockSpan) {
+                        const now = new Date();
+                        clockSpan.textContent = now.toLocaleTimeString('ar-EG');
+                    }
+                }, 1000);
             }
         }, 500);
     })();
