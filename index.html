@@ -8,6 +8,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="موسوعة الأعشاب الطبية">
+    <meta name="description" content="موسوعة شاملة للأعشاب الطبية مع مزامنة سحابية فورية - أكثر من 50 ميزة متقدمة">
+    <meta name="keywords" content="أعشاب طبية, فوائد الأعشاب, علاج بالأعشاب, موسوعة الأعشاب">
+    <meta name="author" content="المعالج الفيزيائي سلمان">
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,15 +22,18 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
 <body>
+    <!-- شاشة البداية -->
     <div id="splashScreen" class="splash-screen">
         <div class="splash-logo"><i class="fas fa-leaf"></i></div>
         <div class="splash-title">موسوعة الأعشاب الطبية</div>
         <div class="splash-spinner"></div>
-        <div class="splash-version">v3.0</div>
+        <div class="splash-version">الإصدار 5.0</div>
     </div>
 
+    <!-- التطبيق الرئيسي -->
     <div id="mainApp" style="display: none;">
         <div class="app-container">
+            <!-- الهيدر -->
             <div class="header">
                 <div class="logo-area">
                     <div class="logo-icon"><i class="fas fa-leaf"></i></div>
@@ -37,10 +43,10 @@
                     </div>
                 </div>
                 <div class="header-buttons">
-                    <div class="icon-btn admin-only" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></div>
-                    <div class="icon-btn" id="lockIcon"><i class="fas fa-lock"></i></div>
-                    <div class="icon-btn" id="installPwaBtn" style="display:none;"><i class="fas fa-download"></i>
-                    </div>
+                    <div class="icon-btn admin-only" id="logoutBtn" title="تسجيل الخروج"><i class="fas fa-sign-out-alt"></i></div>
+                    <div class="icon-btn" id="lockIcon" title="تسجيل الدخول كمسؤول"><i class="fas fa-lock"></i></div>
+                    <div class="icon-btn" id="installPwaBtn" style="display:none;" title="تثبيت التطبيق"><i class="fas fa-download"></i></div>
+                    <div class="icon-btn" id="helpBtn" title="مساعدة"><i class="fas fa-question-circle"></i></div>
                     <div class="mode-switch" id="themeToggle">
                         <div class="slider-track"></div>
                         <i class="fas fa-sun"></i>
@@ -50,6 +56,7 @@
                 </div>
             </div>
 
+            <!-- شريط الأدوات الرئيسي -->
             <div class="toolbar">
                 <div class="view-toggle" id="viewToggle">
                     <button data-view="all" class="view-btn active">🌿 جميع الأعشاب</button>
@@ -57,60 +64,52 @@
                 </div>
                 <button id="searchBtn" class="tool-btn"><i class="fas fa-search"></i> بحث</button>
                 <button id="refreshDataBtn" class="tool-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
-                <button id="manageCategoriesBtn" class="tool-btn admin-only"><i class="fas fa-folder-tree"></i>
-                    التصنيفات</button>
+                <button id="manageCategoriesBtn" class="tool-btn admin-only"><i class="fas fa-folder-tree"></i> التصنيفات</button>
                 <button id="addHerbBtn" class="tool-btn admin-only"><i class="fas fa-plus-circle"></i> إضافة عشبة</button>
                 <button id="backupBtn" class="tool-btn admin-only"><i class="fas fa-database"></i> نسخ احتياطي</button>
                 <button id="restoreBtn" class="tool-btn admin-only"><i class="fas fa-upload"></i> استعادة</button>
-                <button id="deleteAllBtn" class="tool-btn admin-only"
-                    style="background-color: var(--danger); color: white;"><i class="fas fa-trash-alt"></i> حذف الكل</button>
-                <button id="deleteAllHerbsOnlyBtn" class="tool-btn admin-only"
-                    style="background-color: #ff9800; color: white;"><i class="fas fa-leaf"></i> مسح الأعشاب فقط</button>
+                <button id="deleteAllBtn" class="tool-btn admin-only" style="background-color: var(--danger); color: white;"><i class="fas fa-trash-alt"></i> حذف الكل</button>
+                <button id="deleteAllHerbsOnlyBtn" class="tool-btn admin-only" style="background-color: #ff9800; color: white;"><i class="fas fa-leaf"></i> مسح الأعشاب فقط</button>
                 <button id="stopSyncBtn" class="tool-btn admin-only"><i class="fas fa-pause"></i> إيقاف المزامنة</button>
                 <button id="startSyncBtn" class="tool-btn admin-only"><i class="fas fa-play"></i> تشغيل المزامنة</button>
-                <button id="resetSyncBtn" class="tool-btn admin-only reset-sync-btn"><i class="fas fa-sync-alt"></i> إعادة ضبط
-                    المزامنة</button>
-                <button id="requestNotifyBtn" class="tool-btn admin-only notify-btn"><i class="fas fa-bell"></i> تفعيل
-                    الإشعارات</button>
-                <button id="exportCsvBtn" class="tool-btn admin-only export-btn"><i class="fas fa-file-csv"></i> تصدير
-                    CSV</button>
-                <button id="clearCacheBtn" class="tool-btn admin-only" style="background-color: #607d8b; color: white;"><i
-                        class="fas fa-broom"></i> تنظيف الكاش</button>
-                <button id="systemReportBtn" class="tool-btn admin-only" style="background-color: #455a64; color: white;"><i
-                        class="fas fa-chart-simple"></i> تقرير النظام</button>
-                <button id="copyAppLinkBtn" class="tool-btn admin-only" style="background-color: #00897b; color: white;"><i
-                        class="fas fa-link"></i> نسخ الرابط</button>
+                <button id="resetSyncBtn" class="tool-btn admin-only reset-sync-btn"><i class="fas fa-sync-alt"></i> إعادة ضبط المزامنة</button>
+                <button id="requestNotifyBtn" class="tool-btn admin-only notify-btn"><i class="fas fa-bell"></i> تفعيل الإشعارات</button>
+                <button id="exportCsvBtn" class="tool-btn admin-only export-btn"><i class="fas fa-file-csv"></i> تصدير CSV</button>
+                <button id="clearCacheBtn" class="tool-btn admin-only" style="background-color: #607d8b; color: white;"><i class="fas fa-broom"></i> تنظيف الكاش</button>
+                <button id="systemReportBtn" class="tool-btn admin-only" style="background-color: #455a64; color: white;"><i class="fas fa-chart-simple"></i> تقرير النظام</button>
+                <button id="copyAppLinkBtn" class="tool-btn admin-only" style="background-color: #00897b; color: white;"><i class="fas fa-link"></i> نسخ الرابط</button>
                 <button id="actionLogBtn" class="tool-btn admin-only" style="background-color: #6a1b9a; color: white;"><i class="fas fa-history"></i> سجل الإجراءات</button>
                 <button id="cleanFirebaseCacheBtn" class="tool-btn admin-only" style="background-color: #00695c; color: white;"><i class="fas fa-database"></i> تنظيف كاش Firebase</button>
                 <button id="testConnectionBtn" class="tool-btn admin-only" style="background-color: #e65100; color: white;"><i class="fas fa-network-wired"></i> اختبار الاتصال</button>
-                <div id="adminClock" class="admin-clock admin-only"><i class="far fa-clock"></i> <span>--:--:--</span>
-                </div>
+                <div id="adminClock" class="admin-clock admin-only"><i class="far fa-clock"></i> <span>--:--:--</span></div>
                 <input type="file" id="restoreFile" accept=".json" style="display:none;">
                 <div class="stats-badge" id="herbCount">0 عشبة</div>
-                <div class="contact-phone-btn" id="whatsappBtn"><i class="fab fa-whatsapp"></i> 0932934273 <i
-                        class="fas fa-external-link-alt"></i></div>
-                <div class="font-size-btn" id="fontSizeToggleBtn" title="تغيير حجم الخط"><i class="fas fa-text-height"></i>
-                    <span id="fontSizeLabel">عادي</span>
-                </div>
+                <div class="contact-phone-btn" id="whatsappBtn"><i class="fab fa-whatsapp"></i> 0932934273 <i class="fas fa-external-link-alt"></i></div>
+                <div class="font-size-btn" id="fontSizeToggleBtn" title="تغيير حجم الخط"><i class="fas fa-text-height"></i> <span id="fontSizeLabel">عادي</span></div>
             </div>
 
+            <!-- شريط أدوات الزوار -->
             <div class="visitor-toolbar visitor-only">
-                <button id="visitorCategoriesBtn" class="visitor-btn"><i class="fas fa-folder-open"></i> عرض
-                    التصنيفات</button>
+                <button id="visitorCategoriesBtn" class="visitor-btn"><i class="fas fa-folder-open"></i> عرض التصنيفات</button>
                 <button id="shareAppBtn" class="visitor-btn"><i class="fas fa-share-alt"></i> مشاركة التطبيق</button>
                 <button id="visitorStatsBtn" class="visitor-btn"><i class="fas fa-chart-line"></i> إحصائيات الزوار</button>
                 <button id="quickHelpBtn" class="visitor-btn"><i class="fas fa-question-circle"></i> مساعدة سريعة</button>
-                <button id="visitorResyncBtn" class="visitor-btn resync-btn"><i class="fas fa-sync-alt"></i> إعادة
-                    المزامنة</button>
-                <button id="visitorClearTempBtn" class="visitor-btn clear-btn"><i class="fas fa-database"></i> حذف
-                    المؤقتة</button>
+                <button id="visitorResyncBtn" class="visitor-btn resync-btn"><i class="fas fa-sync-alt"></i> إعادة المزامنة</button>
+                <button id="visitorClearTempBtn" class="visitor-btn clear-btn"><i class="fas fa-database"></i> حذف المؤقتة</button>
+                <button id="compareBtn" class="visitor-btn"><i class="fas fa-balance-scale"></i> مقارنة</button>
+                <button id="bookmarksBtn" class="visitor-btn"><i class="fas fa-bookmark"></i> إشاراتي</button>
+                <button id="advancedSearchBtn" class="visitor-btn"><i class="fas fa-search-plus"></i> بحث متقدم</button>
             </div>
 
+            <!-- محتوى التطبيق الديناميكي -->
             <div id="contentArea"></div>
+
+            <!-- التذييل -->
             <div class="footer">جميع الحقوق محفوظة © 2026 - تطوير: المعالج الفيزيائي سلمان</div>
         </div>
     </div>
 
+    <!-- شريط تقدم الحفظ -->
     <div id="saveProgressBar" class="smart-progress-bar" style="display: none;">
         <div class="progress-icon"></div>
         <div class="progress-details">
@@ -123,6 +122,9 @@
         <div class="progress-percent" id="saveProgressPercent">0%</div>
     </div>
 
+    <!-- ========== المودالات ========== -->
+
+    <!-- مودال إدارة التصنيفات -->
     <div id="categoryModal" class="modal-glass">
         <div class="modal-glass-content">
             <div class="modal-header">
@@ -140,6 +142,7 @@
         </div>
     </div>
 
+    <!-- مودال إضافة/تعديل عشبة -->
     <div id="herbModal" class="modal-glass">
         <div class="modal-glass-content">
             <div class="modal-header">
@@ -158,10 +161,8 @@
                 <label><i class="fas fa-image"></i> صورة العشبة</label>
                 <input type="file" id="herbImageInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
                 <div class="image-actions">
-                    <button type="button" id="uploadImageBtn" class="image-btn primary"><i
-                            class="fas fa-cloud-upload-alt"></i> رفع صورة</button>
-                    <button type="button" id="clearImageBtn" class="image-btn danger" style="display:none;"><i
-                            class="fas fa-trash-alt"></i> مسح الصورة</button>
+                    <button type="button" id="uploadImageBtn" class="image-btn primary"><i class="fas fa-cloud-upload-alt"></i> رفع صورة</button>
+                    <button type="button" id="clearImageBtn" class="image-btn danger" style="display:none;"><i class="fas fa-trash-alt"></i> مسح الصورة</button>
                 </div>
                 <div id="imagePreviewContainer" style="margin-top: 8px;"></div>
                 <div id="compressInfo" style="font-size:0.7rem; color:var(--text-secondary); margin-top: 4px;"></div>
@@ -193,6 +194,7 @@
         </div>
     </div>
 
+    <!-- مودال تفاصيل العشبة -->
     <div id="detailModal" class="modal-glass">
         <div class="modal-glass-content">
             <div class="modal-header">
@@ -203,6 +205,7 @@
         </div>
     </div>
 
+    <!-- مودال البحث -->
     <div id="searchModal" class="modal-glass">
         <div class="modal-glass-content">
             <div class="modal-header">
@@ -214,6 +217,7 @@
         </div>
     </div>
 
+    <!-- مودال تسجيل الدخول -->
     <div id="loginModal" class="modal-glass">
         <div class="modal-glass-content login-modern">
             <div class="login-icon"><i class="fas fa-user-shield"></i></div>
@@ -234,6 +238,7 @@
         </div>
     </div>
 
+    <!-- مودال تأكيد الحذف -->
     <div id="deleteModal" class="modal-glass">
         <div class="modal-glass-content">
             <div class="modal-header">
@@ -247,6 +252,7 @@
         </div>
     </div>
 
+    <!-- مودال تأكيد حذف الكل -->
     <div id="deleteAllConfirmModal" class="modal-glass">
         <div class="modal-glass-content">
             <div class="modal-header">
@@ -261,6 +267,7 @@
         </div>
     </div>
 
+    <!-- مودال دليل التثبيت -->
     <div id="installGuideModal" class="modal-glass">
         <div class="modal-glass-content">
             <div class="modal-header">
@@ -274,8 +281,23 @@
         </div>
     </div>
 
+    <!-- ========== ملفات JavaScript ========== -->
     <script src="js/firebase-config.js"></script>
     <script src="js/app.js"></script>
     <script src="js/pwa.js"></script>
+    <script src="js/sync-manager.js"></script>
+    <script src="js/update-handler.js"></script>
+    
+    <script>
+        // تهيئة إضافية - ربط زر المساعدة
+        document.addEventListener('DOMContentLoaded', function() {
+            const helpBtn = document.getElementById('helpBtn');
+            if (helpBtn) {
+                helpBtn.addEventListener('click', function() {
+                    window.location.href = './help.html';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
