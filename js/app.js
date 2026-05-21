@@ -1,6 +1,6 @@
 // ============================================
 // موسوعة الأعشاب الطبية - التطبيق الرئيسي
-// نسخة مستقرة مع إصلاح تنسيق شريط الزائر
+// نسخة مصححة بالكامل
 // ============================================
 
 // =================================================================
@@ -79,128 +79,43 @@ function loadFromLocalCache() {
 }
 
 // =================================================================
-// ========== التحميل الأولي السريع ================================
+// ========== التحميل الأولي =======================================
 // =================================================================
 
-async function saveHerb() {
-    const name = document.getElementById('modalHerbName')?.value.trim();
-    if (!name) {
-        alert('الاسم مطلوب');
-        return;
-    }
+async function initialLoad() {
+    console.log('🚀 بدء التحميل الأولي...');
     
-    if (!navigator.onLine) {
-        alert('⚠️ لا يوجد اتصال بالإنترنت');
-        return;
-    }
+    // 1. عرض البيانات من الكاش فوراً
+    const hasCache = loadFromLocalCache();
     
-    if (typeof herbsCol === 'undefined') {
-        alert('❌ Firebase غير جاهز، يرجى تحديث الصفحة');
-        return;
-    }
-    
-    let imageUrl = null;
-    if (currentImageFile) {
-        try {
-            imageUrl = await compressImage(currentImageFile);
-            currentImageFile = null;
-        } catch (error) {
-            console.warn('فشل ضغط الصورة:', error);
+    if (!hasCache) {
+        const container = document.getElementById('contentArea');
+        if (container) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-spinner fa-pulse"></i>
+                    <p>جاري تحميل الموسوعة...</p>
+                    <button id="retryLoadBtn" class="tool-btn" style="margin-top:15px;background:var(--primary);color:white;">
+                        <i class="fas fa-sync-alt"></i> تحميل البيانات
+                    </button>
+                </div>
+            `;
+            document.getElementById('retryLoadBtn')?.addEventListener('click', () => {
+                if (typeof SyncManager !== 'undefined') {
+                    SyncManager.fetchData(true);
+                }
+            });
         }
     }
     
-    const herbData = {
-        name: name,
-        categoryId: document.getElementById('modalHerbCategory')?.value || null,
-        benefits: document.getElementById('modalHerbBenefits')?.value || '—',
-        warnings: document.getElementById('modalHerbWarnings')?.value || '—',
-        harms: document.getElementById('modalHerbHarams')?.value || '—',
-        usage: document.getElementById('modalHerbUsage')?.value || '—',
-        notes: document.getElementById('modalHerbNotes')?.value || '—',
-        imageUrl: imageUrl || null,
-        updatedAt: new Date().toISOString()
-    };
-    
-    const saveBtn = document.getElementById('saveHerbModalBtn');
-    const originalText = saveBtn?.innerHTML;
-    if (saveBtn) {
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري الحفظ...';
-        saveBtn.disabled = true;
-    }
-    
-    try {
-        const docRef = currentEditHerbId ? herbsCol.doc(currentEditHerbId) : herbsCol.doc();
-        await docRef.set(herbData, { merge: true });
-        
-        console.log('✅ تم حفظ العشبة في Firebase');
-        
-        if (typeof SyncManager !== 'undefined') {
-            await SyncManager.fetchData(true);
-        } else {
-            await loadHerbsFromFirebase();
-        }
-        
-        document.getElementById('herbModal')?.classList.remove('active');
-        resetHerbForm();
-        
-        alert('✅ تم إضافة العشبة بنجاح');
-        
-    } catch (error) {
-        console.error('❌ فشل الحفظ:', error);
-        alert('❌ فشل حفظ العشبة: ' + error.message);
-    } finally {
-        if (saveBtn) {
-            saveBtn.innerHTML = originalText;
-            saveBtn.disabled = false;
-        }
-    }
-}
-
-async function loadHerbsFromFirebase() {
-    try {
-        const [categoriesSnap, herbsSnap] = await Promise.all([
-            categoriesCol.get(),
-            herbsCol.get()
-        ]);
-        
-        const fbCategories = [];
-        categoriesSnap.forEach(doc => {
-            fbCategories.push({ id: doc.id, ...doc.data() });
-        });
-        
-        const fbHerbs = [];
-        herbsSnap.forEach(doc => {
-            fbHerbs.push({ id: doc.id, ...doc.data() });
-        });
-        
-        localStorage.setItem('herbal_cache_v3', JSON.stringify({
-            categories: fbCategories,
-            herbs: fbHerbs,
-            timestamp: Date.now()
-        }));
-        
-        categories = fbCategories;
-        herbs = fbHerbs;
-        
-        renderContent();
-        updateHerbCount();
-        
-        console.log(`✅ تم تحديث البيانات: ${fbHerbs.length} عشبة`);
-        return true;
-    } catch (error) {
-        console.error('فشل جلب البيانات:', error);
-        return false;
-    }
-}
-    
-    // محاولة جلب بيانات جديدة في الخلفية
+    // 2. محاولة جلب بيانات جديدة في الخلفية
     if (navigator.onLine && typeof SyncManager !== 'undefined') {
         setTimeout(() => {
             SyncManager.fetchData(false);
         }, 500);
     }
     
-    // إخفاء شاشة البداية بعد 1.5 ثانية
+    // 3. إخفاء شاشة البداية بعد 1.5 ثانية
     setTimeout(() => {
         const splash = document.getElementById('splashScreen');
         const mainApp = document.getElementById('mainApp');
@@ -608,6 +523,11 @@ async function saveHerb() {
         return;
     }
     
+    if (typeof herbsCol === 'undefined') {
+        alert('❌ Firebase غير جاهز، يرجى تحديث الصفحة');
+        return;
+    }
+    
     let imageUrl = currentImageUrl;
     if (currentImageFile) {
         imageUrl = await compressImage(currentImageFile);
@@ -626,16 +546,37 @@ async function saveHerb() {
         updatedAt: new Date().toISOString()
     };
     
-    const docRef = currentEditHerbId ? herbsCol.doc(currentEditHerbId) : herbsCol.doc();
-    await docRef.set(herbData, { merge: true });
-    
-    if (typeof SyncManager !== 'undefined') {
-        await SyncManager.fetchData(false);
+    const saveBtn = document.getElementById('saveHerbModalBtn');
+    const originalText = saveBtn?.innerHTML;
+    if (saveBtn) {
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري الحفظ...';
+        saveBtn.disabled = true;
     }
     
-    document.getElementById('herbModal').classList.remove('active');
-    resetHerbForm();
-    alert('✅ تم حفظ العشبة بنجاح');
+    try {
+        const docRef = currentEditHerbId ? herbsCol.doc(currentEditHerbId) : herbsCol.doc();
+        await docRef.set(herbData, { merge: true });
+        
+        console.log('✅ تم حفظ العشبة في Firebase');
+        
+        if (typeof SyncManager !== 'undefined') {
+            await SyncManager.fetchData(true);
+        }
+        
+        document.getElementById('herbModal')?.classList.remove('active');
+        resetHerbForm();
+        
+        alert('✅ تم إضافة العشبة بنجاح');
+        
+    } catch (error) {
+        console.error('❌ فشل الحفظ:', error);
+        alert('❌ فشل حفظ العشبة: ' + error.message);
+    } finally {
+        if (saveBtn) {
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
+    }
 }
 
 async function confirmDelete() {
