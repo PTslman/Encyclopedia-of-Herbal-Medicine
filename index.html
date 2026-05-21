@@ -204,15 +204,21 @@
 
     <div id="saveProgressBar" class="smart-progress-bar" style="display:none;"><div class="progress-icon"><i class="fas fa-spinner fa-pulse"></i></div><div class="progress-details"><div class="progress-stage">جاري الحفظ</div><div class="progress-status">جارٍ رفع البيانات...</div><div class="progress-bar-track"><div id="saveProgressFill" class="progress-bar-fill"></div></div></div><div class="progress-percent" id="saveProgressPercent">0%</div></div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="/Encyclopedia-of-Herbal-Medicine/js/firebase-config.js"></script>
-    <script src="/Encyclopedia-of-Herbal-Medicine/js/update-handler.js"></script>
-    <script src="/Encyclopedia-of-Herbal-Medicine/js/sync-manager.js"></script>
-    <script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
-    <script src="/Encyclopedia-of-Herbal-Medicine/js/app.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
+<!-- إعدادات Firebase -->
+<script src="/Encyclopedia-of-Herbal-Medicine/js/firebase-config.js"></script>
+
+<!-- مدير المزامنة -->
+<script src="/Encyclopedia-of-Herbal-Medicine/js/sync-manager.js"></script>
+
+<!-- باقي السكربتات -->
+<script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
+<script src="/Encyclopedia-of-Herbal-Medicine/js/app.js"></script>
     <script>
     // معالج شاشة البداية
     (function smartSplashHandler() {
