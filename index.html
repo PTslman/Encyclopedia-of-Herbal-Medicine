@@ -202,15 +202,36 @@
 
     <div id="saveProgressBar" class="smart-progress-bar" style="display:none;"><div class="progress-icon"><i class="fas fa-spinner fa-pulse"></i></div><div class="progress-details"><div class="progress-stage">جاري الحفظ</div><div class="progress-status">جارٍ رفع البيانات...</div><div class="progress-bar-track"><div id="saveProgressFill" class="progress-bar-fill"></div></div></div><div class="progress-percent" id="saveProgressPercent">0%</div></div>
 
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/Encyclopedia-of-Herbal-Medicine/js/supabase.js"></script>
+<script src="/Encyclopedia-of-Herbal-Medicine/js/local-db.js"></script>
+<script src="/Encyclopedia-of-Herbal-Medicine/js/sync-manager.js"></script>
+<script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
+<script src="/Encyclopedia-of-Herbal-Medicine/js/update-handler.js"></script>
 
-    <!-- باقي السكربتات -->
-    <script src="/Encyclopedia-of-Herbal-Medicine/js/pwa.js"></script>
-    <script src="/Encyclopedia-of-Herbal-Medicine/js/app.js"></script>
+<script>
+// تهيئة المصادقة عند تحميل الصفحة
+(async function initAuth() {
+    if (window.checkCurrentSession) {
+        const user = await window.checkCurrentSession();
+        if (user && window.setAdminMode) {
+            window.setAdminMode(true);
+            console.log('✅ Auto-login success:', user.email);
+        }
+    }
     
-    <script>
+    // إضافة مستمع تغيير المصادقة
+    if (window.onAuthChange) {
+        window.onAuthChange((event, session) => {
+            if (event === 'SIGNED_IN' && session && window.setAdminMode) {
+                window.setAdminMode(true);
+                if (window.loadHerbsFromSupabase) window.loadHerbsFromSupabase();
+            } else if (event === 'SIGNED_OUT' && window.setAdminMode) {
+                window.setAdminMode(false);
+            }
+        });
+    }
+})();
+</script/>
     // معالج شاشة البداية
     (function smartSplashHandler() {
         const splash = document.getElementById('splashScreen');
