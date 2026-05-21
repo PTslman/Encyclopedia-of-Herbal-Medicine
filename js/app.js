@@ -1,6 +1,6 @@
 // ============================================
 // موسوعة الأعشاب الطبية - التطبيق الرئيسي
-// نسخة شغالة بشكل كامل 100%
+// نسخة متكاملة مع Supabase
 // ============================================
 
 // =================================================================
@@ -104,29 +104,39 @@ function loadFromLocalCache() {
     return false;
 }
 
-// جلب البيانات من Supabase
+// =================================================================
+// ========== جلب البيانات من Supabase =============================
+// =================================================================
+
 async function loadHerbsFromSupabase() {
     console.log('🔄 جلب البيانات من Supabase...');
     
+    if (typeof getAllCategories === 'undefined' || typeof getAllHerbs === 'undefined') {
+        console.error('❌ Supabase client not ready');
+        showToast('⚠️ النظام قيد التحميل، حاول مرة أخرى', 'warning');
+        return false;
+    }
+    
     try {
-        const categories = await getAllCategories();
-        const herbs = await getAllHerbs();
+        const cats = await getAllCategories();
+        const hrbs = await getAllHerbs();
         
-        categories = categories;
-        herbs = herbs;
+        categories = cats;
+        herbs = hrbs;
         
         saveToLocalCache();
         renderContent();
         updateHerbCount();
         
-        console.log(`✅ تم جلب ${herbs.length} عشبة`);
+        console.log(`✅ تم جلب ${herbs.length} عشبة و ${categories.length} تصنيف`);
         return true;
     } catch (error) {
         console.error('❌ فشل جلب البيانات:', error);
-        showToast('❌ فشل تحميل البيانات', 'error');
+        showToast('❌ فشل تحميل البيانات: ' + error.message, 'error');
         return false;
     }
 }
+
 // =================================================================
 // ========== التحميل الأولي =======================================
 // =================================================================
@@ -153,10 +163,10 @@ async function initialLoad() {
         }
     }
     
-    // 2. محاولة جلب بيانات جديدة
+    // 2. محاولة جلب بيانات جديدة من Supabase
     if (navigator.onLine) {
         setTimeout(() => {
-            loadHerbsFromFirebase();
+            loadHerbsFromSupabase();
         }, 500);
     }
     
@@ -395,7 +405,7 @@ function showHerbDetail(id) {
 }
 
 // =================================================================
-// ========== إدارة التصنيفات ======================================
+// ========== إدارة التصنيفات (Supabase) ===========================
 // =================================================================
 
 function showCategoryManager() {
@@ -416,9 +426,17 @@ function showCategoryManager() {
     document.getElementById('categoriesList').innerHTML = listHtml || '<div class="empty-state">لا توجد تصنيفات</div>';
     
     document.querySelectorAll('.edit-cat-item').forEach(btn => {
-        btn.onclick = () => {
+        btn.onclick = async () => {
             let newName = prompt("تعديل اسم التصنيف", btn.dataset.name);
-            if (newName) updateCategory(btn.dataset.id, newName);
+            if (newName) {
+                const result = await updateCategory(btn.dataset.id, newName);
+                if (!result.error) {
+                    await loadHerbsFromSupabase();
+                    showToast('✅ تم تعديل التصنيف', 'success');
+                } else {
+                    showToast('❌ فشل تعديل التصنيف', 'error');
+                }
+            }
         };
     });
     document.querySelectorAll('.del-cat-item').forEach(btn => {
@@ -432,20 +450,18 @@ function showCategoryManager() {
     document.getElementById('categoryModal').classList.add('active');
 }
 
-async function addCategory(name) {
-    await categoriesCol.add({ name: name, createdAt: new Date().toISOString() });
-}
-
-async function updateCategory(id, name) {
-    await categoriesCol.doc(id).update({ name: name });
-}
-
-function addNewCategory() {
+async function addNewCategory() {
     let name = document.getElementById('newCategoryName')?.value.trim();
     if (name) {
-        addCategory(name);
-        document.getElementById('newCategoryName').value = '';
-        showCategoryManager();
+        const result = await window.addCategory(name);
+        if (!result.error) {
+            document.getElementById('newCategoryName').value = '';
+            await loadHerbsFromSupabase();
+            showToast('✅ تم إضافة التصنيف', 'success');
+            showCategoryManager();
+        } else {
+            showToast('❌ فشل إضافة التصنيف', 'error');
+        }
     } else {
         alert('أدخل اسم التصنيف');
     }
@@ -457,7 +473,7 @@ function editCategoryModal(id, name) {
 }
 
 // =================================================================
-// ========== إدارة الأعشاب ========================================
+// ========== إدارة الأعشاب (Supabase) =============================
 // =================================================================
 
 function populateCategorySelect(selectedId = '') {
@@ -582,8 +598,7 @@ async function saveHerb() {
         harms: document.getElementById('modalHerbHarams')?.value || '—',
         usage: document.getElementById('modalHerbUsage')?.value || '—',
         notes: document.getElementById('modalHerbNotes')?.value || '—',
-        imageUrl: imageUrl || null,
-        updatedAt: new Date().toISOString()
+        imageUrl: imageUrl || null
     };
     
     const saveBtn = document.getElementById('saveHerbModalBtn');
@@ -594,14 +609,21 @@ async function saveHerb() {
     }
     
     try {
-        const docRef = currentEditHerbId ? herbsCol.doc(currentEditHerbId) : herbsCol.doc();
-        await docRef.set(herbData, { merge: true });
+        let result;
+        if (currentEditHerbId) {
+            result = await updateHerb(currentEditHerbId, herbData);
+        } else {
+            result = await addHerb(herbData);
+        }
         
-        console.log('✅ تم حفظ العشبة في Firebase');
-        showToast('✅ تم إضافة العشبة بنجاح', 'success');
+        if (result.error) {
+            throw new Error(result.error.message);
+        }
+        
+        showToast('✅ تم حفظ العشبة بنجاح', 'success');
         
         // تحديث البيانات
-        await loadHerbsFromFirebase();
+        await loadHerbsFromSupabase();
         
         document.getElementById('herbModal')?.classList.remove('active');
         resetHerbForm();
@@ -619,16 +641,20 @@ async function saveHerb() {
 
 async function confirmDelete() {
     if (pendingDeleteType === 'category') {
-        const categoryHerbs = herbs.filter(h => h.categoryId === pendingDeleteId);
-        for (const herb of categoryHerbs) {
-            await herbsCol.doc(herb.id).delete();
+        const result = await deleteCategory(pendingDeleteId);
+        if (result.error) {
+            showToast('❌ فشل حذف التصنيف', 'error');
+            return;
         }
-        await categoriesCol.doc(pendingDeleteId).delete();
     } else if (pendingDeleteType === 'herb') {
-        await herbsCol.doc(pendingDeleteId).delete();
+        const result = await deleteHerb(pendingDeleteId);
+        if (result.error) {
+            showToast('❌ فشل حذف العشبة', 'error');
+            return;
+        }
     }
     
-    await loadHerbsFromFirebase();
+    await loadHerbsFromSupabase();
     
     document.getElementById('deleteModal').classList.remove('active');
     pendingDeleteId = null;
@@ -637,7 +663,7 @@ async function confirmDelete() {
 }
 
 // =================================================================
-// ========== المصادقة ============================================
+// ========== المصادقة (Supabase) ==================================
 // =================================================================
 
 function setAdminMode(val) {
@@ -668,19 +694,19 @@ async function attemptLogin() {
     loginBtn.disabled = true;
     
     try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        const adminUID = window.ADMIN_UID || "OWssFNrZDaZfeSlrLF8ReS8O6LM2";
+        const result = await loginAdmin(email, password);
         
-        if (userCredential.user.uid === adminUID) {
-            setAdminMode(true);
-            document.getElementById('loginModal').classList.remove('active');
-            showToast('مرحباً أيها المسؤول', 'success');
-        } else {
-            await auth.signOut();
-            alert('⚠️ هذا الحساب ليس لديه صلاحيات المسؤول');
+        if (result.error) {
+            throw new Error(result.error.message);
         }
+        
+        setAdminMode(true);
+        document.getElementById('loginModal').classList.remove('active');
+        showToast('مرحباً أيها المسؤول', 'success');
+        
     } catch (error) {
-        alert('❌ فشل تسجيل الدخول: البريد أو كلمة المرور غير صحيحة');
+        console.error('❌ فشل تسجيل الدخول:', error);
+        alert('❌ فشل تسجيل الدخول: ' + (error.message || 'بيانات غير صحيحة'));
     } finally {
         loginBtn.innerHTML = originalText;
         loginBtn.disabled = false;
@@ -689,15 +715,18 @@ async function attemptLogin() {
 }
 
 function logout() {
-    auth.signOut();
+    logoutAdmin();
     setAdminMode(false);
     showToast('تم تسجيل الخروج', 'info');
 }
 
 function initAuthListener() {
-    auth.onAuthStateChanged(user => {
-        const adminUID = window.ADMIN_UID || "OWssFNrZDaZfeSlrLF8ReS8O6LM2";
-        setAdminMode(user && user.uid === adminUID);
+    onAuthChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+            setAdminMode(true);
+        } else if (event === 'SIGNED_OUT') {
+            setAdminMode(false);
+        }
     });
 }
 
@@ -821,18 +850,22 @@ function openWhatsApp() {
 }
 
 // =================================================================
-// ========== النسخ الاحتياطي والاستعادة ===========================
+// ========== النسخ الاحتياطي والاستعادة (Supabase) =================
 // =================================================================
 
 async function deleteAllData() {
     if (confirm("⚠️ هل أنت متأكد من حذف جميع الأعشاب والتصنيفات؟")) {
-        const allCats = await categoriesCol.get();
-        const allHerbs = await herbsCol.get();
-        const batch = db.batch();
-        allCats.docs.forEach(doc => batch.delete(doc.ref));
-        allHerbs.docs.forEach(doc => batch.delete(doc.ref));
-        await batch.commit();
-        await loadHerbsFromFirebase();
+        const herbsList = herbs;
+        const categoriesList = categories;
+        
+        for (const herb of herbsList) {
+            await deleteHerb(herb.id);
+        }
+        for (const cat of categoriesList) {
+            await deleteCategory(cat.id);
+        }
+        
+        await loadHerbsFromSupabase();
         showToast('تم حذف جميع البيانات', 'success');
     }
 }
@@ -859,10 +892,10 @@ async function handleRestore(e) {
         if (confirm("سيتم استبدال جميع البيانات الحالية. هل أنت متأكد؟")) {
             await deleteAllData();
             for (const cat of data.categories) {
-                await categoriesCol.add({ name: cat.name, createdAt: new Date() });
+                await addCategory(cat.name);
             }
             for (const herb of data.herbs) {
-                await herbsCol.add({
+                await addHerb({
                     name: herb.name,
                     categoryId: herb.categoryId,
                     benefits: herb.benefits || '—',
@@ -873,7 +906,7 @@ async function handleRestore(e) {
                     imageUrl: herb.imageUrl || null
                 });
             }
-            await loadHerbsFromFirebase();
+            await loadHerbsFromSupabase();
             showToast('تمت الاستعادة بنجاح', 'success');
         }
     } else {
@@ -961,9 +994,21 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('clearImageBtn').style.display = 'none';
     });
     
-    // زر تحديث البيانات
-    document.getElementById('visitorForceSyncBtn')?.addEventListener('click', () => loadHerbsFromFirebase());
-    document.getElementById('refreshDataBtn')?.addEventListener('click', () => loadHerbsFromFirebase());
+    // زر تحديث البيانات (استخدام SyncManager)
+    document.getElementById('visitorForceSyncBtn')?.addEventListener('click', () => {
+        if (typeof SyncManager !== 'undefined') {
+            SyncManager.fetchData(true);
+        } else {
+            loadHerbsFromSupabase();
+        }
+    });
+    document.getElementById('refreshDataBtn')?.addEventListener('click', () => {
+        if (typeof SyncManager !== 'undefined') {
+            SyncManager.fetchData(true);
+        } else {
+            loadHerbsFromSupabase();
+        }
+    });
     
     // إغلاق المودالات بالضغط على الخلفية
     document.querySelectorAll('.modal-glass').forEach(modal => {
@@ -986,4 +1031,4 @@ document.addEventListener('DOMContentLoaded', function() {
     initialLoad();
 });
 
-console.log('✅ التطبيق جاهز');
+console.log('✅ التطبيق جاهز مع Supabase');
