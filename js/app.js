@@ -104,46 +104,29 @@ function loadFromLocalCache() {
     return false;
 }
 
-// =================================================================
-// ========== جلب البيانات من Firebase =============================
-// =================================================================
-
-async function loadHerbsFromFirebase() {
-    console.log('🔄 جلب البيانات من Firebase...');
+// جلب البيانات من Supabase
+async function loadHerbsFromSupabase() {
+    console.log('🔄 جلب البيانات من Supabase...');
     
     try {
-        const [categoriesSnap, herbsSnap] = await Promise.all([
-            categoriesCol.get(),
-            herbsCol.get()
-        ]);
+        const categories = await getAllCategories();
+        const herbs = await getAllHerbs();
         
-        const fbCategories = [];
-        categoriesSnap.forEach(doc => {
-            fbCategories.push({ id: doc.id, ...doc.data() });
-        });
-        
-        const fbHerbs = [];
-        herbsSnap.forEach(doc => {
-            fbHerbs.push({ id: doc.id, ...doc.data() });
-        });
-        
-        categories = fbCategories;
-        herbs = fbHerbs;
+        categories = categories;
+        herbs = herbs;
         
         saveToLocalCache();
         renderContent();
         updateHerbCount();
         
-        console.log(`✅ تم جلب ${fbHerbs.length} عشبة و ${fbCategories.length} تصنيف`);
+        console.log(`✅ تم جلب ${herbs.length} عشبة`);
         return true;
-        
     } catch (error) {
         console.error('❌ فشل جلب البيانات:', error);
-        showToast('❌ فشل تحميل البيانات: ' + error.message, 'error');
+        showToast('❌ فشل تحميل البيانات', 'error');
         return false;
     }
 }
-
 // =================================================================
 // ========== التحميل الأولي =======================================
 // =================================================================
