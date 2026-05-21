@@ -116,7 +116,39 @@ async function loadAllData() {
     }
 }
 
-// تعديل دالة saveHerb لاستخدام LocalDB أولاً
+// ============================================
+// دوال رفع الصور إلى Firebase Storage
+// ============================================
+
+// متغير لتخزين الصورة المرفوعة حالياً
+let currentImageFile = null;
+let currentImageUrl = null;
+let isUploading = false;
+
+// دالة رفع الصورة إلى Storage
+async function uploadHerbImage(file, herbId) {
+    if (!file || !window.uploadImageToStorage) return null;
+    
+    try {
+        isUploading = true;
+        showSaveProgress(25, 'رفع الصورة...', 'جاري الرفع إلى السحابة');
+        const imageUrl = await window.uploadImageToStorage(file, herbId);
+        isUploading = false;
+        return imageUrl;
+    } catch (error) {
+        console.error("فشل رفع الصورة:", error);
+        isUploading = false;
+        return null;
+    }
+}
+
+// دالة حذف الصورة من Storage
+async function deleteHerbImage(imageUrl) {
+    if (!imageUrl || !window.deleteImageFromStorage) return;
+    await window.deleteImageFromStorage(imageUrl);
+}
+
+// تعديل دالة saveHerb لاستخدام LocalDB أولاً ورفع الصور إلى Storage
 const originalSaveHerb = window.saveHerb || function() {};
 window.saveHerb = async function() {
     const name = document.getElementById('modalHerbName')?.value.trim();
@@ -125,64 +157,106 @@ window.saveHerb = async function() {
         return;
     }
     
-    let imageUrl = currentImageBase64;
-    if (currentImageFile) {
-        imageUrl = await compressImage(currentImageFile);
-        currentImageFile = null;
+    if (!navigator.onLine) {
+        alert('⚠️ لا يوجد اتصال بالإنترنت');
+        return;
     }
     
-    const herbData = {
-        name: name,
-        categoryId: document.getElementById('modalHerbCategory')?.value || null,
-        benefits: document.getElementById('modalHerbBenefits')?.value || '—',
-        warnings: document.getElementById('modalHerbWarnings')?.value || '—',
-        harms: document.getElementById('modalHerbHarams')?.value || '—',
-        usage: document.getElementById('modalHerbUsage')?.value || '—',
-        notes: document.getElementById('modalHerbNotes')?.value || '—',
-        imageUrl: imageUrl || null,
-        updatedAt: new Date().toISOString()
-    };
+    showSaveProgress(10, 'جاري التجهيز...', 'فحص البيانات');
     
-    showSaveProgress(30, 'تجهيز...', 'حفظ في قاعدة البيانات المحلية');
-    
-    if (currentEditHerbId) {
-        // تعديل
+    try {
+        let imageUrl = currentImageUrl;
+        
+        // رفع الصورة إلى Storage إذا وجدت
+        if (currentImageFile) {
+            const tempId = currentEditHerbId || Date.now().toString();
+            imageUrl = await uploadHerbImage(currentImageFile, tempId);
+            if (imageUrl && currentEditHerbId) {
+                // حذف الصورة القديمة إذا كانت موجودة
+                const oldHerb = herbs.find(h => h.id === currentEditHerbId);
+                if (oldHerb && oldHerb.imageUrl) {
+                    await deleteHerbImage(oldHerb.imageUrl);
+                }
+            }
+            currentImageFile = null;
+            currentImageUrl = null;
+        }
+        
+        const herbData = {
+            name: name,
+            categoryId: document.getElementById('modalHerbCategory')?.value || null,
+            benefits: document.getElementById('modalHerbBenefits')?.value || '—',
+            warnings: document.getElementById('modalHerbWarnings')?.value || '—',
+            harms: document.getElementById('modalHerbHarams')?.value || '—',
+            usage: document.getElementById('modalHerbUsage')?.value || '—',
+            notes: document.getElementById('modalHerbNotes')?.value || '—',
+            imageUrl: imageUrl || null,
+            updatedAt: new Date().toISOString()
+        };
+        
+        showSaveProgress(70, 'جاري حفظ البيانات...', 'الرجاء الانتظار');
+        
+        if (currentEditHerbId) {
+            // تعديل
+            if (window.LocalDB && window.LocalDB.isLoaded) {
+                window.LocalDB.updateHerb(currentEditHerbId, herbData);
+            }
+            if (window.herbsCol) {
+                await window.herbsCol.doc(currentEditHerbId).set(herbData, { merge: true });
+            }
+        } else {
+            // إضافة جديدة
+            let newHerb = null;
+            if (window.LocalDB && window.LocalDB.isLoaded) {
+                newHerb = window.LocalDB.addHerb(herbData);
+            }
+            if (window.herbsCol) {
+                const docRef = window.herbsCol.doc();
+                await docRef.set({ ...herbData, id: docRef.id });
+            }
+        }
+        
+        // تحديث المتغيرات المحلية
         if (window.LocalDB && window.LocalDB.isLoaded) {
-            window.LocalDB.updateHerb(currentEditHerbId, herbData);
+            categories = window.LocalDB.getCategories();
+            herbs = window.LocalDB.getHerbs();
         }
-        if (window.herbsCol) {
-            await window.herbsCol.doc(currentEditHerbId).set(herbData, { merge: true });
-        }
-    } else {
-        // إضافة جديدة
-        let newHerb = null;
-        if (window.LocalDB && window.LocalDB.isLoaded) {
-            newHerb = window.LocalDB.addHerb(herbData);
-        }
-        if (window.herbsCol) {
-            const docRef = window.herbsCol.doc();
-            await docRef.set({ ...herbData, id: docRef.id });
-        }
+        
+        showSaveProgress(100, 'تم الحفظ بنجاح', 'اكتمل');
+        
+        // تحديث الواجهة
+        renderContent();
+        updateHerbCount();
+        
+        document.getElementById('herbModal')?.classList.remove('active');
+        resetHerbForm();
+        
+        alert('✅ تم حفظ العشبة بنجاح');
+        
+    } catch (error) {
+        console.error('فشل الحفظ:', error);
+        showSaveProgress(0, 'فشل الحفظ', 'حدث خطأ');
+        alert('❌ فشل حفظ العشبة: ' + error.message);
     }
-    
-    // تحديث المتغيرات المحلية
-    if (window.LocalDB && window.LocalDB.isLoaded) {
-        categories = window.LocalDB.getCategories();
-        herbs = window.LocalDB.getHerbs();
-    }
-    
-    showSaveProgress(100, 'تم', 'انتهى');
-    renderContent();
-    updateHerbCount();
-    
-    document.getElementById('herbModal')?.classList.remove('active');
-    resetHerbForm();
 };
 
 // تعديل دالة confirmDelete
 const originalConfirmDelete = window.confirmDelete || function() {};
 window.confirmDelete = async function() {
     if (pendingDeleteType === 'category') {
+        // حذف جميع أعشاب التصنيف أولاً (بما في ذلك صورهم)
+        const categoryHerbs = herbs.filter(h => h.categoryId === pendingDeleteId);
+        for (const herb of categoryHerbs) {
+            if (herb.imageUrl) {
+                await deleteHerbImage(herb.imageUrl);
+            }
+            if (window.LocalDB && window.LocalDB.isLoaded) {
+                window.LocalDB.deleteHerb(herb.id);
+            }
+            if (window.herbsCol) {
+                await window.herbsCol.doc(herb.id).delete();
+            }
+        }
         if (window.LocalDB && window.LocalDB.isLoaded) {
             window.LocalDB.deleteCategory(pendingDeleteId);
         }
@@ -190,6 +264,11 @@ window.confirmDelete = async function() {
             await window.categoriesCol.doc(pendingDeleteId).delete();
         }
     } else if (pendingDeleteType === 'herb') {
+        // حذف الصورة من Storage أولاً
+        const herb = herbs.find(h => h.id === pendingDeleteId);
+        if (herb && herb.imageUrl) {
+            await deleteHerbImage(herb.imageUrl);
+        }
         if (window.LocalDB && window.LocalDB.isLoaded) {
             window.LocalDB.deleteHerb(pendingDeleteId);
         }
@@ -259,8 +338,17 @@ console.log('✅ تم تحميل نظام قاعدة البيانات المزد
 // ================== الوظائف الأساسية للنظام ===================
 // =================================================================
 
-async function compressImage(file, maxWidth = 800, quality = 0.8) {
+async function compressImage(file, maxWidth = 500, quality = 0.6) {
     return new Promise((resolve, reject) => {
+        // إذا كان الملف صغيراً، لا نضغطه
+        if (file.size < 100 * 1024) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            return;
+        }
+        
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = function(e) {
@@ -269,18 +357,25 @@ async function compressImage(file, maxWidth = 800, quality = 0.8) {
             img.onload = function() {
                 const canvas = document.createElement('canvas');
                 let width = img.width, height = img.height;
+                
                 if (width > maxWidth) {
                     height *= maxWidth / width;
                     width = maxWidth;
                 }
+                
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                
+                let finalQuality = quality;
+                if (file.size > 2 * 1024 * 1024) finalQuality = 0.3;
+                else if (file.size > 1 * 1024 * 1024) finalQuality = 0.4;
+                
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', finalQuality);
                 const compressInfo = document.getElementById('compressInfo');
                 if (compressInfo) {
-                    compressInfo.innerHTML = '✅ تم الضغط: ' + (file.size / 1024).toFixed(2) + ' KB → ' + (compressedDataUrl.length * 0.75 / 1024).toFixed(2) + ' KB';
+                    compressInfo.innerHTML = '✅ تم الضغط: ' + (file.size / 1024).toFixed(1) + ' KB → ' + (compressedDataUrl.length * 0.75 / 1024).toFixed(1) + ' KB';
                 }
                 resolve(compressedDataUrl);
             };
@@ -337,7 +432,6 @@ let currentEditHerbId = null;
 let pendingDeleteId = null;
 let pendingDeleteType = null;
 let currentImageBase64 = null;
-let currentImageFile = null;
 let unsubscribeCategories = null;
 let unsubscribeHerbs = null;
 let reconnectAttempts = 0;
@@ -873,6 +967,7 @@ function resetHerbForm() {
     currentEditHerbId = null;
     currentImageBase64 = null;
     currentImageFile = null;
+    currentImageUrl = null;
     const herbName = document.getElementById('modalHerbName');
     const benefits = document.getElementById('modalHerbBenefits');
     const warnings = document.getElementById('modalHerbWarnings');
@@ -908,7 +1003,7 @@ function editHerb(id) {
     if (!herb) return;
     resetHerbForm();
     currentEditHerbId = id;
-    currentImageBase64 = herb.imageUrl;
+    currentImageUrl = herb.imageUrl;
     const herbName = document.getElementById('modalHerbName');
     const benefits = document.getElementById('modalHerbBenefits');
     const warnings = document.getElementById('modalHerbWarnings');
@@ -934,122 +1029,6 @@ function editHerb(id) {
     if (herbModalTitle) herbModalTitle.innerHTML = '<i class="fas fa-edit"></i> تعديل العشبة';
     const herbModal = document.getElementById('herbModal');
     if (herbModal) herbModal.classList.add('active');
-}
-
-async function saveHerb() {
-    let name = document.getElementById('modalHerbName')?.value.trim();
-    if (!name) {
-        alert('الاسم مطلوب');
-        return;
-    }
-    let categoryId = document.getElementById('modalHerbCategory')?.value;
-    let finalCategoryId = (categoryId === "") ? null : categoryId;
-    let imageUrl = currentImageBase64;
-    if (currentImageFile) {
-        imageUrl = await compressImage(currentImageFile);
-        currentImageFile = null;
-    }
-    let data = {
-        name: name,
-        categoryId: finalCategoryId,
-        benefits: document.getElementById('modalHerbBenefits')?.value || '—',
-        warnings: document.getElementById('modalHerbWarnings')?.value || '—',
-        harms: document.getElementById('modalHerbHarams')?.value || '—',
-        usage: document.getElementById('modalHerbUsage')?.value || '—',
-        notes: document.getElementById('modalHerbNotes')?.value || '—',
-        imageUrl: imageUrl || null,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    showSaveProgress(30, 'تجهيز...', 'حفظ البيانات');
-    const docRef = currentEditHerbId ? herbsCol.doc(currentEditHerbId) : herbsCol.doc();
-    await docRef.set(data, { merge: true });
-    showSaveProgress(100, 'تم', 'انتهى');
-    const herbModal = document.getElementById('herbModal');
-    if (herbModal) herbModal.classList.remove('active');
-    resetHerbForm();
-}
-
-async function confirmDelete() {
-    if (pendingDeleteType === 'category') {
-        await deleteCategoryWithHerbs(pendingDeleteId);
-    } else if (pendingDeleteType === 'herb') {
-        await herbsCol.doc(pendingDeleteId).delete();
-    }
-    const deleteModal = document.getElementById('deleteModal');
-    if (deleteModal) deleteModal.classList.remove('active');
-    pendingDeleteId = null;
-    pendingDeleteType = null;
-}
-
-async function deleteAllData() {
-    const allCats = await categoriesCol.get();
-    const allHerbs = await herbsCol.get();
-    const batch = db.batch();
-    allCats.docs.forEach(doc => batch.delete(doc.ref));
-    allHerbs.docs.forEach(doc => batch.delete(doc.ref));
-    await batch.commit();
-    alert("تم حذف جميع الأعشاب والتصنيفات من السحابة");
-    localStorage.removeItem(CACHE_KEY);
-}
-
-async function deleteAllHerbsOnly() {
-    if (confirm("⚠️ تحذير: سيتم حذف جميع الأعشاب نهائياً؟")) {
-        const allHerbs = await herbsCol.get();
-        const batch = db.batch();
-        allHerbs.docs.forEach(doc => batch.delete(doc.ref));
-        await batch.commit();
-        alert("تم حذف جميع الأعشاب بنجاح");
-        localStorage.removeItem(CACHE_KEY);
-    }
-}
-
-async function backupJSON() {
-    let data = { categories: categories, herbs: herbs, backupDate: new Date().toISOString() };
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
-    a.download = 'herbs_backup_' + Date.now() + '.json';
-    a.click();
-    alert("تم إنشاء ملف النسخ الاحتياطي");
-}
-
-function restoreJSON() {
-    const restoreFile = document.getElementById('restoreFile');
-    if (restoreFile) restoreFile.click();
-}
-
-async function handleRestore(e) {
-    let file = e.target.files[0];
-    if (!file) return;
-    let text = await file.text();
-    let parsed = JSON.parse(text);
-    let cats = parsed.categories;
-    let hs = parsed.herbs;
-    if (Array.isArray(cats) && Array.isArray(hs)) {
-        if (confirm("⚠️ سيتم استبدال جميع البيانات الحالية. هل أنت متأكد؟")) {
-            await deleteAllData();
-            for (let c of cats) {
-                await categoriesCol.add({ name: c.name, createdAt: new Date() });
-            }
-            for (let h of hs) {
-                await herbsCol.add({
-                    name: h.name,
-                    categoryId: h.categoryId,
-                    benefits: h.benefits || '—',
-                    warnings: h.warnings || '—',
-                    harms: h.harms || '—',
-                    usage: h.usage || '—',
-                    notes: h.notes || '—',
-                    imageUrl: h.imageUrl || null,
-                    createdAt: new Date()
-                });
-            }
-            alert("تمت الاستعادة بنجاح");
-            localStorage.removeItem(CACHE_KEY);
-        }
-    } else {
-        alert("ملف غير صالح");
-    }
-    if (document.getElementById('restoreFile')) document.getElementById('restoreFile').value = '';
 }
 
 // =================================================================
@@ -1080,11 +1059,7 @@ function showLogin() {
     if (loginModal) loginModal.classList.add('active');
 }
 
-// ============================================
-// إصلاح خطأ ADMIN_UID - الإصدار النهائي
-// ============================================
 async function attemptLogin() {
-    // التأكد من وجود ADMIN_UID من عدة مصادر
     let validAdminUID = null;
     
     if (typeof ADMIN_UID !== 'undefined') {
@@ -1092,7 +1067,6 @@ async function attemptLogin() {
     } else if (window.ADMIN_UID) {
         validAdminUID = window.ADMIN_UID;
     } else {
-        // الـ UID الافتراضي للمشروع الجديد
         validAdminUID = "OWssFNrZDaZfeSlrLF8ReS8O6LM2";
         console.warn("⚠️ ADMIN_UID not found, using default");
     }
@@ -1453,7 +1427,6 @@ function closeModalOnBackground(modalId) {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    // إغلاق المودالات بالضغط على الخلفية
     closeModalOnBackground('categoryModal');
     closeModalOnBackground('herbModal');
     closeModalOnBackground('detailModal');
@@ -1463,14 +1436,12 @@ document.addEventListener('DOMContentLoaded', function() {
     closeModalOnBackground('deleteAllConfirmModal');
     closeModalOnBackground('installGuideModal');
 
-    // إغلاق المودالات بزر ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             document.querySelectorAll('.modal-glass.active').forEach(modal => modal.classList.remove('active'));
         }
     });
 
-    // زر البحث الرئيسي
     const mainSearchBtn = document.getElementById('mainSearchBtn');
     if (mainSearchBtn) {
         mainSearchBtn.addEventListener('click', function(e) {
@@ -1479,7 +1450,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // أزرار العرض الكبيرة
     const viewToggleLarge = document.getElementById('viewToggle');
     if (viewToggleLarge) {
         viewToggleLarge.addEventListener('click', (e) => {
@@ -1492,7 +1462,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // أزرار المسؤول
     const refreshBtn = document.getElementById('refreshDataBtn');
     if (refreshBtn) refreshBtn.addEventListener('click', manualRefresh);
     
@@ -1650,7 +1619,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) searchInput.addEventListener('input', performSearch);
     
-    // رفع الصورة
     const uploadImageBtn = document.getElementById('uploadImageBtn');
     if (uploadImageBtn) uploadImageBtn.addEventListener('click', () => {
         const herbImageInput = document.getElementById('herbImageInput');
@@ -1662,17 +1630,23 @@ document.addEventListener('DOMContentLoaded', function() {
         herbImageInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file && file.type.startsWith('image/')) {
-                currentImageFile = file;
-                const compressed = await compressImage(file);
-                currentImageBase64 = compressed;
-                const previewContainer = document.getElementById('imagePreviewContainer');
-                if (previewContainer) {
-                    previewContainer.innerHTML = `<img src="${compressed}" class="herb-image-preview" onclick="document.getElementById('herbImageInput').click()">`;
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('⚠️ حجم الصورة كبير جداً. الحد الأقصى 5 ميجابايت.');
+                    return;
                 }
-                const clearBtn = document.getElementById('clearImageBtn');
-                if (clearBtn) clearBtn.style.display = 'inline-flex';
+                currentImageFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewContainer = document.getElementById('imagePreviewContainer');
+                    if (previewContainer) {
+                        previewContainer.innerHTML = `<img src="${e.target.result}" class="herb-image-preview" onclick="document.getElementById('herbImageInput').click()">`;
+                    }
+                    const clearBtn = document.getElementById('clearImageBtn');
+                    if (clearBtn) clearBtn.style.display = 'inline-flex';
+                };
+                reader.readAsDataURL(file);
             } else {
-                alert('ملف غير صالح');
+                alert('الرجاء اختيار ملف صورة صالح (jpg, png, webp)');
             }
         });
     }
@@ -1680,8 +1654,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearImageBtn = document.getElementById('clearImageBtn');
     if (clearImageBtn) {
         clearImageBtn.addEventListener('click', () => {
-            currentImageBase64 = null;
             currentImageFile = null;
+            currentImageUrl = null;
             const herbImageInput = document.getElementById('herbImageInput');
             if (herbImageInput) herbImageInput.value = '';
             const previewContainer = document.getElementById('imagePreviewContainer');
@@ -1692,7 +1666,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // تسجيل زائر
     let visitCount = parseInt(localStorage.getItem('visitor') || '0');
     localStorage.setItem('visitor', visitCount === 0 ? '1' : (visitCount + 1).toString());
     localStorage.setItem('last_visit_date', new Date().toLocaleDateString('ar-EG'));
@@ -1703,7 +1676,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // ========== كشف حالة الاتصال بالإنترنت ===========================
 // =================================================================
 
-// إضافة نمط لوضع عدم الاتصال
 const offlineStyle = document.createElement('style');
 offlineStyle.textContent = `
     body.offline-mode {
@@ -1732,7 +1704,6 @@ offlineStyle.textContent = `
 `;
 document.head.appendChild(offlineStyle);
 
-// دالة عرض إشعار مؤقت
 function showConnectionToast(message, type = 'info') {
     const colors = {
         success: '#4caf50',
@@ -1769,7 +1740,6 @@ function showConnectionToast(message, type = 'info') {
     }, 3500);
 }
 
-// مراقبة حالة الاتصال
 window.addEventListener('online', () => {
     console.log('🟢 تم استعادة الاتصال بالإنترنت');
     document.body.classList.remove('offline-mode');
@@ -1797,13 +1767,11 @@ window.addEventListener('offline', () => {
     showConnectionToast('⚠️ لا يوجد اتصال بالإنترنت - يتم عرض البيانات المخزنة محلياً', 'warning');
 });
 
-// التحقق من حالة الاتصال عند تحميل الصفحة
 if (!navigator.onLine) {
     document.body.classList.add('offline-mode');
     showConnectionToast('⚠️ لا يوجد اتصال بالإنترنت - يتم عرض البيانات المخزنة محلياً', 'warning');
 }
 
-// مؤشر LED لحالة المزامنة
 function updateConnectionStatusLED() {
     const led = document.getElementById('syncStatusLed');
     if (!led) return;
@@ -1827,10 +1795,9 @@ setInterval(updateConnectionStatusLED, 3000);
 setTimeout(updateConnectionStatusLED, 500);
 
 // ============================================
-// المزامنة مع Firebase - جميع المستخدمين يشتركون في نفس البيانات
+// المزامنة مع Firebase
 // ============================================
 
-// دالة تحديث شريط التقدم
 window.updateSyncProgress = function(percent, status) {
     const fill = document.getElementById('syncProgressFill');
     const percentSpan = document.getElementById('syncProgressPercent');
@@ -1858,54 +1825,45 @@ window.updateSyncProgress = function(percent, status) {
     }
 };
 
-// دالة التحديث الإجباري للبيانات من Firebase (للمستخدم العادي والمسؤول)
 window.forceSyncData = async function(showToast = true) {
     console.log('🔄 بدء جلب البيانات من Firebase...');
     
-    // التحقق من وجود Firebase
     if (typeof categoriesCol === 'undefined' || typeof herbsCol === 'undefined') {
-        console.error('❌ Firebase غير متاح - categoriesCol أو herbsCol غير معرفين');
+        console.error('❌ Firebase غير متاح');
         if (showToast) {
-            alert('❌ خطأ: Firebase غير متاح. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
+            alert('❌ خطأ: Firebase غير متاح. يرجى تحديث الصفحة.');
         }
         return false;
     }
     
     if (!navigator.onLine) {
-        if (showToast) alert('⚠️ لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك ثم حاول مرة أخرى.');
+        if (showToast) alert('⚠️ لا يوجد اتصال بالإنترنت.');
         return false;
     }
     
-    // تحديث شريط التقدم - بدء التحميل
     if (typeof window.updateSyncProgress === 'function') {
-        window.updateSyncProgress(5, '🔄 جاري الاتصال بقاعدة البيانات...');
+        window.updateSyncProgress(5, '🔄 جاري الاتصال...');
     }
     
     try {
-        // ========== 1. جلب التصنيفات من Firebase ==========
-        if (typeof window.updateSyncProgress === 'function') window.updateSyncProgress(15, '📡 جلب التصنيفات من السحابة...');
-        
+        if (typeof window.updateSyncProgress === 'function') window.updateSyncProgress(15, '📡 جلب التصنيفات...');
         const categoriesSnapshot = await categoriesCol.get();
         const fbCategories = [];
         categoriesSnapshot.forEach(doc => {
             fbCategories.push({ id: doc.id, ...doc.data() });
         });
-        console.log(`✅ تم جلب ${fbCategories.length} تصنيف من Firebase`);
+        console.log(`✅ تم جلب ${fbCategories.length} تصنيف`);
         
-        // ========== 2. جلب الأعشاب من Firebase ==========
-        if (typeof window.updateSyncProgress === 'function') window.updateSyncProgress(30, '📡 جلب الأعشاب من السحابة...');
-        
+        if (typeof window.updateSyncProgress === 'function') window.updateSyncProgress(30, '📡 جلب الأعشاب...');
         const herbsSnapshot = await herbsCol.get();
         const fbHerbs = [];
         herbsSnapshot.forEach(doc => {
             fbHerbs.push({ id: doc.id, ...doc.data() });
         });
-        console.log(`✅ تم جلب ${fbHerbs.length} عشبة من Firebase`);
+        console.log(`✅ تم جلب ${fbHerbs.length} عشبة`);
         
-        // ========== 3. حفظ البيانات محلياً ==========
-        if (typeof window.updateSyncProgress === 'function') window.updateSyncProgress(70, '💾 حفظ البيانات وتحديث الواجهة...');
+        if (typeof window.updateSyncProgress === 'function') window.updateSyncProgress(70, '💾 حفظ البيانات...');
         
-        // حفظ في localStorage للاستخدام المستقبلي
         const cacheData = {
             categories: fbCategories,
             herbs: fbHerbs,
@@ -1913,17 +1871,14 @@ window.forceSyncData = async function(showToast = true) {
         };
         localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
         
-        // ========== 4. تحديث المتغيرات العامة ==========
         categories = fbCategories;
         herbs = fbHerbs;
         
-        // ========== 5. تحديث الواجهة فوراً ==========
         renderContent();
         updateHerbCount();
         
-        // ========== 6. انتهى التحميل ==========
         if (typeof window.updateSyncProgress === 'function') {
-            window.updateSyncProgress(100, '✅ تم التحميل بنجاح');
+            window.updateSyncProgress(100, '✅ تم التحميل');
             setTimeout(() => {
                 if (typeof window.updateSyncProgress === 'function') {
                     window.updateSyncProgress(0, '✅ متصل');
@@ -1931,7 +1886,6 @@ window.forceSyncData = async function(showToast = true) {
             }, 2000);
         }
         
-        // إظهار إشعار بالنتيجة
         if (showToast) {
             const toast = document.createElement('div');
             toast.innerHTML = `✅ تم تحديث البيانات بنجاح<br>📚 ${fbHerbs.length} عشبة | 📂 ${fbCategories.length} تصنيف`;
@@ -1940,32 +1894,19 @@ window.forceSyncData = async function(showToast = true) {
             setTimeout(() => toast.remove(), 3000);
         }
         
-        console.log(`✅ تم تحديث البيانات بنجاح: ${fbHerbs.length} عشبة, ${fbCategories.length} تصنيف`);
         return true;
         
     } catch (error) {
-        console.error('❌ فشل جلب البيانات من Firebase:', error);
-        
+        console.error('❌ فشل جلب البيانات:', error);
         if (typeof window.updateSyncProgress === 'function') {
             window.updateSyncProgress(0, '❌ فشل التحميل');
         }
-        
         if (showToast) {
-            let errorMessage = error.message;
-            if (error.code === 'permission-denied') {
-                errorMessage = 'ليس لديك صلاحية الوصول إلى قاعدة البيانات';
-            } else if (error.code === 'unavailable') {
-                errorMessage = 'خدمة Firebase غير متاحة حالياً. تأكد من اتصالك بالإنترنت';
-            }
-            alert(`❌ فشل تحديث البيانات: ${errorMessage}`);
+            alert(`❌ فشل تحديث البيانات: ${error.message}`);
         }
         return false;
     }
 };
-
-// ============================================
-// المزامنة التلقائية عند فتح التطبيق (لجميع المستخدمين)
-// ============================================
 
 let autoSyncDone = false;
 
@@ -1975,19 +1916,13 @@ async function autoSyncOnStart() {
     
     console.log('🔄 مزامنة تلقائية عند فتح التطبيق...');
     
-    // انتظار قليلاً حتى يتم تحميل التطبيق بالكامل
     setTimeout(async () => {
-        // فقط إذا كان هناك اتصال بالإنترنت
         if (navigator.onLine) {
-            // تحديث شريط التقدم
             if (typeof window.updateSyncProgress === 'function') {
                 window.updateSyncProgress(5, '🔄 مزامنة تلقائية...');
             }
-            
-            // جلب البيانات من Firebase (بدون إظهار إشعار)
-            const result = await window.forceSyncData(false);
-            
-            if (result && typeof window.updateSyncProgress === 'function') {
+            await window.forceSyncData(false);
+            if (typeof window.updateSyncProgress === 'function') {
                 window.updateSyncProgress(100, '✅ مزامن');
                 setTimeout(() => {
                     if (typeof window.updateSyncProgress === 'function') {
@@ -1996,7 +1931,7 @@ async function autoSyncOnStart() {
                 }, 2000);
             }
         } else {
-            console.log('📡 لا يوجد اتصال بالإنترنت - عرض البيانات المخزنة محلياً');
+            console.log('📡 لا يوجد اتصال بالإنترنت');
             if (typeof window.updateSyncProgress === 'function') {
                 window.updateSyncProgress(0, '📡 غير متصل');
             }
@@ -2004,47 +1939,33 @@ async function autoSyncOnStart() {
     }, 1500);
 }
 
-// ============================================
-// ربط أزرار التحديث
-// ============================================
-
 function setupSyncButtons() {
-    // زر التحديث في شريط الزائر
     const visitorSyncBtn = document.getElementById('visitorForceSyncBtn');
     if (visitorSyncBtn) {
         const newBtn = visitorSyncBtn.cloneNode(true);
         visitorSyncBtn.parentNode.replaceChild(newBtn, visitorSyncBtn);
         newBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            console.log('🔘 تم الضغط على زر تحديث البيانات (الزائر)');
-            
             const originalHTML = newBtn.innerHTML;
             newBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري التحميل...';
             newBtn.disabled = true;
-            
             await window.forceSyncData(true);
-            
             newBtn.innerHTML = originalHTML;
             newBtn.disabled = false;
         });
         console.log('✅ زر التحديث (الزائر) جاهز');
     }
     
-    // زر التحديث في شريط المسؤول (refreshDataBtn)
     const refreshBtn = document.getElementById('refreshDataBtn');
     if (refreshBtn) {
         const newRefreshBtn = refreshBtn.cloneNode(true);
         refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
         newRefreshBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            console.log('🔘 تم الضغط على زر التحديث (المسؤول)');
-            
             const originalHTML = newRefreshBtn.innerHTML;
             newRefreshBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري التحميل...';
             newRefreshBtn.disabled = true;
-            
             await window.forceSyncData(true);
-            
             newRefreshBtn.innerHTML = originalHTML;
             newRefreshBtn.disabled = false;
         });
@@ -2052,19 +1973,12 @@ function setupSyncButtons() {
     }
 }
 
-// ============================================
-// مراقبة حالة الاتصال - مزامنة تلقائية عند عودة الإنترنت
-// ============================================
-
 window.addEventListener('online', async () => {
     console.log('🟢 تم استعادة الاتصال بالإنترنت');
-    
     if (typeof window.updateSyncProgress === 'function') {
         window.updateSyncProgress(20, '🔄 مزامنة تلقائية...');
     }
-    
     await window.forceSyncData(false);
-    
     if (typeof window.updateSyncProgress === 'function') {
         window.updateSyncProgress(100, '✅ مزامن');
         setTimeout(() => {
@@ -2075,20 +1989,15 @@ window.addEventListener('online', async () => {
     }
 });
 
-// ============================================
-// تشغيل المزامنة التلقائية عند تحميل التطبيق
-// ============================================
-
 setTimeout(() => {
     autoSyncOnStart();
 }, 2000);
 
-// تشغيل إعداد الأزرار بعد تحميل الصفحة
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupSyncButtons);
 } else {
     setupSyncButtons();
 }
 
-console.log('✅ نظام المزامنة جاهز - جميع المستخدمين يتشاركون نفس البيانات من Firebase');
+console.log('✅ نظام المزامنة جاهز');
 console.log('✅ تم تحميل التطبيق بنجاح');
