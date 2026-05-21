@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>غير متصل - موسوعة الأعشاب الطبية</title>
     <meta name="theme-color" content="#2e7d32">
+    <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -195,6 +196,7 @@
                 <li>📚 عرض الأعشاب التي تم تحميلها سابقاً</li>
                 <li>🔍 البحث في البيانات المخزنة محلياً</li>
                 <li>📖 تصفح التصنيفات المحفوظة</li>
+                <li>⭐ الإشارات المرجعية والملاحظات</li>
             </ul>
         </div>
         
@@ -209,10 +211,13 @@
             <button class="btn-secondary" onclick="location.reload()">
                 <i class="fas fa-sync-alt"></i> إعادة المحاولة
             </button>
+            <button class="btn-secondary" onclick="clearCacheAndReload()">
+                <i class="fas fa-broom"></i> مسح الكاش والمحاولة
+            </button>
         </div>
         
         <div class="footer">
-            <i class="fas fa-leaf"></i> موسوعة الأعشاب الطبية - الإصدار 4.0
+            <i class="fas fa-leaf"></i> موسوعة الأعشاب الطبية - الإصدار 5.0
         </div>
     </div>
     
@@ -245,14 +250,42 @@
             }
         }
         
+        // مسح الكاش وإعادة المحاولة
+        function clearCacheAndReload() {
+            if (confirm('⚠️ هل تريد مسح جميع البيانات المخزنة محلياً وإعادة المحاولة؟')) {
+                try {
+                    // مسح localStorage
+                    localStorage.clear();
+                    
+                    // مسح sessionStorage
+                    sessionStorage.clear();
+                    
+                    // مسح caches إذا كان متاحاً
+                    if ('caches' in window) {
+                        caches.keys().then(function(names) {
+                            for (var i = 0; i < names.length; i++) {
+                                caches.delete(names[i]);
+                            }
+                        });
+                    }
+                    
+                    alert('✅ تم مسح الكاش بنجاح. سيتم إعادة تحميل الصفحة.');
+                    location.reload();
+                } catch(e) {
+                    console.error('فشل مسح الكاش:', e);
+                    alert('❌ فشل مسح الكاش: ' + e.message);
+                }
+            }
+        }
+        
         // العودة إلى التطبيق
         function goToApp() {
-            // محاولة العودة إلى التطبيق
+            // استخدام المسار النسبي ليتوافق مع هيكل المشروع
             if (window.matchMedia('(display-mode: standalone)').matches) {
                 // إذا كان التطبيق مثبتاً
-                window.location.href = '/Encyclopedia-of-Herbal-Medicine/';
+                window.location.href = './';
             } else {
-                window.location.href = '/Encyclopedia-of-Herbal-Medicine/';
+                window.location.href = './';
             }
         }
         
@@ -268,9 +301,20 @@
                 cachedDiv.style.background = 'rgba(76,175,80,0.3)';
             }
             setTimeout(() => {
-                window.location.href = '/Encyclopedia-of-Herbal-Medicine/';
+                window.location.href = './';
             }, 1500);
         });
+        
+        // دعم PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./sw.js').then(function(registration) {
+                    console.log('ServiceWorker registered successfully: ', registration.scope);
+                }).catch(function(error) {
+                    console.log('ServiceWorker registration failed: ', error);
+                });
+            });
+        }
         
         console.log('📱 صفحة offline.html تم تحميلها بنجاح');
     </script>
